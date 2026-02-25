@@ -423,10 +423,10 @@ This section documents every known gap between the product spec and the current 
 
 ### 🟡 Medium-Priority Gaps (contracts exist, no wiring)
 
-#### GAP-11: DB Ledger not wired
-- **File:** `lib/ledger/dbAdapter.ts` — contract exists.
-- **Issue:** `NEXT_PUBLIC_ENABLE_DB_LEDGER` flag is defined and read, but `dbAdapter.ts` is never used — the local in-memory adapter (`lib/ledger/adapter.ts`) is always used.
-- **Fix:** When flag is on, swap ledger adapter to SQLite-backed implementation.
+#### GAP-11: DB Ledger implemented but never selected
+- **File:** `lib/ledger/dbAdapter.ts`
+- **Issue:** `createDbLedgerAdapter()` is a **fully functional SQLite implementation** — it opens a real DB file, creates the `ledger_records` table, and has prepared statements for `readAll`, `upsert` (with `ON CONFLICT`), and `findByMission`. A `shouldUseDbLedger()` helper also exists and reads the flag. However, no consumer ever calls `shouldUseDbLedger()` — `StudioWorkspace`, `CredentialsSummary`, and `AdminEvidenceView` all import `localLedgerAdapter` directly and unconditionally. Enabling `NEXT_PUBLIC_ENABLE_DB_LEDGER=true` currently has no effect.
+- **Fix:** In each ledger consumer, replace the direct `localLedgerAdapter` import with a conditional: `shouldUseDbLedger() ? createDbLedgerAdapter() : localLedgerAdapter`.
 
 #### GAP-12: Dead code in catch-all for `/app/core` and `/app/forbidden`
 - **File:** `app/app/[[...slug]]/page.tsx:40-88`
@@ -441,6 +441,32 @@ This section documents every known gap between the product spec and the current 
 #### GAP-14: Offline mode missing
 - **Issue:** `NEXT_PUBLIC_ENABLE_OFFLINE=true` flag has no corresponding implementation (service worker, offline ledger sync, etc.).
 - **Fix:** Define the offline contract before implementation; create a dedicated ticket.
+
+#### GAP-22: LLM routing layer never instantiated
+- **Files:** `lib/llm/router.ts`, `lib/llm/providers/localOllama.ts`, `lib/llm/providers/cloudManaged.ts`
+- **Issue:** `ModelRouter`, `LocalOllamaProvider`, and `CloudManagedProvider` are fully typed and implemented but **no API route or component ever instantiates or calls them**. The entire LLM routing layer is a disconnected island — enabling `NEXT_PUBLIC_ENABLE_LOCAL_OLLAMA` or configuring AWS does nothing visible in the app.
+- **Sub-issue:** `LocalOllamaProvider.infer()` calls `buildFallbackResponse()` with `usedFallback: false` even when the provider is disabled. This means if `ModelRouter` were ever wired up, a disabled Ollama provider would appear to "succeed," preventing the router from triggering cloud fallback.
+- **Fix:** Create an API route (e.g. `app/api/infer/route.ts`) that instantiates `ModelRouter` with the configured providers, then wire it to a UI entry point (e.g. studio AI assist). Fix `LocalOllamaProvider` to return `usedFallback: true` when disabled.
+
+#### GAP-23: Orchestration queue never instantiated
+- **Files:** `lib/orchestration/queueAdapter.ts`, `lib/orchestration/workerRunner.ts`, `lib/orchestration/stateMachine.ts`
+- **Issue:** `InMemoryQueueAdapter` and `runWorkerLifecycle` are fully implemented (priority sorting, idempotency keying, retry logic, deterministic state machine) but **no API route or background job ever creates an instance or enqueues work**. The orchestration system runs nowhere.
+- **Fix:** Create at minimum an API route that accepts job submissions and a worker invocation path. Long-term: back the adapter with SQS as contracted in `infra/aws-baseline.json`.
+
+#### GAP-24: Audit log writes to disk — broken in serverless
+- **File:** `lib/observability/audit.ts`
+- **Issue:** `recordAuditEvent()` uses `appendFileSync` to write NDJSON to `docs/status/audit-log.ndjson` via a **synchronous filesystem write** to a project-relative path. In Vercel's serverless runtime the project directory is read-only — these writes fail silently, and any writes that do succeed on a local/container run are ephemeral and lost on the next deploy. The audit trail (federation events, webhook events) is never actually persisted in production.
+- **Fix:** Replace `appendFileSync` with an append to a durable store — at minimum a writable path like `/tmp` for local dev, and a real append destination (DynamoDB, logging service, or Vercel Log Drains) for production.
+
+#### GAP-25: Clerk webhook handler discards event payload
+- **File:** `app/api/webhooks/clerk/route.ts`
+- **Issue:** The HMAC signature verification is correctly implemented using `timingSafeEqual`. However, after accepting the verified webhook, the handler **does nothing with the body** — it reads it only for signature verification, then returns `{ ok: true }`. No `user.created`, `user.updated`, or `session.created` events are processed. Role changes in Clerk do not propagate to any app-side record or cache.
+- **Fix:** Parse the webhook event type and payload, then handle relevant events (e.g. sync `publicMetadata.role` changes to a server-side store, invalidate role caches).
+
+#### GAP-26: Standards plugin architecture defined but bypassed
+- **File:** `lib/standards/contracts/plugins.ts`
+- **Issue:** `createRulePlugin()` and `runStandardsPlugins()` implement a complete plugin dispatch system for standards verification. However, `StudioWorkspace` calls `verifyArtifactText()` directly from `lib/standards/verifier/localVerifier.ts`, which internally calls `keywordStandardsRule` without going through the plugin registry. The plugin system is fully coded but never invoked anywhere.
+- **Fix:** Wire `runStandardsPlugins()` into the verification call in `StudioWorkspace`, replacing the direct `verifyArtifactText()` call, so that additional plugins can be registered and composed.
 
 ### 🟢 Low-Priority Gaps (polish / UX improvements)
 
@@ -484,6 +510,26 @@ This section documents every known gap between the product spec and the current 
 - **File:** `components/app-shell/AppShell.tsx`
 - **Issue:** The shell header shows role label and user name but has no sign-out link or button. Users authenticated via Clerk have no in-app path to log out. The Help `<details>` menu only contains "Restart tour". Signing out currently requires the user to navigate to `/sign-in` manually or clear their session.
 - **Fix:** Add a Clerk `<SignOutButton>` (or equivalent redirect to `/sign-in`) inside the Help menu or as a standalone header control.
+
+#### GAP-27: Data retention and deletion hooks never triggered
+- **Files:** `lib/ledger/adapter.ts`, `lib/runtime/engine/store.ts`
+- **Issue:** Four data lifecycle functions exist but nothing calls them:
+  - `purgeLedgerRecordsBefore(cutoffIso)` — time-based ledger retention
+  - `deleteLedgerRecordsByLearner(learnerId)` — GDPR-style learner deletion from ledger
+  - `purgeRuntimeStateBefore(cutoffIso)` — runtime state retention
+  - `deleteRuntimeStateByLearner(learnerId)` — GDPR-style runtime state deletion
+  No UI, API endpoint, admin screen, or scheduled job invokes any of these. The data retention/right-to-erasure mechanism is implemented but completely unconnected.
+- **Fix:** Wire to an admin API endpoint and/or an admin UI control in the Standards or Evidence screens.
+
+#### GAP-28: Standards registry is hardcoded — no admin path to configure
+- **File:** `lib/standards/verifier/localVerifier.ts`
+- **Issue:** `DEFAULT_STANDARDS` contains exactly 2 hardcoded standards (`rw.mission.clarity`, `rw.artifact.reflection`) with keyword sets. The `/app/standards` admin screen is a placeholder. There is no way for an admin to add, modify, disable, or weight standards through the UI. The plugin architecture (`plugins.ts`) exists but is also bypassed (see GAP-26).
+- **Fix:** Implement the Standards admin screen to read/write a standards registry; connect it to the verifier and plugin system.
+
+#### GAP-29: Federation dispatch is a stub — tasks accepted but never routed
+- **File:** `app/api/federation/route.ts`
+- **Issue:** The federation POST endpoint validates the flag, validates the task envelope, and returns `{ accepted: true }` — but it never actually dispatches the task to any agent. No agent registry lookup occurs, no capability matching runs, `buildCapabilityIndex` from `registryContracts.ts` is never called, and there is no GET endpoint for agent discovery. The federation control plane accepts work but does nothing with it.
+- **Fix:** Implement agent registry persistence, capability routing via `buildCapabilityIndex`, and actual task dispatch. Add a GET endpoint for agent discovery.
 
 ---
 
@@ -695,6 +741,7 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-25 — Updated after full codebase verification pass.*
-*Corrections: GAP-12 revised (Core Mount IS wired via dedicated page); GAP-20, GAP-21 added (role-matrix.md incomplete; no sign-out in AppShell).*
+*Last updated: 2026-02-25 — Second verification pass, full code-level inspection of all lib/ and api/ files.*
+*Corrections: GAP-11 revised (SQLite adapter is fully implemented, wiring gap only); GAP-12 revised (Core Mount IS wired via dedicated page).*
+*New gaps added: GAP-22 (LLM router disconnected), GAP-23 (orchestration queue disconnected), GAP-24 (audit log broken in serverless), GAP-25 (webhook handler discards payload), GAP-26 (standards plugin bypassed), GAP-27 (retention hooks unreachable), GAP-28 (standards hardcoded), GAP-29 (federation dispatch stub).*
 *Branch: `claude/gap-analysis-user-roles-RHg64`*
