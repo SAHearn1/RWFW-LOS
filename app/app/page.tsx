@@ -1,6 +1,8 @@
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
+import AdminHome from "@/components/dashboards/AdminHome";
 import AdultLearnerHome from "@/components/dashboards/AdultLearnerHome";
 import ProfessionalDevelopmentHome from "@/components/dashboards/ProfessionalDevelopmentHome";
+import TeacherHome from "@/components/dashboards/TeacherHome";
 import PLEHome from "@/components/ple/PLEHome";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
 import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
@@ -20,8 +22,16 @@ export default async function AppHomePage() {
     return <AdultLearnerHome />;
   }
 
+  if (role === "teacher") {
+    return <TeacherHome />;
+  }
+
   if (role === "professional_development") {
     return <ProfessionalDevelopmentHome />;
+  }
+
+  if (role === "admin") {
+    return <AdminHome />;
   }
 
   return <PLEHome />;
