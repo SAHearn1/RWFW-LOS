@@ -14,6 +14,14 @@ const CREATE_TABLE_SQL = `
   );
 `;
 
+const DEFAULT_DATABASE_PATH = "rootwork-ledger.db";
+
+type LedgerAvailability = {
+  enabled: boolean;
+  databasePath?: string;
+  reason?: string;
+};
+
 function ensureTable(database: InstanceType<typeof Database>): void {
   database.exec(CREATE_TABLE_SQL);
 }
@@ -38,8 +46,49 @@ function toRecord(row: {
   };
 }
 
-export function createDbLedgerAdapter(databasePath = "rootwork-ledger.db"): LedgerAdapter {
-  const database = new Database(databasePath);
+function resolveDatabasePath(): string | null {
+  const explicitPath = process.env.DB_LEDGER_PATH?.trim();
+  if (explicitPath) {
+    return explicitPath;
+  }
+
+  const runningOnVercel = process.env.VERCEL === "1";
+  if (runningOnVercel) {
+    return null;
+  }
+
+  return DEFAULT_DATABASE_PATH;
+}
+
+export function getDbLedgerAvailability(): LedgerAvailability {
+  if (process.env.NEXT_PUBLIC_ENABLE_DB_LEDGER !== "true") {
+    return {
+      enabled: false,
+      reason: "DB ledger disabled via NEXT_PUBLIC_ENABLE_DB_LEDGER."
+    };
+  }
+
+  const databasePath = resolveDatabasePath();
+  if (!databasePath) {
+    return {
+      enabled: false,
+      reason: "DB ledger disabled in serverless runtime without DB_LEDGER_PATH override."
+    };
+  }
+
+  return {
+    enabled: true,
+    databasePath
+  };
+}
+
+export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
+  const resolvedPath = databasePath ?? resolveDatabasePath();
+  if (!resolvedPath) {
+    throw new Error("DB ledger path is unavailable for current runtime.");
+  }
+
+  const database = new Database(resolvedPath);
   ensureTable(database);
 
   const readAllStatement = database.prepare(`
@@ -107,6 +156,5 @@ export function createDbLedgerAdapter(databasePath = "rootwork-ledger.db"): Ledg
 }
 
 export function shouldUseDbLedger(): boolean {
-  return process.env.NEXT_PUBLIC_ENABLE_DB_LEDGER === "true";
+  return getDbLedgerAvailability().enabled;
 }
-
