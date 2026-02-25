@@ -1,12 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { phase3FeatureFlags } from "@/lib/config/featureFlags";
+import { phase3FeatureFlags, phase1FeatureFlags } from "@/lib/config/featureFlags";
+
+type FlagServiceStatus = "unknown" | "ready" | "disabled" | "error";
 
 export default function SettingsHealth() {
   const localStorageReady = typeof window !== "undefined" && typeof window.localStorage !== "undefined";
   const [exportState, setExportState] = useState<"idle" | "working" | "done" | "error">("idle");
+  const [mcpStatus, setMcpStatus] = useState<FlagServiceStatus>("unknown");
+  const [offlineStatus, setOfflineStatus] = useState<FlagServiceStatus>("unknown");
+
+  useEffect(() => {
+    const loadStatuses = async () => {
+      const check = async (url: string): Promise<FlagServiceStatus> => {
+        try {
+          const response = await fetch(url, { cache: "no-store" });
+          if (response.ok) {
+            return "ready";
+          }
+
+          if (response.status === 503) {
+            return "disabled";
+          }
+
+          return "error";
+        } catch {
+          return "error";
+        }
+      };
+
+      const [mcp, offline] = await Promise.all([
+        check("/api/mcp/health"),
+        check("/api/offline/status")
+      ]);
+
+      setMcpStatus(mcp);
+      setOfflineStatus(offline);
+    };
+
+    loadStatuses();
+  }, []);
 
   const exportDiagnostics = async () => {
     try {
@@ -41,6 +76,10 @@ export default function SettingsHealth() {
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Runtime Flag</dt><dd>{phase3FeatureFlags.enableRuntime ? "enabled" : "disabled"}</dd></div>
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Ledger Flag</dt><dd>{phase3FeatureFlags.enableLedger ? "enabled" : "disabled"}</dd></div>
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Standards Verifier Flag</dt><dd>{phase3FeatureFlags.enableStandardsVerifier ? "enabled" : "disabled"}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">MCP Flag</dt><dd>{phase1FeatureFlags.enableMcp ? "enabled" : "disabled"}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">MCP Service</dt><dd>{mcpStatus}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Offline Flag</dt><dd>{phase1FeatureFlags.enableOffline ? "enabled" : "disabled"}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Offline Service</dt><dd>{offlineStatus}</dd></div>
       </dl>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4" data-tour="support-diagnostics">
