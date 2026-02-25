@@ -36,10 +36,6 @@ export default async function AppCatchAllPage({ params }: AppCatchAllPageProps) 
     return <ForbiddenPanel message="Your current role does not have access to this route." />;
   }
 
-  if (pathname === "/app/forbidden") {
-    return <ForbiddenPanel message="Your role cannot access the requested route." />;
-  }
-
   const definition = getRouteDefinition(pathname);
   if (!definition) {
     notFound();
