@@ -1,5 +1,5 @@
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
-import TeacherInterventionQueue from "@/components/teacher/TeacherInterventionQueue";
+import ReviewQueue from "@/components/reviews/ReviewQueue";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
 import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
 
@@ -14,5 +14,5 @@ export default async function ReviewsPage() {
     return <ForbiddenPanel message="Your current role does not have access to this route." />;
   }
 
-  return <TeacherInterventionQueue />;
+  return <ReviewQueue />;
 }
