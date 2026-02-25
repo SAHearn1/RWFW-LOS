@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
+import type { LearnerTimelineItem } from "@/lib/timeline/learnerTimeline";
 
 export default function CredentialsSummary() {
   const records = useMemo(() => {
@@ -12,6 +13,40 @@ export default function CredentialsSummary() {
     }
 
     return localLedgerAdapter.readAll();
+  }, []);
+
+  const [timeline, setTimeline] = useState<LearnerTimelineItem[]>([]);
+  const [timelineError, setTimelineError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadTimeline = async () => {
+      try {
+        const response = await fetch("/api/timeline/learner", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`timeline_request_failed_${response.status}`);
+        }
+
+        const payload = (await response.json()) as { timeline?: LearnerTimelineItem[] };
+        if (!active) {
+          return;
+        }
+
+        setTimeline(payload.timeline ?? []);
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+
+        setTimelineError(error instanceof Error ? error.message : "timeline_request_failed");
+      }
+    };
+
+    loadTimeline();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const verificationCount = records.filter((record) => record.type === "verification").length;
@@ -38,6 +73,30 @@ export default function CredentialsSummary() {
           <dd>{verificationCount}</dd>
         </div>
       </dl>
+
+      <section className="space-y-3" data-tour="learner-timeline">
+        <h2 className="text-lg font-semibold text-slate-900">Progress Timeline</h2>
+        <p className="text-sm text-slate-600">Recent mission, artifact, and verification events for this learner.</p>
+
+        {timelineError ? (
+          <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            Timeline unavailable ({timelineError}).
+          </p>
+        ) : timeline.length === 0 ? (
+          <div className="rounded border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-600">
+            No timeline events found yet.
+          </div>
+        ) : (
+          <ol className="space-y-2">
+            {timeline.slice(0, 20).map((item) => (
+              <li key={item.id} className="rounded border border-slate-200 bg-white p-3 text-sm">
+                <p className="font-medium text-slate-900">{item.summary}</p>
+                <p className="text-xs text-slate-500">{new Date(item.occurredAtIso).toLocaleString()} | {item.missionId}</p>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
     </section>
   );
 }
