@@ -80,3 +80,14 @@
 
 ## Backup and Restore Reference
 - See docs/runbooks/hybrid-backup-restore.md for step-by-step hybrid backup/restore.
+
+
+## Vercel Incident Timeline (2026-02-25)
+- Window observed: approximately 10-12 hours before stabilization checks.
+- Impact pattern: a cluster of production deploys reported `Error` status.
+- Current state: latest production deploys returned to `Ready` status.
+- Containment used: release-gate verification plus env/auth contract checks before redeploy.
+- Prevention:
+  - avoid parallel build jobs on the same worktree,
+  - run `npm run verify:release-gate` before production promotion,
+  - treat env key formatting drift as a release blocker.

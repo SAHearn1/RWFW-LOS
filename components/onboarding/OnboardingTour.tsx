@@ -42,7 +42,7 @@ export default function OnboardingTour({ role }: OnboardingTourProps) {
 
   const safeSteps = useMemo(() => {
     return steps.filter((step) => document.querySelector(step.selector));
-  }, [steps, started, index]);
+  }, [steps]);
 
   const activeStep = started ? safeSteps[index] : null;
 
@@ -97,3 +97,4 @@ export default function OnboardingTour({ role }: OnboardingTourProps) {
     </div>
   );
 }
+

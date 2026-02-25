@@ -131,7 +131,7 @@ export default function StudioWorkspace() {
     }
 
     return readRuntimeState().missions[MISSION_ID]?.stage ?? "not_started";
-  }, [lastSavedIso]);
+  }, []);
 
   return (
     <section className="space-y-4">
@@ -166,3 +166,4 @@ export default function StudioWorkspace() {
     </section>
   );
 }
+
