@@ -1,103 +1,103 @@
 {
-  "generatedAtIso": "2026-02-25T15:46:08.825Z",
+  "generatedAtIso": "2026-02-25T15:48:28.412Z",
   "checks": [
     {
       "script": "lint",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:45:47.630Z",
-      "finishedAtIso": "2026-02-25T15:45:49.552Z"
+      "startedAtIso": "2026-02-25T15:48:07.648Z",
+      "finishedAtIso": "2026-02-25T15:48:09.596Z"
     },
     {
       "script": "typecheck",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:45:49.552Z",
-      "finishedAtIso": "2026-02-25T15:45:51.500Z"
+      "startedAtIso": "2026-02-25T15:48:09.596Z",
+      "finishedAtIso": "2026-02-25T15:48:10.883Z"
     },
     {
       "script": "build",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:45:51.500Z",
-      "finishedAtIso": "2026-02-25T15:46:03.317Z"
+      "startedAtIso": "2026-02-25T15:48:10.883Z",
+      "finishedAtIso": "2026-02-25T15:48:23.101Z"
     },
     {
       "script": "verify:env",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:03.317Z",
-      "finishedAtIso": "2026-02-25T15:46:03.789Z"
+      "startedAtIso": "2026-02-25T15:48:23.101Z",
+      "finishedAtIso": "2026-02-25T15:48:23.516Z"
     },
     {
       "script": "verify:env-parity",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:03.789Z",
-      "finishedAtIso": "2026-02-25T15:46:04.197Z"
+      "startedAtIso": "2026-02-25T15:48:23.516Z",
+      "finishedAtIso": "2026-02-25T15:48:23.951Z"
     },
     {
       "script": "verify:engine-smoke",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:04.197Z",
-      "finishedAtIso": "2026-02-25T15:46:04.672Z"
+      "startedAtIso": "2026-02-25T15:48:23.951Z",
+      "finishedAtIso": "2026-02-25T15:48:24.382Z"
     },
     {
       "script": "verify:webhook-contract",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:04.672Z",
-      "finishedAtIso": "2026-02-25T15:46:05.160Z"
+      "startedAtIso": "2026-02-25T15:48:24.382Z",
+      "finishedAtIso": "2026-02-25T15:48:24.821Z"
     },
     {
       "script": "verify:security-checklist",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:05.160Z",
-      "finishedAtIso": "2026-02-25T15:46:05.588Z"
+      "startedAtIso": "2026-02-25T15:48:24.821Z",
+      "finishedAtIso": "2026-02-25T15:48:25.259Z"
     },
     {
       "script": "verify:branch-policy",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:05.588Z",
-      "finishedAtIso": "2026-02-25T15:46:06.002Z"
+      "startedAtIso": "2026-02-25T15:48:25.259Z",
+      "finishedAtIso": "2026-02-25T15:48:25.718Z"
     },
     {
       "script": "verify:swarm-overlap",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:06.002Z",
-      "finishedAtIso": "2026-02-25T15:46:06.430Z"
+      "startedAtIso": "2026-02-25T15:48:25.718Z",
+      "finishedAtIso": "2026-02-25T15:48:26.098Z"
     },
     {
       "script": "verify:role-routes",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:06.430Z",
-      "finishedAtIso": "2026-02-25T15:46:06.897Z"
+      "startedAtIso": "2026-02-25T15:48:26.098Z",
+      "finishedAtIso": "2026-02-25T15:48:26.528Z"
     },
     {
       "script": "verify:runtime-routes",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:06.897Z",
-      "finishedAtIso": "2026-02-25T15:46:07.318Z"
+      "startedAtIso": "2026-02-25T15:48:26.528Z",
+      "finishedAtIso": "2026-02-25T15:48:26.992Z"
     },
     {
       "script": "verify:onboarding",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:07.318Z",
-      "finishedAtIso": "2026-02-25T15:46:07.757Z"
+      "startedAtIso": "2026-02-25T15:48:26.992Z",
+      "finishedAtIso": "2026-02-25T15:48:27.422Z"
     },
     {
       "script": "verify:http-smoke",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-25T15:46:07.757Z",
-      "finishedAtIso": "2026-02-25T15:46:08.825Z"
+      "startedAtIso": "2026-02-25T15:48:27.422Z",
+      "finishedAtIso": "2026-02-25T15:48:28.412Z"
     }
   ],
   "passed": true
