@@ -1,27 +1,29 @@
 # Swarm Control Board
 
 Last Updated: 2026-02-25
-Mode: Execution complete, stabilization follow-ups only
+Mode: Phase 8 planning complete, execution queue initialized
 
 ## Active Milestone
-- EPIC: #44 (`CLOSED`)
+- EPIC: #78 (`OPEN`)
 
 ## Lane Assignments
-- Lane A (Auth/Security): complete (#61, #62, #63, #66, #68)
-- Lane B (Shell/Nav/Onboarding): complete, no active tickets
-- Lane C (Runtime/Ledger/Standards): complete (#64, #65)
-- Lane D (Cloud/Federation): complete (#45 through #55)
-- Lane E (CI/Docs/Release): complete (#59, #60, #67, #69, #70, #71, #72, #73, #74)
+- Lane A (Auth/Security): reserved for role/privacy hooks (no active ticket at kickoff)
+- Lane B (Shell/Nav/Onboarding): #81, #82, #84
+- Lane C (Runtime/Ledger/Standards): #83, #88
+- Lane D (Cloud/Federation/Observability): #79, #80
+- Lane E (CI/Docs/Release): #86, #87, #89, #90, #91
 
-## Current Queue
-1. Residual lint-warning cleanup ticket (optional quality polish)
-2. Build race hardening note enforcement (no parallel build jobs on shared worktree)
-3. Next-phase planning kickoff once product priorities are confirmed
+## Day 1 Queue (parallel-safe)
+1. #79 KPI contracts and metric schema
+2. #87 synthetic smoke monitor skeleton
+3. #88 runtime-ledger consistency verifier contract
+4. #90 pilot go/no-go checklist draft
 
 ## Merge Order
-1. Any residual low-risk hygiene tickets
-2. Planning artifacts for the next phase
-3. New execution EPIC only after updated guardrails and boundaries are merged
+1. Contracts first: #79
+2. Ingestion/monitor primitives: #80, #87, #88
+3. Product surfaces: #81, #82, #83, #84
+4. Support/release docs and drills: #86, #89, #90, #91
 
 ## Collision Prevention
 - No parallel PR may modify `app/app/layout.tsx`.
