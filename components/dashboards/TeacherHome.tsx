@@ -6,15 +6,15 @@ export default function TeacherHome() {
         Coordinate learner interventions, monitor review queues, and keep cohort progress moving.
       </p>
       <div className="grid gap-3 md:grid-cols-3">
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="teacher-intervention-card">
           <h2 className="font-semibold text-slate-900">Intervention Queue</h2>
           <p className="mt-1 text-slate-600">Prioritize learner support from deterministic urgency signals.</p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="teacher-cohort-card">
           <h2 className="font-semibold text-slate-900">Cohort Flow</h2>
           <p className="mt-1 text-slate-600">Track cohort pacing and unblock missions with targeted actions.</p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="teacher-reviews-card">
           <h2 className="font-semibold text-slate-900">Evidence Reviews</h2>
           <p className="mt-1 text-slate-600">Review submitted artifacts and verification outcomes in one loop.</p>
         </article>

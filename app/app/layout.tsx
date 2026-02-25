@@ -37,7 +37,7 @@ export default async function ProtectedAppLayout({
     );
   }
 
-  if ((role === "teacher" || role === "professional_development" || role === "admin") && !orgId) {
+  if ((role === "student_enrolled" || role === "teacher" || role === "professional_development" || role === "admin") && !orgId) {
     return (
       <main className="mx-auto w-full max-w-4xl px-6 py-8">
         <ForbiddenPanel message="An organization assignment is required for this role. Contact an administrator." />
@@ -57,3 +57,4 @@ export default async function ProtectedAppLayout({
     </>
   );
 }
+

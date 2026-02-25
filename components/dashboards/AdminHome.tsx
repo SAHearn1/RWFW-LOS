@@ -6,15 +6,15 @@ export default function AdminHome() {
         Monitor standards alignment, evidence readiness, and export posture with operational clarity.
       </p>
       <div className="grid gap-3 md:grid-cols-3">
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="admin-standards-card">
           <h2 className="font-semibold text-slate-900">Standards Health</h2>
           <p className="mt-1 text-slate-600">Review standards coverage and identify missing verification areas.</p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="admin-evidence-card">
           <h2 className="font-semibold text-slate-900">Evidence Readiness</h2>
           <p className="mt-1 text-slate-600">Track evidence volume and consistency across learner pathways.</p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="admin-exports-card">
           <h2 className="font-semibold text-slate-900">Export Operations</h2>
           <p className="mt-1 text-slate-600">Validate release and reporting readiness before stakeholder export.</p>
         </article>

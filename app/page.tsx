@@ -54,7 +54,7 @@ export default function HomePage() {
         <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/sign-in">
           Teacher Login
         </Link>
-        <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/sign-in">
+        <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/admin-info">
           Admin Info
         </Link>
       </section>

@@ -36,7 +36,9 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
   ],
   teacher: [
     { id: "nav", selector: "[data-tour='primary-nav']", title: "Command Navigation", body: "Teacher tools are grouped in your role navigation." },
-    { id: "home", selector: "[data-tour='page-title']", title: "Workspace", body: "This page reflects your current operational area." },
+    { id: "home", selector: "[data-tour='page-title']", title: "Teacher Home", body: "This home view summarizes intervention, cohort, and review signals." },
+    { id: "context", selector: "[data-tour='page-description']", title: "Operational Context", body: "Use this context to decide where to intervene first." },
+    { id: "notifications", selector: "[data-tour='notification-menu']", title: "Notifications", body: "Watch operational alerts for blockers and escalations." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour any time from Help." }
   ],
   professional_development: [
@@ -46,7 +48,9 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
   ],
   admin: [
     { id: "nav", selector: "[data-tour='primary-nav']", title: "Admin Navigation", body: "Standards, evidence, and exports are role-scoped." },
-    { id: "home", selector: "[data-tour='page-title']", title: "Workspace", body: "This page shows the active admin area." },
+    { id: "home", selector: "[data-tour='page-title']", title: "Admin Home", body: "This home view summarizes standards health and release readiness." },
+    { id: "context", selector: "[data-tour='page-description']", title: "Governance Context", body: "Use this context to prioritize standards, evidence, and exports." },
+    { id: "notifications", selector: "[data-tour='notification-menu']", title: "Notifications", body: "Use notifications to track governance alerts and export blockers." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour from Help when needed." }
   ]
 } as const;
