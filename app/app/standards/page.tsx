@@ -1,5 +1,5 @@
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
-import StandardsRegistry from "@/components/standards/StandardsRegistry";
+import StandardsManager from "@/components/standards/StandardsManager";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
 import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
 
@@ -14,5 +14,5 @@ export default async function StandardsPage() {
     return <ForbiddenPanel message="Standards registry is restricted to administrators." />;
   }
 
-  return <StandardsRegistry />;
+  return <StandardsManager />;
 }
