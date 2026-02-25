@@ -1,0 +1,32 @@
+{
+  "generatedAtIso": "2026-02-25T14:18:48.760Z",
+  "mode": "check-run",
+  "destructiveActionsExecuted": false,
+  "passed": true,
+  "steps": [
+    {
+      "id": "capture_current_state",
+      "description": "Capture current deployment and release-gate state for baseline.",
+      "command": "npm run verify:release-gate",
+      "status": "passed"
+    },
+    {
+      "id": "prepare_rollback_target",
+      "description": "Identify last known good deployment and commit hash.",
+      "status": "passed",
+      "note": "Record deployment URL and commit SHA before executing rollback."
+    },
+    {
+      "id": "rehearse_flag_containment",
+      "description": "Rehearse containment by toggling safe feature flags in a non-production environment.",
+      "status": "passed",
+      "note": "Do not change production flags during dry-run rehearsal."
+    },
+    {
+      "id": "verify_post_rollback_health",
+      "description": "Run route and verifier checks against rollback candidate.",
+      "command": "npm run verify:release-gate",
+      "status": "passed"
+    }
+  ]
+}

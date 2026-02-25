@@ -22,7 +22,8 @@
     "verify:swarm-overlap": "node scripts/verify-swarm-overlap.mjs",
     "verify:security-checklist": "node scripts/verify-security-checklist.mjs",
     "verify:synthetic-smoke": "node scripts/verify-synthetic-smoke.mjs",
-    "verify:runtime-ledger-consistency": "node scripts/verify-runtime-ledger-consistency.mjs"
+    "verify:runtime-ledger-consistency": "node scripts/verify-runtime-ledger-consistency.mjs",
+    "verify:release-drill": "node scripts/verify-release-drill.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",
