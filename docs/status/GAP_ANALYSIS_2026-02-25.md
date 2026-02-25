@@ -36,3 +36,8 @@ Scope: Phases 1-6 execution closure + cloud/local hybrid checks + release readin
 
 ## Completion Statement
 Gap-analysis issue tasks are complete for the currently planned phases. Remaining work is stabilization polish, not phase-blocking delivery.
+
+## GAP-12 Correction (2026-02-25)
+- Previous statement that `CoreMountRuntime` was not wired was incorrect.
+- `app/app/core/page.tsx` correctly mounts `CoreMountRuntimeLoader` and runtime lifecycle.
+- Actual issue: dead code existed in `app/app/[[...slug]]/page.tsx` for `/app/core` that could never execute because the dedicated `/app/core/page.tsx` route takes precedence in Next.js App Router.
