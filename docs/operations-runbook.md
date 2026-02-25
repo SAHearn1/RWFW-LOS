@@ -76,3 +76,7 @@
 - No parallel PRs may edit same layout file.
 - Shared contracts must merge before dependent changes.
 - Keep PR file count <= 15 unless explicitly approved.
+
+
+## Backup and Restore Reference
+- See docs/runbooks/hybrid-backup-restore.md for step-by-step hybrid backup/restore.

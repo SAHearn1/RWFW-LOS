@@ -52,6 +52,20 @@ function writeRecords(records: LedgerRecord[]): LedgerRecord[] {
   return records;
 }
 
+export function purgeLedgerRecordsBefore(cutoffIso: string): number {
+  const records = readRecords();
+  const kept = records.filter((record) => record.updatedAtIso >= cutoffIso);
+  writeRecords(kept);
+  return records.length - kept.length;
+}
+
+export function deleteLedgerRecordsByLearner(learnerId: string): number {
+  const records = readRecords();
+  const kept = records.filter((record) => record.learnerId !== learnerId);
+  writeRecords(kept);
+  return records.length - kept.length;
+}
+
 export const localLedgerAdapter: LedgerAdapter = {
   readAll() {
     return readRecords();

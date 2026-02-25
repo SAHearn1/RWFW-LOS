@@ -2,6 +2,10 @@ import { spawn } from "node:child_process";
 
 const routes = ["/", "/sign-in", "/app", "/app/studio", "/app/credentials", "/app/evidence", "/app/settings", "/app/exports"];
 const baseUrl = "http://127.0.0.1:3000";
+const performanceBudgetsMs = {
+  "/": 2500,
+  "/app": 3000
+};
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -43,15 +47,22 @@ async function run() {
 
     for (const route of routes) {
       let response;
+      const started = performance.now();
       try {
         response = await fetch(`${baseUrl}${route}`, { redirect: "manual" });
       } catch (error) {
         failures.push(`${route}: request failed (${error.message})`);
         continue;
       }
+      const elapsed = performance.now() - started;
 
       if (response.status >= 500) {
         failures.push(`${route}: returned ${response.status}`);
+      }
+
+      const budget = performanceBudgetsMs[route];
+      if (budget && elapsed > budget) {
+        failures.push(`${route}: exceeded budget (${Math.round(elapsed)}ms > ${budget}ms)`);
       }
     }
 

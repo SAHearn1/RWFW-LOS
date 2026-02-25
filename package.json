@@ -19,7 +19,8 @@
                     "verify:engine-smoke":  "node scripts/verify-engine-smoke.mjs",
                     "verify:webhook-contract":  "node scripts/verify-webhook-contract.mjs",
                     "verify:branch-policy":  "node scripts/verify-branch-policy.mjs",
-                    "verify:swarm-overlap":  "node scripts/verify-swarm-overlap.mjs"
+                    "verify:swarm-overlap":  "node scripts/verify-swarm-overlap.mjs",
+                    "verify:security-checklist":  "node scripts/verify-security-checklist.mjs"
                 },
     "dependencies":  {
                          "@clerk/nextjs":  "^6.31.6",

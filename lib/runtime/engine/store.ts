@@ -37,6 +37,35 @@ export function writeRuntimeState(state: RuntimeState): RuntimeState {
   return state;
 }
 
+export function purgeRuntimeStateBefore(cutoffIso: string): RuntimeState {
+  const current = readRuntimeState();
+
+  const next: RuntimeState = {
+    missions: Object.fromEntries(Object.entries(current.missions).filter(([, mission]) => mission.updatedAtIso >= cutoffIso)),
+    artifacts: Object.fromEntries(Object.entries(current.artifacts).filter(([, artifact]) => artifact.updatedAtIso >= cutoffIso)),
+    verifications: Object.fromEntries(Object.entries(current.verifications).filter(([, verification]) => verification.createdAtIso >= cutoffIso))
+  };
+
+  return writeRuntimeState(next);
+}
+
+export function deleteRuntimeStateByLearner(learnerId: string): RuntimeState {
+  const current = readRuntimeState();
+
+  const next: RuntimeState = {
+    missions: Object.fromEntries(Object.entries(current.missions).filter(([, mission]) => mission.learnerId !== learnerId)),
+    artifacts: Object.fromEntries(Object.entries(current.artifacts).filter(([, artifact]) => artifact.learnerId !== learnerId)),
+    verifications: Object.fromEntries(
+      Object.entries(current.verifications).filter(([, verification]) => {
+        const mission = current.missions[verification.missionId];
+        return mission?.learnerId !== learnerId;
+      })
+    )
+  };
+
+  return writeRuntimeState(next);
+}
+
 export function dispatchRuntimeEvent(event: RuntimeEvent): RuntimeState {
   const current = readRuntimeState();
   const next = reduceRuntimeState(current, event);

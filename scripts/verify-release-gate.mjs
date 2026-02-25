@@ -10,6 +10,7 @@ const checks = [
   "verify:env-parity",
   "verify:engine-smoke",
   "verify:webhook-contract",
+  "verify:security-checklist",
   "verify:branch-policy",
   "verify:swarm-overlap",
   "verify:role-routes",
