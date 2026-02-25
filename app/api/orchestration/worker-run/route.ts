@@ -4,10 +4,12 @@ import { NextResponse } from "next/server";
 import { parseAppRole } from "@/lib/auth/userRole";
 import type { OrchestrationJobEnvelope, QueueLeaseResult } from "@/lib/orchestration/contracts";
 import { DynamoOrchestrationStateStore } from "@/lib/orchestration/dynamoStateStore";
+import type { OrchestrationJobPayload, StandardsVerifyJobPayload } from "@/lib/orchestration/jobTypes";
 import { InMemoryQueueAdapter } from "@/lib/orchestration/queueAdapter";
 import { SqsQueueAdapter } from "@/lib/orchestration/sqsQueueAdapter";
 import { runWorkerLifecycle } from "@/lib/orchestration/workerRunner";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { verifyArtifactText } from "@/lib/standards/verifier/localVerifier";
 
 type WorkerRunBody = {
   idempotencyKey?: string;
@@ -28,6 +30,7 @@ type WorkerExecutionResult = {
   lifecycle: Awaited<ReturnType<typeof runWorkerLifecycle>>;
   finalJob: OrchestrationJobEnvelope<Record<string, unknown>>;
   backend: WorkerBackend;
+  jobOutput?: Record<string, unknown>;
 };
 
 function nowIso(): string {
@@ -86,13 +89,28 @@ async function executeWorker(
     queue.markStarted(lease.job.jobId, nowIso());
   }
 
+  const outputRef: { value?: Record<string, unknown> } = {};
+
   const lifecycle = await runWorkerLifecycle(lease.job, {
     workerId: "worker.local",
     startedAtIso: nowIso(),
     nowIso,
-    execute: async () => {
+    execute: async (executingJob) => {
       if (body.simulateFailure) {
         throw new Error("simulated_worker_failure");
+      }
+
+      const payload = executingJob.payload as OrchestrationJobPayload;
+      const jobType = (payload as { jobType?: string }).jobType;
+
+      if (jobType === "standards.verify") {
+        const typedPayload = payload as StandardsVerifyJobPayload;
+        const results = verifyArtifactText(typedPayload.artifactText, typedPayload.standards);
+        outputRef.value = { results };
+      } else if (jobType === "runtime.smoke" || jobType === undefined) {
+        // no-op smoke behavior
+      } else {
+        throw new Error("unsupported_job_type");
       }
     }
   });
@@ -123,7 +141,7 @@ async function executeWorker(
     await dynamicStore.upsert(finalJob);
   }
 
-  return { enqueued, lease, lifecycle, finalJob, backend };
+  return { enqueued, lease, lifecycle, finalJob, backend, jobOutput: outputRef.value };
 }
 
 export async function POST(request: Request): Promise<Response> {
