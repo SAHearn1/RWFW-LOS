@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
