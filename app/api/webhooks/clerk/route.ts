@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+import { syncRoleFromWebhook } from "@/lib/auth/roleSync";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
@@ -63,33 +64,38 @@ export async function POST(request: Request): Promise<Response> {
 
   const eventType = event.type ?? "unknown";
   const userId = event.data?.id ?? "unknown";
-  const role = typeof event.data?.public_metadata?.role === "string" ? event.data.public_metadata.role : "unassigned";
+  const rawRole = event.data?.public_metadata?.role;
+  const role = typeof rawRole === "string" ? rawRole : "unassigned";
 
-  const handledTypes = new Set(["user.created", "user.updated"]);
-  const handled = handledTypes.has(eventType);
+  if (eventType === "user.created" || eventType === "user.updated") {
+    syncRoleFromWebhook(userId, rawRole);
+
+    recordAuditEvent({
+      traceId,
+      eventType: "clerk.webhook.processed",
+      role: "system",
+      severity: "info",
+      createdAtIso: new Date().toISOString(),
+      metadata: { eventType, userId, role, handled: true }
+    });
+
+    return NextResponse.json(
+      { ok: true, processed: eventType },
+      { status: 200, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
 
   recordAuditEvent({
     traceId,
-    eventType: handled ? "clerk.webhook.processed" : "clerk.webhook.ignored",
+    eventType: "clerk.webhook.ignored",
     role: "system",
-    severity: handled ? "info" : "warning",
+    severity: "warning",
     createdAtIso: new Date().toISOString(),
-    metadata: {
-      eventType,
-      userId,
-      role,
-      handled
-    }
+    metadata: { eventType, userId, role, handled: false }
   });
 
   return NextResponse.json(
-    {
-      ok: true,
-      eventType,
-      handled,
-      userId,
-      role
-    },
+    { ok: true, skipped: true },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
   );
 }
