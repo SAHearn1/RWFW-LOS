@@ -1,6 +1,6 @@
 # RootWork LOS
 
-This repo runs a Next.js App Router shell with active Phase 2-4 hardening work.
+This repo runs a Next.js App Router shell with active Phase 2-5 hardening work.
 
 ## Local Setup
 1. Install dependencies:
@@ -36,5 +36,7 @@ This repo runs a Next.js App Router shell with active Phase 2-4 hardening work.
 - `docs/operations-runbook.md`
 - `docs/phase4-release-gate.md`
 
-## QA Matrix
+## QA
 - `docs/qa/role-matrix.md`
+- `docs/qa/manual-role-e2e-checklist.md`
+- `docs/qa/browser-quality-smoke.md`

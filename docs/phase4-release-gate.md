@@ -29,6 +29,10 @@
 - Teacher/admin without org displays explicit organization assignment block.
 - Malformed Clerk publishable key does not cause global 500; protected routes fail safely.
 
+## Required Manual Evidence
+- Role captures: see `docs/qa/manual-role-e2e-checklist.md`
+- Browser quality pass: see `docs/qa/browser-quality-smoke.md`
+
 ## Final Signoff
 - CI green on `main`
 - Role matrix unchanged or intentionally updated with docs + verifier sync

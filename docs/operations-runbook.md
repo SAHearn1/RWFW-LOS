@@ -27,10 +27,18 @@
 - Symptom: global HTTP 500 on all routes during runtime.
 - Root cause: auth middleware initializes Clerk with invalid publishable key.
 - Mitigation in code:
-  - `middleware.ts` now bypasses Clerk and fails safe for protected routes when key is invalid.
+  - `middleware.ts` bypasses Clerk and fails safe for protected routes when key is invalid.
   - sign-in/sign-up routes show controlled unavailable state instead of crashing.
 - Regression prevention:
+  - `npm run verify:env`
   - `npm run verify:http-smoke` in CI.
+
+## Clerk Key Normalization Protocol
+- Never wrap Clerk keys in single or double quotes in Vercel project env vars.
+- Remove accidental whitespace/newlines when rotating keys.
+- Re-sync local env after Vercel updates and re-run:
+  - `npm run verify:env`
+  - `npm run verify:http-smoke`
 
 ## Rollback Decision Tree
 - If auth fallback/regression: revert latest auth/layout commit and redeploy.
