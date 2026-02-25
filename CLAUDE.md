@@ -283,7 +283,7 @@ Defined in `lib/nav/items.ts`. Every role gets its own `readonly NavItem[]` — 
 |--------|-------|-----------|--------|-------|
 | Landing | `/` | `app/page.tsx` | ✅ Implemented | Three role CTAs (learner, teacher, admin) |
 | Profile | `/app/profile` | inline in catch-all | ✅ Implemented | Shows role + orgId |
-| Core Mount | `/app/core` | inline in catch-all | ✅ Implemented | Flag-gated bridge message |
+| Core Mount | `/app/core` | `app/app/core/page.tsx` → `CoreMountRuntimeLoader` | ✅ Implemented | Flag-gated via `createCoreMountRuntime()` + dedicated page |
 | Forbidden | `/app/forbidden` | `components/app-shell/ForbiddenPanel.tsx` | ✅ Implemented | In-app 403 view |
 | Sign In | `/sign-in` | Clerk UI | ✅ Implemented | — |
 | Sign Up | `/sign-up` | Clerk UI | ✅ Implemented | — |
@@ -428,10 +428,11 @@ This section documents every known gap between the product spec and the current 
 - **Issue:** `NEXT_PUBLIC_ENABLE_DB_LEDGER` flag is defined and read, but `dbAdapter.ts` is never used — the local in-memory adapter (`lib/ledger/adapter.ts`) is always used.
 - **Fix:** When flag is on, swap ledger adapter to SQLite-backed implementation.
 
-#### GAP-12: Core Mount components unused
-- **Files:** `components/core-mount/CoreMountRuntime.tsx`, `CoreMountRuntimeLoader.tsx`
-- **Issue:** These components exist but are imported nowhere. The `/app/core` route renders a static text message inline in the catch-all, not the actual mount components.
-- **Fix:** Wire `CoreMountRuntimeLoader` into `app/app/core/page.tsx` when `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT` is true.
+#### GAP-12: Dead code in catch-all for `/app/core` and `/app/forbidden`
+- **File:** `app/app/[[...slug]]/page.tsx:40-88`
+- **Issue:** The catch-all contains explicit handling blocks for `/app/core` (static text, lines 68-88) and `/app/forbidden` (lines 40-42), but **dedicated pages take Next.js App Router priority**: `app/app/core/page.tsx` and `app/app/forbidden/page.tsx` both exist and are the actual handlers. The catch-all branches are unreachable dead code.
+- **Note:** `CoreMountRuntime.tsx` and `CoreMountRuntimeLoader.tsx` ARE properly wired — `app/app/core/page.tsx` imports and uses them correctly via `createCoreMountRuntime()`.
+- **Fix:** Remove the `/app/core` and `/app/forbidden` handling blocks from the catch-all to eliminate confusion.
 
 #### GAP-13: MCP integration missing
 - **Issue:** `NEXT_PUBLIC_ENABLE_MCP=true` flag has no corresponding implementation, component, API route, or UI entry point.
@@ -467,6 +468,22 @@ This section documents every known gap between the product spec and the current 
 - **Files:** `src/App.tsx`, `src/main.tsx`, `src/services/geminiService.ts`
 - **Issue:** The Vite core exists in `src/` and `vite.config.ts` is present but the migration path to Next.js routes is only partially defined.
 - **Fix:** Screen-by-screen migration per Phase 2 cutover doc (`docs/phase2-cutover.md`).
+
+#### GAP-20: `docs/qa/role-matrix.md` incomplete — 6 routes missing
+- **File:** `docs/qa/role-matrix.md`
+- **Issue:** The QA matrix only documents 12 routes, but `lib/auth/routeAccess.ts` defines 17 routes. Six are absent from the matrix:
+  - `/app/portfolio`
+  - `/app/pickups`
+  - `/app/builder`
+  - `/app/standards`
+  - `/app/exports`
+  - `/app/forbidden`
+- **Fix:** Add the 6 missing rows to `docs/qa/role-matrix.md` and run `verify:role-routes` to confirm parity.
+
+#### GAP-21: No sign-out button in AppShell
+- **File:** `components/app-shell/AppShell.tsx`
+- **Issue:** The shell header shows role label and user name but has no sign-out link or button. Users authenticated via Clerk have no in-app path to log out. The Help `<details>` menu only contains "Restart tour". Signing out currently requires the user to navigate to `/sign-in` manually or clear their session.
+- **Fix:** Add a Clerk `<SignOutButton>` (or equivalent redirect to `/sign-in`) inside the Help menu or as a standalone header control.
 
 ---
 
@@ -507,7 +524,9 @@ This section documents every known gap between the product spec and the current 
 | `app/page.tsx` | Public landing page |
 | `app/app/layout.tsx` | Protected shell layout (auth check, role extraction, nav, onboarding) |
 | `app/app/page.tsx` | Home route — dispatches to role-specific dashboard |
-| `app/app/[[...slug]]/page.tsx` | Catch-all for all unimplemented routes (placeholder + profile + core) |
+| `app/app/[[...slug]]/page.tsx` | Catch-all for unimplemented routes (placeholder + profile inline) — has dead branches for `/app/core` and `/app/forbidden` (see GAP-12) |
+| `app/app/core/page.tsx` | Core mount route — `createCoreMountRuntime()` + `CoreMountRuntimeLoader` (dedicated, takes App Router priority) |
+| `app/app/forbidden/page.tsx` | In-app 403 route — renders `ForbiddenPanel` directly (dedicated page) |
 | `app/app/studio/page.tsx` | Studio route (role guard + StudioWorkspace) |
 | `app/app/credentials/page.tsx` | Credentials route |
 | `app/app/evidence/page.tsx` | Evidence route |
@@ -676,5 +695,6 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-25 — Generated by gap analysis sweep.*
+*Last updated: 2026-02-25 — Updated after full codebase verification pass.*
+*Corrections: GAP-12 revised (Core Mount IS wired via dedicated page); GAP-20, GAP-21 added (role-matrix.md incomplete; no sign-out in AppShell).*
 *Branch: `claude/gap-analysis-user-roles-RHg64`*
