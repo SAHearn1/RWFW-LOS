@@ -32,7 +32,7 @@ export default function HomePage() {
       {/* ── Five R's framework ─────────────────────────────────────── */}
       <section>
         <h2 className="mb-6 font-serif text-xl font-semibold text-rootwork-ink">
-          The Five R's
+          The Five R&apos;s
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {FIVE_RS.map(({ id, label, Icon, description }) => (

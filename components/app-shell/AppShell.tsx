@@ -1,5 +1,6 @@
 "use client";
 
+import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -77,6 +78,14 @@ export default function AppShell({ role, navItems, userLabel, children }: AppShe
               >
                 Restart tour
               </button>
+              <SignOutButton redirectUrl="/sign-in">
+                <button
+                  type="button"
+                  className="w-full rounded px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                >
+                  Sign out
+                </button>
+              </SignOutButton>
             </div>
           </details>
         </div>
