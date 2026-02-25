@@ -5,39 +5,46 @@ Owner: Release Captain (Codex)
 Scope: Phases 1-6 execution closure + cloud/local hybrid checks + release readiness
 
 ## Source of Truth Checks
-- GitHub issues `#44-#74`: all `CLOSED`
 - Local release gate: `passed` via `npm run verify:release-gate`
 - Vercel deployments: latest production deployments are `Ready`
 - AWS SSO/API access: verified for account `962531446166` with role `AdministratorAccess`
-
-## Commands Executed
-1. `npm run lint`
-2. `npm run typecheck`
-3. `npm run verify:release-gate`
-4. `vercel ls`
-5. `aws sts get-caller-identity`
+- Code-level verification performed against provider/queue implementations
 
 ## Verified Green Areas
 - Front Door shell, auth gating, role-route protections, onboarding resilience checks.
 - Runtime/ledger/standards contracts and smoke verifiers.
-- Cloud/federation interface and API route surfaces.
 - CI release-gate aggregator and verifier matrix.
 - Security/threat-model checklist and webhook contract validation.
 
-## Residual Gaps
-1. Lint warnings: 2 `react-hooks/exhaustive-deps` warnings remain (non-blocking).
-2. Build process race risk: concurrent `next build` in same worktree can transiently fail `.next/types` lookups.
-3. Vercel historical error cluster remains visible in older deployments, though latest is healthy.
+## Corrected Gap Findings (Operational Engine)
+1. `GAP-20` Local Ollama runtime call missing:
+   - `lib/llm/providers/localOllama.ts` still returns stub text; no HTTP call to Ollama API.
+2. `GAP-21` Cloud managed runtime call missing:
+   - `lib/llm/providers/cloudManaged.ts` still returns stub text; no AWS invocation.
+3. `GAP-22` SQS adapter missing:
+   - `lib/orchestration/queueAdapter.ts` currently only `InMemoryQueueAdapter`.
+4. `GAP-23` DynamoDB orchestration state store missing:
+   - AWS env contract exists but no DynamoDB-backed state adapter is wired.
+5. `GAP-24` AI/federation runtime status not surfaced in app UI:
+   - Contracts/routes exist, but no operator-facing status panel for provider health.
 
-## Recommended Follow-Up Tickets
-1. `type:chore risk:low area:nav agent:solo` - Resolve remaining React hook dependency warnings.
-2. `type:chore risk:low area:ci agent:solo` - Prevent concurrent builds in shared workspace (lock/guard).
-3. `type:chore risk:low area:docs agent:solo` - Add deployment incident timeline summary for historical Vercel errors.
+## Existing Open Gaps
+1. `GAP-11` DB ledger write-path parity remains open (`#103`).
 
-## Completion Statement
-Gap-analysis issue tasks are complete for the currently planned phases. Remaining work is stabilization polish, not phase-blocking delivery.
+## Active Tracking Issues
+- `#103` GAP-11 DB ledger write-path parity
+- `#104` EPIC Phase 4 Runtime Realization
+- `#105` GAP-20 Local Ollama real HTTP inference
+- `#106` GAP-22 SQS orchestration queue adapter
+- `#107` GAP-21 Cloud managed AWS-backed inference
+- `#108` GAP-23 DynamoDB orchestration state store
+- `#109` GAP-24 AI/federation runtime status UI
 
 ## GAP-12 Correction (2026-02-25)
 - Previous statement that `CoreMountRuntime` was not wired was incorrect.
 - `app/app/core/page.tsx` correctly mounts `CoreMountRuntimeLoader` and runtime lifecycle.
-- Actual issue: dead code existed in `app/app/[[...slug]]/page.tsx` for `/app/core` that could never execute because the dedicated `/app/core/page.tsx` route takes precedence in Next.js App Router.
+- Actual issue was unreachable dead code in `app/app/[[...slug]]/page.tsx` for `/app/core`, now removed.
+
+## Completion Statement
+Gap closure is complete for the Front Door/Shell and route-governance layer.
+Operational engine runtime realization is still in progress and tracked by `#104` and child issues.

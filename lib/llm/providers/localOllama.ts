@@ -1,13 +1,42 @@
 import type { ModelInferenceRequest, ModelInferenceResponse, ModelProvider } from "../providerContracts";
 
-function buildFallbackResponse(request: ModelInferenceRequest, outputText: string): ModelInferenceResponse {
+const DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434";
+const DEFAULT_OLLAMA_TIMEOUT_MS = 10_000;
+
+type OllamaGenerateResponse = {
+  response?: string;
+};
+
+function buildResponse(
+  request: ModelInferenceRequest,
+  outputText: string,
+  latencyMs: number,
+  usedFallback: boolean
+): ModelInferenceResponse {
   return {
     requestId: request.requestId,
     provider: "local_ollama",
     outputText,
-    latencyMs: 0,
-    usedFallback: false
+    latencyMs,
+    usedFallback
   };
+}
+
+function resolveOllamaBaseUrl(): string {
+  return (process.env.OLLAMA_BASE_URL ?? DEFAULT_OLLAMA_BASE_URL).replace(/\/$/, "");
+}
+
+function resolveOllamaModel(request: ModelInferenceRequest): string {
+  return process.env.OLLAMA_MODEL ?? request.model;
+}
+
+function resolveTimeoutMs(): number {
+  const parsed = Number.parseInt(process.env.OLLAMA_TIMEOUT_MS ?? "", 10);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  return DEFAULT_OLLAMA_TIMEOUT_MS;
 }
 
 export class LocalOllamaProvider implements ModelProvider {
@@ -20,9 +49,56 @@ export class LocalOllamaProvider implements ModelProvider {
   async infer(request: ModelInferenceRequest): Promise<ModelInferenceResponse> {
     const enabled = await this.isAvailable();
     if (!enabled) {
-      return buildFallbackResponse(request, "Local Ollama disabled by feature flag.");
+      return buildResponse(request, "Local Ollama disabled by feature flag.", 0, true);
     }
 
-    return buildFallbackResponse(request, `Local Ollama stub response for model ${request.model}.`);
+    const startedAt = Date.now();
+    const controller = new AbortController();
+    const timeoutMs = resolveTimeoutMs();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(`${resolveOllamaBaseUrl()}/api/generate`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          model: resolveOllamaModel(request),
+          prompt: request.prompt,
+          stream: false,
+          options: {
+            temperature: request.temperature,
+            num_predict: request.maxTokens
+          }
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        return buildResponse(
+          request,
+          `Local Ollama unavailable: HTTP ${response.status}.`,
+          Date.now() - startedAt,
+          true
+        );
+      }
+
+      const payload = (await response.json()) as OllamaGenerateResponse;
+      const text = payload.response?.trim();
+      if (!text) {
+        return buildResponse(request, "Local Ollama returned an empty response.", Date.now() - startedAt, true);
+      }
+
+      return buildResponse(request, text, Date.now() - startedAt, false);
+    } catch (error) {
+      const isAbortError = error instanceof Error && error.name === "AbortError";
+      const message = isAbortError
+        ? `Local Ollama request timed out after ${timeoutMs}ms.`
+        : "Local Ollama request failed.";
+      return buildResponse(request, message, Date.now() - startedAt, true);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }

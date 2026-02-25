@@ -7,37 +7,23 @@ Owner: Release Captain (Codex)
 - Front Door + Shell: Green
 - Role/Auth + RBAC + 403: Green
 - Multi-role E2E smoke: Green
-- CI baseline gates: Green (release gate passing with full verifier matrix)
-- Vercel production health: Yellow (latest production deploys are `Ready`; historical error cluster documented)
-- Cloud orchestration (AWS): Green (SSO/API access verified in account `962531446166`)
-- Local private model path (Ollama): Green
-- Agent federation control plane: Green
+- CI baseline gates: Green
+- Vercel production health: Yellow (historical error cluster documented)
+- Cloud orchestration (AWS runtime implementation): Yellow
+- Local private model path (Ollama runtime implementation): Yellow
+- Agent federation control plane (contracts): Green
 - Observability and SRE controls: Green
-- Pilot operations/adoption layer (Phase 8): Green
 
-## Planning and Ticket Status
-- Phase 4-8 delivery: complete
-- Phase 8 EPIC: #78
-- Phase 8 atomic issues: #79 through #91 complete (`#85` closed as duplicate)
-- Active planning docs:
-  - `docs/planning/PHASE8_BACKLOG.md`
-  - `docs/planning/PHASE8_SWARM_RUNBOOK.md`
-- Active execution board:
-  - `docs/status/SWARM_CONTROL_BOARD.md`
+## Open Delivery Gaps
+1. `#103` GAP-11 DB ledger write-path parity
+2. `#105` GAP-20 Local Ollama real HTTP inference
+3. `#107` GAP-21 Cloud managed AWS-backed inference
+4. `#106` GAP-22 SQS orchestration queue adapter
+5. `#108` GAP-23 DynamoDB orchestration state store
+6. `#109` GAP-24 AI/federation runtime status UI
 
-## Residual Gaps
-1. No phase-blocking product gaps identified in current scope.
-2. Standalone `npm run build` occasionally exhibits transient `.next` manifest ENOENT on this host, while release-gate build succeeds reliably.
-
-## Phase Map
-- Phase 1: Front Door + Shell (complete)
-- Phase 2: Core mount migration bridge (complete)
-- Phase 3: Runtime + ledger + standards local-first (complete)
-- Phase 4: Hybrid operational engine (complete)
-- Phase 5: Reliability, security, and data hardening (complete)
-- Phase 6: Scale, governance, and release automation (complete)
-- Phase 7: Stabilization closure (complete)
-- Phase 8: Pilot operations, reliability, and adoption layer (complete)
+## Program Epics
+- `#104` Phase 4 Runtime Realization (active)
 
 ## Guardrail Enforcement
 - One PR per issue, <= 15 files unless approved.
