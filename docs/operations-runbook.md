@@ -91,3 +91,8 @@
   - avoid parallel build jobs on the same worktree,
   - run `npm run verify:release-gate` before production promotion,
   - treat env key formatting drift as a release blocker.
+
+## Incident Annotation Workflow
+- Open `.github/ISSUE_TEMPLATE/INCIDENT_ANNOTATION.md` for every failed deploy incident.
+- Follow `docs/status/INCIDENT_ANNOTATION_WORKFLOW.md` and attach release-gate + deployment evidence.
+- Do not close incident tickets until latest deployment is `Ready` and corrective action is tracked.
