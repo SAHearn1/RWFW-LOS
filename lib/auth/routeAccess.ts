@@ -18,6 +18,12 @@ const STUDENT_ROLES: readonly AppRole[] = ["student_independent", "student_enrol
 const TEACHER_ROLE: readonly AppRole[] = ["teacher"] as const;
 const ADMIN_ROLE: readonly AppRole[] = ["admin"] as const;
 
+export const LEGACY_APP_ROUTE_REDIRECTS: Readonly<Record<string, `/app${string}`>> = {
+  "/app/home": "/app",
+  "/app/ple": "/app",
+  "/app/create": "/app/studio"
+} as const;
+
 export const APP_ROUTE_DEFINITIONS: readonly AppRouteDefinition[] = [
   { path: "/app", title: "Home", description: "RootWork shell home.", allowedRoles: ALL_ROLES },
   { path: "/app/profile", title: "Profile", description: "User role and organization summary.", allowedRoles: ALL_ROLES },
@@ -38,12 +44,26 @@ export const APP_ROUTE_DEFINITIONS: readonly AppRouteDefinition[] = [
   { path: "/app/forbidden", title: "Access Restricted", description: "In-app 403 view.", allowedRoles: ALL_ROLES }
 ] as const;
 
+export function normalizeAppPath(pathname: string): `/app${string}` | null {
+  const normalized = LEGACY_APP_ROUTE_REDIRECTS[pathname] ?? pathname;
+  if (!normalized.startsWith("/app")) {
+    return null;
+  }
+
+  return normalized as `/app${string}`;
+}
+
 export function getRouteDefinition(pathname: string): AppRouteDefinition | null {
-  return APP_ROUTE_DEFINITIONS.find((definition) => definition.path === pathname) ?? null;
+  const normalized = normalizeAppPath(pathname);
+  if (!normalized) {
+    return null;
+  }
+
+  return APP_ROUTE_DEFINITIONS.find((definition) => definition.path === normalized) ?? null;
 }
 
 export function isKnownAppPath(pathname: string): boolean {
-  return APP_ROUTE_DEFINITIONS.some((definition) => definition.path === pathname);
+  return getRouteDefinition(pathname) !== null;
 }
 
 export function isRoleAllowedForPath(pathname: string, role: AppRole): boolean {

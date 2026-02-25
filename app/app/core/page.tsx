@@ -1,5 +1,5 @@
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
-import CoreMountRuntime from "@/components/core-mount/CoreMountRuntime";
+import CoreMountRuntimeLoader from "@/components/core-mount/CoreMountRuntimeLoader";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
 import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
 import { createCoreMountRuntime } from "@/lib/coreMount/runtime";
@@ -18,5 +18,5 @@ export default async function CoreMountPage() {
   const runtime = createCoreMountRuntime({ route: "/app/core", attempt: 1 });
   await runtime.mount();
 
-  return <CoreMountRuntime initialStatus={runtime.status()} />;
+  return <CoreMountRuntimeLoader initialStatus={runtime.status()} />;
 }

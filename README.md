@@ -1,6 +1,6 @@
 # RootWork LOS
 
-This repo now runs a Next.js App Router front-door shell for Phase 1.
+This repo now runs a Next.js App Router front-door shell for Phase 1 and active Phase 2 core migration.
 
 ## Local Setup
 1. Install dependencies:
@@ -20,9 +20,10 @@ This repo now runs a Next.js App Router front-door shell for Phase 1.
 - `/` public landing page
 - `/sign-in` auth entry
 - `/sign-up` auth entry
-- `/app` protected shell home
-- `/app/profile` role + org profile
+- `/app` PLE route (role-protected)
+- `/app/studio` Studio route (role-protected)
 - `/app/core` temporary core mount route (flag-gated)
+- `/app/profile` role + org profile
 
 ## Required Feature Flags
 - `NEXT_PUBLIC_ENABLE_LEDGER`
@@ -46,18 +47,11 @@ This repo now runs a Next.js App Router front-door shell for Phase 1.
 - Tour restart is available from Help -> `Restart tour`.
 - Disabled features are skipped safely when flags are off.
 
+## Phase 2 Cutover
+- See `docs/phase2-cutover.md` for deploy checks and rollback procedure.
+
 ## Pre-commit Secret Scanning
 `git-secrets` hooks are installed locally for this repository.
 
 To scan manually:
 `$env:USERPROFILE\\.git-secrets\\git-secrets.cmd --scan`
-
-## Vercel Environment Variables
-Set these in Vercel Project Settings (Preview + Production as needed):
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- `NEXT_PUBLIC_ENABLE_LEDGER`
-- `NEXT_PUBLIC_ENABLE_MCP`
-- `NEXT_PUBLIC_ENABLE_PICKUP`
-- `NEXT_PUBLIC_ENABLE_OFFLINE`
-- `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT`

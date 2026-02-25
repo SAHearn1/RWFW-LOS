@@ -13,7 +13,8 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
   student_independent: [
     { id: "nav", selector: "[data-tour='primary-nav']", title: "Navigation", body: "Use left navigation to move through PLE, missions, and studio." },
     { id: "home", selector: "[data-tour='page-title']", title: "Home", body: "This is your current workspace context." },
-    { id: "desc", selector: "[data-tour='page-description']", title: "Focus", body: "Each page gives a clear next action." },
+    { id: "mission", selector: "[data-tour='mission-draft']", title: "Mission Draft", body: "Capture your mission objective before moving into Studio." },
+    { id: "studio", selector: "[data-tour='studio-entry']", title: "Studio Path", body: "Move to Studio to transform your mission draft into an artifact." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Use Help to restart this tour at any time." },
     { id: "core", selector: "[data-tour='core-mount']", title: "Core Mount", body: "Legacy core screens are available during migration.", requiredFlag: "NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT" }
   ],
