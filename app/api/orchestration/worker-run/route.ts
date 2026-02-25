@@ -2,7 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
-import type { OrchestrationJobEnvelope } from "@/lib/orchestration/contracts";
+import type { OrchestrationJobEnvelope, QueueLeaseResult } from "@/lib/orchestration/contracts";
 import { DynamoOrchestrationStateStore } from "@/lib/orchestration/dynamoStateStore";
 import { InMemoryQueueAdapter } from "@/lib/orchestration/queueAdapter";
 import { SqsQueueAdapter } from "@/lib/orchestration/sqsQueueAdapter";
@@ -14,6 +14,20 @@ type WorkerRunBody = {
   priority?: "low" | "normal" | "high";
   payload?: Record<string, unknown>;
   simulateFailure?: boolean;
+};
+
+type WorkerBackend = {
+  queue: "sqs" | "in_memory";
+  stateStore: "dynamodb" | "none";
+  fallbackReason?: string;
+};
+
+type WorkerExecutionResult = {
+  enqueued: OrchestrationJobEnvelope<Record<string, unknown>>;
+  lease: QueueLeaseResult<Record<string, unknown>>;
+  lifecycle: Awaited<ReturnType<typeof runWorkerLifecycle>>;
+  finalJob: OrchestrationJobEnvelope<Record<string, unknown>>;
+  backend: WorkerBackend;
 };
 
 function nowIso(): string {
@@ -46,30 +60,14 @@ function canUseDynamo(): boolean {
   return Boolean(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE && process.env.AWS_REGION);
 }
 
-export async function POST(request: Request): Promise<Response> {
-  const traceId = getTraceIdFromRequest(request);
-  const user = await currentUser();
-  const role = parseAppRole(user?.publicMetadata?.role);
-
-  if (!role || (role !== "admin" && role !== "teacher" && role !== "professional_development")) {
-    return NextResponse.json(
-      { error: "Facilitator/admin role required." },
-      { status: 403, headers: { [TRACE_HEADER]: traceId } }
-    );
-  }
-
-  const body = (await request.json().catch(() => ({}))) as WorkerRunBody;
-  const enqueuedJob = buildJob(body, traceId);
-
-  const dynamicStore = canUseDynamo()
-    ? new DynamoOrchestrationStateStore<Record<string, unknown>>(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE as string)
-    : null;
-
-  const queue = canUseAwsQueue()
-    ? new SqsQueueAdapter<Record<string, unknown>>(process.env.AWS_SQS_QUEUE_URL as string)
-    : new InMemoryQueueAdapter<Record<string, unknown>>();
-
-  const enqueued = await queue.enqueue(enqueuedJob);
+async function executeWorker(
+  job: OrchestrationJobEnvelope<Record<string, unknown>>,
+  body: WorkerRunBody,
+  queue: SqsQueueAdapter<Record<string, unknown>> | InMemoryQueueAdapter<Record<string, unknown>>,
+  dynamicStore: DynamoOrchestrationStateStore<Record<string, unknown>> | null,
+  backend: WorkerBackend
+): Promise<WorkerExecutionResult> {
+  const enqueued = await queue.enqueue(job);
   if (dynamicStore) {
     await dynamicStore.upsert(enqueued);
   }
@@ -81,10 +79,7 @@ export async function POST(request: Request): Promise<Response> {
   });
 
   if (!lease.leased || !lease.job) {
-    return NextResponse.json(
-      { error: lease.reason ?? "unable_to_lease" },
-      { status: 409, headers: { [TRACE_HEADER]: traceId } }
-    );
+    throw new Error(lease.reason ?? "unable_to_lease");
   }
 
   if ("markStarted" in queue && typeof queue.markStarted === "function") {
@@ -114,7 +109,13 @@ export async function POST(request: Request): Promise<Response> {
     if ("markFailed" in queue && typeof queue.markFailed === "function") {
       finalJob = queue.markFailed(lease.job.jobId, nowIso(), "worker_failure", lifecycle.reason ?? "unknown", true);
     } else {
-      finalJob = { ...lease.job, status: "failed", updatedAtIso: nowIso(), lastErrorMessage: lifecycle.reason, lastErrorCode: "worker_failure" };
+      finalJob = {
+        ...lease.job,
+        status: "failed",
+        updatedAtIso: nowIso(),
+        lastErrorMessage: lifecycle.reason,
+        lastErrorCode: "worker_failure"
+      };
     }
   }
 
@@ -122,17 +123,61 @@ export async function POST(request: Request): Promise<Response> {
     await dynamicStore.upsert(finalJob);
   }
 
-  return NextResponse.json(
-    {
-      enqueued,
-      lease,
-      lifecycle,
-      finalJob,
-      backend: {
-        queue: canUseAwsQueue() ? "sqs" : "in_memory",
-        stateStore: dynamicStore ? "dynamodb" : "none"
-      }
-    },
-    { status: 200, headers: { [TRACE_HEADER]: traceId } }
-  );
+  return { enqueued, lease, lifecycle, finalJob, backend };
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const traceId = getTraceIdFromRequest(request);
+  const user = await currentUser();
+  const role = parseAppRole(user?.publicMetadata?.role);
+
+  if (!role || (role !== "admin" && role !== "teacher" && role !== "professional_development")) {
+    return NextResponse.json(
+      { error: "Facilitator/admin role required." },
+      { status: 403, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
+
+  const body = (await request.json().catch(() => ({}))) as WorkerRunBody;
+  const enqueuedJob = buildJob(body, traceId);
+
+  const preferredStore = canUseDynamo()
+    ? new DynamoOrchestrationStateStore<Record<string, unknown>>(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE as string)
+    : null;
+  const preferredQueue = canUseAwsQueue()
+    ? new SqsQueueAdapter<Record<string, unknown>>(process.env.AWS_SQS_QUEUE_URL as string)
+    : new InMemoryQueueAdapter<Record<string, unknown>>();
+  const preferredBackend: WorkerBackend = {
+    queue: canUseAwsQueue() ? "sqs" : "in_memory",
+    stateStore: preferredStore ? "dynamodb" : "none"
+  };
+
+  try {
+    const result = await executeWorker(enqueuedJob, body, preferredQueue, preferredStore, preferredBackend);
+    return NextResponse.json(result, { status: 200, headers: { [TRACE_HEADER]: traceId } });
+  } catch (error) {
+    const hasAwsPreferred = preferredBackend.queue === "sqs" || preferredBackend.stateStore === "dynamodb";
+    if (!hasAwsPreferred) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "worker_execution_failed" },
+        { status: 500, headers: { [TRACE_HEADER]: traceId } }
+      );
+    }
+
+    const fallbackBackend: WorkerBackend = {
+      queue: "in_memory",
+      stateStore: "none",
+      fallbackReason: error instanceof Error ? error.message : "aws_backend_failure"
+    };
+
+    const fallbackResult = await executeWorker(
+      enqueuedJob,
+      body,
+      new InMemoryQueueAdapter<Record<string, unknown>>(),
+      null,
+      fallbackBackend
+    );
+
+    return NextResponse.json(fallbackResult, { status: 200, headers: { [TRACE_HEADER]: traceId } });
+  }
 }

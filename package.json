@@ -23,7 +23,8 @@
     "verify:security-checklist": "node scripts/verify-security-checklist.mjs",
     "verify:synthetic-smoke": "node scripts/verify-synthetic-smoke.mjs",
     "verify:runtime-ledger-consistency": "node scripts/verify-runtime-ledger-consistency.mjs",
-    "verify:release-drill": "node scripts/verify-release-drill.mjs"
+    "verify:release-drill": "node scripts/verify-release-drill.mjs",
+    "verify:cloud-aws-smoke": "node scripts/verify-cloud-aws-smoke.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.997.0",
