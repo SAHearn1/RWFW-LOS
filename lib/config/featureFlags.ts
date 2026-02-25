@@ -11,6 +11,7 @@ export type Phase1FeatureFlagKey = (typeof PHASE1_FEATURE_FLAG_KEYS)[number];
 export const PHASE3_FEATURE_FLAG_KEYS = [
   "NEXT_PUBLIC_ENABLE_RUNTIME",
   "NEXT_PUBLIC_ENABLE_LEDGER",
+  "NEXT_PUBLIC_ENABLE_DB_LEDGER",
   "NEXT_PUBLIC_ENABLE_STANDARDS_VERIFIER"
 ] as const;
 
@@ -31,5 +32,6 @@ export const phase1FeatureFlags = {
 export const phase3FeatureFlags = {
   enableRuntime: readFlag("NEXT_PUBLIC_ENABLE_RUNTIME"),
   enableLedger: readFlag("NEXT_PUBLIC_ENABLE_LEDGER"),
+  enableDbLedger: readFlag("NEXT_PUBLIC_ENABLE_DB_LEDGER"),
   enableStandardsVerifier: readFlag("NEXT_PUBLIC_ENABLE_STANDARDS_VERIFIER")
 } as const;

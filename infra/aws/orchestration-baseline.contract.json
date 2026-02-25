@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "resources": {
+    "queue": {
+      "kind": "sqs",
+      "envKey": "AWS_SQS_QUEUE_URL"
+    },
+    "deadLetterQueue": {
+      "kind": "sqs",
+      "envKey": "AWS_SQS_DLQ_URL"
+    },
+    "stateStore": {
+      "kind": "dynamodb",
+      "envKey": "AWS_DYNAMODB_ORCHESTRATION_TABLE"
+    },
+    "eventBus": {
+      "kind": "eventbridge",
+      "envKey": "AWS_EVENTBRIDGE_BUS_NAME"
+    }
+  }
+}

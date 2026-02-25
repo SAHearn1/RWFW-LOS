@@ -8,6 +8,7 @@ const checks = [
   "build",
   "verify:env",
   "verify:env-parity",
+  "verify:engine-smoke",
   "verify:role-routes",
   "verify:runtime-routes",
   "verify:onboarding",

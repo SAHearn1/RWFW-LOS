@@ -15,7 +15,8 @@
                     "verify:http-smoke":  "node scripts/verify-http-smoke.mjs",
                     "verify:role-e2e":  "node scripts/verify-role-e2e.mjs",
                     "verify:env-parity":  "node scripts/verify-env-parity.mjs",
-                    "verify:release-gate":  "node scripts/verify-release-gate.mjs"
+                    "verify:release-gate":  "node scripts/verify-release-gate.mjs",
+                    "verify:engine-smoke":  "node scripts/verify-engine-smoke.mjs"
                 },
     "dependencies":  {
                          "@clerk/nextjs":  "^6.31.6",
