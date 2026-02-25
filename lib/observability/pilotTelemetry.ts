@@ -1,16 +1,9 @@
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
+import { appendFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { isPilotKpiEvent, type PilotKpiEvent } from "@/lib/observability/pilotKpiContracts";
 
 const TELEMETRY_LOG_PATH = resolve("docs", "status", "pilot-kpi-events.ndjson");
-
-function ensureTelemetryDirectory(): void {
-  const directory = resolve("docs", "status");
-  if (!existsSync(directory)) {
-    mkdirSync(directory, { recursive: true });
-  }
-}
 
 function safeToken(value: string, fallback: string): string {
   const cleaned = value.trim();
@@ -61,6 +54,16 @@ function sanitizeEvent(event: PilotKpiEvent, traceId: string): PilotKpiEvent {
   };
 }
 
+async function persistTelemetryEvent(event: PilotKpiEvent): Promise<void> {
+  if (process.env.VERCEL === "1") {
+    console.log(`[pilot-kpi] ${JSON.stringify(event)}`);
+    return;
+  }
+
+  await mkdir(resolve("docs", "status"), { recursive: true });
+  await appendFile(TELEMETRY_LOG_PATH, `${JSON.stringify(event)}\n`, "utf8");
+}
+
 export function isTelemetryTokenAuthorized(requestToken: string | null): boolean {
   const expected = process.env.ROOTWORK_TELEMETRY_INGEST_TOKEN?.trim();
   if (!expected) {
@@ -76,8 +79,9 @@ export function ingestPilotKpiEvent(input: unknown, traceId: string): { accepted
   }
 
   const event = sanitizeEvent(input, traceId);
-  ensureTelemetryDirectory();
-  appendFileSync(TELEMETRY_LOG_PATH, `${JSON.stringify(event)}\n`, "utf8");
+  void persistTelemetryEvent(event).catch((error) => {
+    console.warn(`[pilot-kpi] persist_failed ${error instanceof Error ? error.message : "unknown_error"}`);
+  });
 
   return { accepted: true, eventId: event.eventId };
 }
