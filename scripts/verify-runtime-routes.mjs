@@ -9,7 +9,7 @@ if (!existsSync(routeAccessPath)) {
 }
 
 const content = readFileSync(routeAccessPath, "utf8");
-const missing = requiredPaths.filter((path) => !content.includes(`path: \"${path}\"`));
+const missing = requiredPaths.filter((path) => !content.includes(`path: "${path}"`));
 
 if (missing.length > 0) {
   console.error(`Missing required route definitions: ${missing.join(", ")}`);
@@ -17,3 +17,4 @@ if (missing.length > 0) {
 }
 
 console.log("Route smoke check passed:", requiredPaths.join(", "));
+

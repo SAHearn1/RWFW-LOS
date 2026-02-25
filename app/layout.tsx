@@ -1,6 +1,8 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 
+import { sanitizePublishableKey, sanitizePublicUrl } from "@/lib/config/envGuards";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,26 +10,14 @@ export const metadata: Metadata = {
   description: "RootWork Learning Operating System front door shell"
 };
 
-function getValidPublishableKey(): string | null {
-  const raw = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (!raw) {
-    return null;
-  }
-
-  const cleaned = raw.trim();
-  if (!cleaned.startsWith("pk_") || cleaned.length < 20 || cleaned.includes("\n") || cleaned.includes(" ")) {
-    return null;
-  }
-
-  return cleaned;
-}
-
 export default function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const publishableKey = getValidPublishableKey();
+  const publishableKey = sanitizePublishableKey(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const signInUrl = sanitizePublicUrl(process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL);
+  const signUpUrl = sanitizePublicUrl(process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL);
 
   if (!publishableKey) {
     return (
@@ -38,7 +28,7 @@ export default function RootLayout({
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey}>
+    <ClerkProvider publishableKey={publishableKey} signInUrl={signInUrl ?? undefined} signUpUrl={signUpUrl ?? undefined}>
       <html lang="en">
         <body>{children}</body>
       </html>

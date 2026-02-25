@@ -12,14 +12,22 @@ export default async function ProtectedAppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
   const user = await currentUser();
-  const role = parseAppRole(user?.publicMetadata?.role);
+  if (!user) {
+    return (
+      <main className="mx-auto w-full max-w-4xl px-6 py-8">
+        <ForbiddenPanel message="Authentication session is incomplete. Please sign out and sign in again." />
+      </main>
+    );
+  }
+
+  const role = parseAppRole(user.publicMetadata?.role);
 
   if (!role) {
     return (
@@ -29,8 +37,16 @@ export default async function ProtectedAppLayout({
     );
   }
 
+  if ((role === "teacher" || role === "admin") && !orgId) {
+    return (
+      <main className="mx-auto w-full max-w-4xl px-6 py-8">
+        <ForbiddenPanel message="An organization assignment is required for this role. Contact an administrator." />
+      </main>
+    );
+  }
+
   const navItems = getNavItemsForRole(role);
-  const userLabel = user?.fullName || user?.primaryEmailAddress?.emailAddress || "Authenticated user";
+  const userLabel = user.fullName || user.primaryEmailAddress?.emailAddress || "Authenticated user";
 
   return (
     <>

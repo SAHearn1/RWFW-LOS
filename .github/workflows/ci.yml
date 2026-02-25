@@ -33,3 +33,12 @@ jobs:
 
       - name: Runtime Route Smoke
         run: npm run verify:runtime-routes
+
+      - name: Role Route Verify
+        run: npm run verify:role-routes
+
+      - name: Env Completeness Verify
+        run: npm run verify:env
+
+      - name: Onboarding Selector Verify
+        run: npm run verify:onboarding

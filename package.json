@@ -8,7 +8,10 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "verify:runtime-routes": "node scripts/verify-runtime-routes.mjs"
+    "verify:runtime-routes": "node scripts/verify-runtime-routes.mjs",
+    "verify:role-routes": "node scripts/verify-role-routes.mjs",
+    "verify:env": "node scripts/verify-env.mjs",
+    "verify:onboarding": "node scripts/verify-onboarding.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",

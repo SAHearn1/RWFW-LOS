@@ -1,6 +1,6 @@
 # RootWork LOS
 
-This repo now runs a Next.js App Router front-door shell with active Phase 2 and Phase 3 migration layers.
+This repo runs a Next.js App Router shell with active Phase 2-4 hardening work.
 
 ## Local Setup
 1. Install dependencies:
@@ -15,49 +15,25 @@ This repo now runs a Next.js App Router front-door shell with active Phase 2 and
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+- `npm run verify:env`
+- `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
+- `npm run verify:onboarding`
 
-## Routes to Verify
-- `/` public landing page
-- `/sign-in` auth entry
-- `/sign-up` auth entry
-- `/app` PLE route (role-protected)
-- `/app/studio` Studio route (role-protected)
-- `/app/credentials` learner evidence summary
-- `/app/evidence` admin evidence read view
-- `/app/core` temporary core mount route (flag-gated)
-- `/app/profile` role + org profile
+## Key Routes
+- `/app`
+- `/app/studio`
+- `/app/credentials`
+- `/app/evidence`
+- `/app/settings`
+- `/app/exports`
+- `/app/core`
 
-## Required Feature Flags
-- `NEXT_PUBLIC_ENABLE_LEDGER`
-- `NEXT_PUBLIC_ENABLE_MCP`
-- `NEXT_PUBLIC_ENABLE_PICKUP`
-- `NEXT_PUBLIC_ENABLE_OFFLINE`
-- `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT`
-- `NEXT_PUBLIC_ENABLE_RUNTIME`
-- `NEXT_PUBLIC_ENABLE_STANDARDS_VERIFIER`
+## Runbooks
+- `docs/phase2-cutover.md`
+- `docs/phase3-cutover.md`
+- `docs/operations-runbook.md`
+- `docs/phase4-release-gate.md`
 
-## Auth and RBAC
-- Roles:
-  - `student_independent`
-  - `student_enrolled`
-  - `teacher`
-  - `admin`
-- `/app/*` routes require authentication.
-- Wrong-role route access renders friendly in-app 403 content.
-- Navigation is filtered by role.
-
-## Onboarding
-- Role-based onboarding tour runs for first app session.
-- Tour restart is available from Help -> `Restart tour`.
-- Disabled features are skipped safely when flags are off.
-
-## Phase 2 and 3 Cutover
-- Phase 2 runbook: `docs/phase2-cutover.md`
-- Phase 3 runbook: `docs/phase3-cutover.md`
-
-## Pre-commit Secret Scanning
-`git-secrets` hooks are installed locally for this repository.
-
-To scan manually:
-`$env:USERPROFILE\\.git-secrets\\git-secrets.cmd --scan`
+## QA Matrix
+- `docs/qa/role-matrix.md`
