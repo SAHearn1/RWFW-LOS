@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <!-- Left hand cupping upward -->
+  <path d="M6 58 C6 48 12 40 22 38 L34 37 C38 37 40 41 40 45 L40 62 C32 66 18 67 6 58Z" fill="#3D7A6A"/>
+  <!-- Right hand cupping upward (mirrored) -->
+  <path d="M90 58 C90 48 84 40 74 38 L62 37 C58 37 56 41 56 45 L56 62 C64 66 78 67 90 58Z" fill="#3D7A6A"/>
+  <!-- Stem -->
+  <line x1="48" y1="62" x2="48" y2="26" stroke="#4A4A35" stroke-width="3" stroke-linecap="round"/>
+  <!-- Left leaf -->
+  <path d="M48 40 C38 30 26 34 30 44 C36 42 42 40 48 40Z" fill="#6BAF8A"/>
+  <!-- Right leaf -->
+  <path d="M48 40 C58 30 70 34 66 44 C60 42 54 40 48 40Z" fill="#6BAF8A"/>
+  <!-- Root network -->
+  <path d="M48 62 L36 76" stroke="#C5A059" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M48 62 L48 78" stroke="#C5A059" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M48 62 L60 76" stroke="#C5A059" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M36 76 L28 84" stroke="#C5A059" stroke-width="2" stroke-linecap="round"/>
+  <path d="M36 76 L38 86" stroke="#C5A059" stroke-width="2" stroke-linecap="round"/>
+  <path d="M60 76 L58 86" stroke="#C5A059" stroke-width="2" stroke-linecap="round"/>
+  <path d="M60 76 L68 84" stroke="#C5A059" stroke-width="2" stroke-linecap="round"/>
+</svg>

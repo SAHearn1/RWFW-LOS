@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import type { AppRole } from "@/lib/auth/roles";
 import type { NavItem } from "@/lib/nav/items";
+import RootworkMark from "@/components/brand/RootworkMark";
 
 type AppShellProps = {
   role: AppRole;
@@ -54,9 +55,12 @@ export default function AppShell({ role, navItems, userLabel, children }: AppShe
           >
             Menu
           </button>
-          <div>
-            <p className="text-sm font-semibold">RootWork LOS</p>
-            <p className="text-xs text-slate-600">Role: {role}</p>
+          <div className="flex items-center gap-2">
+            <RootworkMark className="h-7 w-auto" />
+            <div>
+              <p className="text-sm font-semibold leading-none text-rootwork-ink">RootWork</p>
+              <p className="text-xs text-slate-500">Role: {role}</p>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">

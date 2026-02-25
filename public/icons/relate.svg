@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <!-- Left profile (facing right) -->
+  <path d="M6 76 L6 42 C6 28 14 18 26 18 C38 18 44 28 44 42 C44 54 38 62 34 66 L34 76 Z" fill="#3D7A6A"/>
+  <!-- Left eye hint -->
+  <circle cx="32" cy="36" r="3.5" fill="#F8F7F2"/>
+  <!-- Right profile (facing left, mirrored) -->
+  <path d="M90 76 L90 42 C90 28 82 18 70 18 C58 18 52 28 52 42 C52 54 58 62 62 66 L62 76 Z" fill="#3D7A6A"/>
+  <!-- Right eye hint -->
+  <circle cx="64" cy="36" r="3.5" fill="#F8F7F2"/>
+  <!-- Central connecting plant stem -->
+  <line x1="48" y1="76" x2="48" y2="36" stroke="#6BAF8A" stroke-width="3" stroke-linecap="round"/>
+  <!-- Left leaf on stem -->
+  <path d="M48 54 C40 46 32 50 34 58 C38 56 44 54 48 54Z" fill="#6BAF8A"/>
+  <!-- Right leaf on stem -->
+  <path d="M48 54 C56 46 64 50 62 58 C58 56 52 54 48 54Z" fill="#6BAF8A"/>
+  <!-- Top bud/heart -->
+  <path d="M48 36 C44 28 36 32 38 38 C42 37 46 36 48 36Z" fill="#C5A059" opacity="0.9"/>
+  <path d="M48 36 C52 28 60 32 58 38 C54 37 50 36 48 36Z" fill="#C5A059" opacity="0.9"/>
+</svg>

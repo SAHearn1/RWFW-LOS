@@ -6,8 +6,22 @@ import { getConfiguredPublishableKey, sanitizePublicUrl } from "@/lib/config/env
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RootWork LOS",
-  description: "RootWork Learning Operating System front door shell"
+  title: {
+    default: "RootWork LOS",
+    template: "%s — RootWork",
+  },
+  description:
+    "RootWork aligns learner agency, teacher guidance, and administrator visibility in one respectful workflow — grounded in the five R's: Roots, Reflect, Relate, Rise, Radiate.",
+  icons: {
+    icon: "/favicon.svg",
+  },
+  openGraph: {
+    title: "RootWork LOS",
+    description: "Learning operations built for calm, focused progress.",
+    siteName: "RootWork",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

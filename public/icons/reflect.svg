@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <!-- Head profile facing right -->
+  <path d="M30 80 L30 44 C30 28 38 16 52 16 C66 16 76 28 76 44 C76 58 66 66 58 70 L58 80 Z" fill="#3D7A6A"/>
+  <!-- Eye hint (negative space) -->
+  <circle cx="62" cy="40" r="4" fill="#F8F7F2"/>
+  <!-- Leaf thought 1 (upper left, smaller) -->
+  <path d="M46 16 C36 4 22 8 26 18 C32 16 40 15 46 16Z" fill="#6BAF8A"/>
+  <!-- Leaf thought 2 (upper right, larger) -->
+  <path d="M58 20 C54 6 68 2 72 12 C68 16 62 18 58 20Z" fill="#6BAF8A"/>
+  <!-- Spiral thought dot -->
+  <circle cx="42" cy="10" r="3.5" fill="#C5A059" opacity="0.85"/>
+  <!-- Small inner leaf -->
+  <path d="M52 22 C46 14 38 18 40 24 C44 22 48 22 52 22Z" fill="#4A4A35" opacity="0.4"/>
+</svg>
