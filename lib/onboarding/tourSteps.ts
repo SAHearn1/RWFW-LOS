@@ -14,7 +14,10 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
     { id: "nav", selector: "[data-tour='primary-nav']", title: "Navigation", body: "Use left navigation to move through PLE, missions, and studio." },
     { id: "home", selector: "[data-tour='page-title']", title: "Home", body: "This is your current workspace context." },
     { id: "mission", selector: "[data-tour='mission-draft']", title: "Mission Draft", body: "Capture your mission objective before moving into Studio." },
+    { id: "mission-actions", selector: "[data-tour='mission-actions']", title: "Mission Actions", body: "Start or submit mission lifecycle events from PLE." },
     { id: "studio", selector: "[data-tour='studio-entry']", title: "Studio Path", body: "Move to Studio to transform your mission draft into an artifact." },
+    { id: "artifact-save", selector: "[data-tour='artifact-save']", title: "Artifact Save", body: "Save artifact content to the local evidence ledger." },
+    { id: "verification", selector: "[data-tour='verification-summary']", title: "Verification", body: "Review standards verification summary after saving." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Use Help to restart this tour at any time." },
     { id: "core", selector: "[data-tour='core-mount']", title: "Core Mount", body: "Legacy core screens are available during migration.", requiredFlag: "NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT" }
   ],

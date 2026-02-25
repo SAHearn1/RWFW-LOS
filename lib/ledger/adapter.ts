@@ -18,17 +18,52 @@ export type LedgerAdapter = {
   findByMission: (missionId: string) => LedgerRecord[];
 };
 
-const records = new Map<string, LedgerRecord>();
+const LEDGER_STORAGE_KEY = "rootwork.ledger.records";
+let ledgerFallback: LedgerRecord[] = [];
+
+function canUseLocalStorage(): boolean {
+  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+function readRecords(): LedgerRecord[] {
+  if (!canUseLocalStorage()) {
+    return ledgerFallback;
+  }
+
+  const raw = window.localStorage.getItem(LEDGER_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(raw) as LedgerRecord[];
+  } catch {
+    return [];
+  }
+}
+
+function writeRecords(records: LedgerRecord[]): LedgerRecord[] {
+  if (!canUseLocalStorage()) {
+    ledgerFallback = records;
+    return records;
+  }
+
+  window.localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(records));
+  return records;
+}
 
 export const localLedgerAdapter: LedgerAdapter = {
   readAll() {
-    return Array.from(records.values());
+    return readRecords();
   },
   upsert(record) {
-    records.set(record.id, record);
+    const records = readRecords();
+    const next = records.filter((item) => item.id !== record.id);
+    next.push(record);
+    writeRecords(next);
     return record;
   },
   findByMission(missionId) {
-    return Array.from(records.values()).filter((record) => record.missionId === missionId);
+    return readRecords().filter((record) => record.missionId === missionId);
   }
 };
