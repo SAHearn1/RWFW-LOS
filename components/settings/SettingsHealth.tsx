@@ -2,15 +2,27 @@
 
 import { useEffect, useState } from "react";
 
+import DataRetentionPanel from "@/components/settings/DataRetentionPanel";
 import { phase3FeatureFlags, phase1FeatureFlags } from "@/lib/config/featureFlags";
 
-type FlagServiceStatus = "unknown" | "ready" | "disabled" | "error";
+type FlagServiceStatus = "unknown" | "ready" | "disabled" | "error" | "unavailable";
+
+type AiHealthPayload = {
+  localOllama?: string;
+  cloudManaged?: string;
+  federation?: string;
+  discoveryCount?: number;
+};
 
 export default function SettingsHealth() {
   const localStorageReady = typeof window !== "undefined" && typeof window.localStorage !== "undefined";
   const [exportState, setExportState] = useState<"idle" | "working" | "done" | "error">("idle");
   const [mcpStatus, setMcpStatus] = useState<FlagServiceStatus>("unknown");
   const [offlineStatus, setOfflineStatus] = useState<FlagServiceStatus>("unknown");
+  const [localOllamaStatus, setLocalOllamaStatus] = useState<FlagServiceStatus>("unknown");
+  const [cloudManagedStatus, setCloudManagedStatus] = useState<FlagServiceStatus>("unknown");
+  const [federationStatus, setFederationStatus] = useState<FlagServiceStatus>("unknown");
+  const [federationDiscoveryCount, setFederationDiscoveryCount] = useState<number>(0);
 
   useEffect(() => {
     const loadStatuses = async () => {
@@ -38,9 +50,29 @@ export default function SettingsHealth() {
 
       setMcpStatus(mcp);
       setOfflineStatus(offline);
+
+      try {
+        const response = await fetch("/api/ai/health", { cache: "no-store" });
+        if (!response.ok) {
+          setLocalOllamaStatus("error");
+          setCloudManagedStatus("error");
+          setFederationStatus("error");
+          return;
+        }
+
+        const payload = (await response.json()) as AiHealthPayload;
+        setLocalOllamaStatus((payload.localOllama as FlagServiceStatus) ?? "unknown");
+        setCloudManagedStatus((payload.cloudManaged as FlagServiceStatus) ?? "unknown");
+        setFederationStatus((payload.federation as FlagServiceStatus) ?? "unknown");
+        setFederationDiscoveryCount(payload.discoveryCount ?? 0);
+      } catch {
+        setLocalOllamaStatus("error");
+        setCloudManagedStatus("error");
+        setFederationStatus("error");
+      }
     };
 
-    loadStatuses();
+    void loadStatuses();
   }, []);
 
   const exportDiagnostics = async () => {
@@ -80,6 +112,10 @@ export default function SettingsHealth() {
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">MCP Service</dt><dd>{mcpStatus}</dd></div>
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Offline Flag</dt><dd>{phase1FeatureFlags.enableOffline ? "enabled" : "disabled"}</dd></div>
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Offline Service</dt><dd>{offlineStatus}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Local Ollama</dt><dd>{localOllamaStatus}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Cloud Managed</dt><dd>{cloudManagedStatus}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Federation</dt><dd>{federationStatus}</dd></div>
+        <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Federation Discovery</dt><dd>{federationDiscoveryCount}</dd></div>
       </dl>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4" data-tour="support-diagnostics">
@@ -100,6 +136,8 @@ export default function SettingsHealth() {
           {exportState === "error" ? <p className="text-xs text-rose-700">Diagnostics export failed.</p> : null}
         </div>
       </section>
+
+      <DataRetentionPanel />
     </section>
   );
 }

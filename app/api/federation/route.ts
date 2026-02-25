@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { createFederationRequest, createFederationResponse } from "@/lib/federation/protocol";
+import { getFederationDiscovery, resolveFederationAssignment } from "@/lib/federation/registry";
 import type { FederationTaskEnvelope } from "@/lib/federation/types";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
-export async function POST(request: Request): Promise<Response> {
-  const traceId = getTraceIdFromRequest(request);
-
+function ensureFederationEnabled(traceId: string): Response | null {
   if (process.env.NEXT_PUBLIC_ENABLE_FEDERATION !== "true") {
     recordAuditEvent({
       traceId,
@@ -24,12 +23,63 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  return null;
+}
+
+export async function GET(request: Request): Promise<Response> {
+  const traceId = getTraceIdFromRequest(request);
+  const blocked = ensureFederationEnabled(traceId);
+  if (blocked) {
+    return blocked;
+  }
+
+  const discovery = getFederationDiscovery();
+  return NextResponse.json(
+    {
+      protocol: "v1",
+      discovery
+    },
+    { status: 200, headers: { [TRACE_HEADER]: traceId } }
+  );
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const traceId = getTraceIdFromRequest(request);
+  const blocked = ensureFederationEnabled(traceId);
+  if (blocked) {
+    return blocked;
+  }
+
   const body = (await request.json()) as { task?: FederationTaskEnvelope };
   if (!body.task) {
     return NextResponse.json({ error: "task payload is required" }, { status: 400, headers: { [TRACE_HEADER]: traceId } });
   }
 
   const requestEnvelope = createFederationRequest(body.task);
+  const assignment = resolveFederationAssignment(body.task);
+
+  if (!assignment.accepted) {
+    recordAuditEvent({
+      traceId,
+      eventType: "federation.request.rejected",
+      role: body.task.requestedByRole,
+      severity: "warning",
+      createdAtIso: new Date().toISOString(),
+      metadata: {
+        taskId: body.task.taskId,
+        capabilityId: body.task.capabilityId,
+        reason: assignment.reason
+      }
+    });
+
+    return NextResponse.json(
+      {
+        error: assignment.reason ?? "capability_not_found",
+        protocol: requestEnvelope.version
+      },
+      { status: 404, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
 
   const responseEnvelope = createFederationResponse({
     taskId: body.task.taskId,
@@ -37,7 +87,8 @@ export async function POST(request: Request): Promise<Response> {
     status: "success",
     output: {
       accepted: true,
-      protocol: requestEnvelope.version
+      protocol: requestEnvelope.version,
+      assignedAgentId: assignment.assignedAgentId
     }
   });
 
@@ -49,7 +100,8 @@ export async function POST(request: Request): Promise<Response> {
     createdAtIso: new Date().toISOString(),
     metadata: {
       taskId: body.task.taskId,
-      assignedAgentId: body.task.assignedAgentId,
+      requestedAgentId: body.task.assignedAgentId,
+      assignedAgentId: assignment.assignedAgentId,
       capabilityId: body.task.capabilityId
     }
   });

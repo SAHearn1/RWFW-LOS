@@ -7,7 +7,7 @@ import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/core
 import { localLedgerAdapter, type LedgerRecord } from "@/lib/ledger/adapter";
 import type { VerificationEvent } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
-import { verifyArtifactText } from "@/lib/standards/verifier/localVerifier";
+import { runDefaultStandardsPlugins } from "@/lib/standards/plugins/defaultPlugins";
 
 const STORAGE_KEY = "rootwork.core.session";
 const MISSION_ID = "mission.primary";
@@ -100,7 +100,7 @@ export default function StudioWorkspace() {
       }
 
       if (phase3FeatureFlags.enableStandardsVerifier) {
-        const results = verifyArtifactText(artifactDraft);
+        const results = runDefaultStandardsPlugins(artifactDraft);
         const verification: VerificationEvent = {
           id: `verification.${Date.now()}`,
           missionId: MISSION_ID,
@@ -195,3 +195,4 @@ export default function StudioWorkspace() {
     </section>
   );
 }
+

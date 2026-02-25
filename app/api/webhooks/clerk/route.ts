@@ -5,6 +5,15 @@ import { NextResponse } from "next/server";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
+type ClerkWebhookEvent = {
+  type?: string;
+  data?: {
+    id?: string;
+    public_metadata?: Record<string, unknown>;
+    private_metadata?: Record<string, unknown>;
+  };
+};
+
 function verifySignature(body: string, signature: string, secret: string): boolean {
   const expected = createHmac("sha256", secret).update(body).digest("hex");
   const provided = signature.trim().toLowerCase();
@@ -45,13 +54,42 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ error: "Invalid webhook signature." }, { status: 401, headers: { [TRACE_HEADER]: traceId } });
   }
 
+  let event: ClerkWebhookEvent;
+  try {
+    event = JSON.parse(body) as ClerkWebhookEvent;
+  } catch {
+    return NextResponse.json({ error: "Invalid webhook payload." }, { status: 400, headers: { [TRACE_HEADER]: traceId } });
+  }
+
+  const eventType = event.type ?? "unknown";
+  const userId = event.data?.id ?? "unknown";
+  const role = typeof event.data?.public_metadata?.role === "string" ? event.data.public_metadata.role : "unassigned";
+
+  const handledTypes = new Set(["user.created", "user.updated"]);
+  const handled = handledTypes.has(eventType);
+
   recordAuditEvent({
     traceId,
-    eventType: "clerk.webhook.accepted",
+    eventType: handled ? "clerk.webhook.processed" : "clerk.webhook.ignored",
     role: "system",
-    severity: "info",
-    createdAtIso: new Date().toISOString()
+    severity: handled ? "info" : "warning",
+    createdAtIso: new Date().toISOString(),
+    metadata: {
+      eventType,
+      userId,
+      role,
+      handled
+    }
   });
 
-  return NextResponse.json({ ok: true }, { status: 200, headers: { [TRACE_HEADER]: traceId } });
+  return NextResponse.json(
+    {
+      ok: true,
+      eventType,
+      handled,
+      userId,
+      role
+    },
+    { status: 200, headers: { [TRACE_HEADER]: traceId } }
+  );
 }
