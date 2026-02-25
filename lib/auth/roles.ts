@@ -5,6 +5,7 @@ export const APP_ROLES = [
   "teacher",
   "professional_development",
   "admin",
+  "super_admin",
 ] as const;
 
 export type AppRole = (typeof APP_ROLES)[number];

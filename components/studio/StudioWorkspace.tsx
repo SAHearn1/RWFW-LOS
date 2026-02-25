@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/coreState/session";
 import { localLedgerAdapter, type LedgerRecord } from "@/lib/ledger/adapter";
-import { shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
+import { shouldUseDbLedger } from "@/lib/ledger/flags";
 import type { VerificationEvent } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
 import { runDefaultStandardsPlugins } from "@/lib/standards/plugins/defaultPlugins";
