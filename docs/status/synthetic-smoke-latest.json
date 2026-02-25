@@ -1,0 +1,43 @@
+{
+  "generatedAtIso": "2026-02-25T13:52:13.908Z",
+  "startedAtIso": "2026-02-25T13:52:13.341Z",
+  "baseUrl": "https://rwfw-7e2owiaoc-shawns-projects-5cde83d1.vercel.app",
+  "checks": [
+    {
+      "route": "/",
+      "url": "https://rwfw-7e2owiaoc-shawns-projects-5cde83d1.vercel.app/",
+      "status": 401,
+      "durationMs": 213,
+      "passed": true
+    },
+    {
+      "route": "/sign-in",
+      "url": "https://rwfw-7e2owiaoc-shawns-projects-5cde83d1.vercel.app/sign-in",
+      "status": 401,
+      "durationMs": 181,
+      "passed": true
+    },
+    {
+      "route": "/app",
+      "url": "https://rwfw-7e2owiaoc-shawns-projects-5cde83d1.vercel.app/app",
+      "status": 401,
+      "durationMs": 58,
+      "passed": true
+    },
+    {
+      "route": "/app/studio",
+      "url": "https://rwfw-7e2owiaoc-shawns-projects-5cde83d1.vercel.app/app/studio",
+      "status": 401,
+      "durationMs": 57,
+      "passed": true
+    },
+    {
+      "route": "/app/settings",
+      "url": "https://rwfw-7e2owiaoc-shawns-projects-5cde83d1.vercel.app/app/settings",
+      "status": 401,
+      "durationMs": 58,
+      "passed": true
+    }
+  ],
+  "passed": true
+}
