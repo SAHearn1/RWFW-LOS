@@ -14,3 +14,7 @@ tsconfig.tsbuildinfo
 .env*.local
 
 docs/qa/artifacts/
+
+# Agent worktree scratch directories (tool-generated, not project files)
+.claude/
+.claire/
