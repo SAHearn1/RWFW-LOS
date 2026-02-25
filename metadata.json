@@ -1,0 +1,5 @@
+{
+  "name": "Rootwork LOS",
+  "description": "A Learning Operating System (LOS) integrating neuroscience, regulation, and applied knowledge based on the Rootwork Framework.",
+  "requestFramePermissions": ["microphone", "camera", "geolocation"]
+}
