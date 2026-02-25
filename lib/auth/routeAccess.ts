@@ -31,7 +31,7 @@ export const APP_ROUTE_DEFINITIONS: readonly AppRouteDefinition[] = [
   { path: "/app/missions", title: "Missions", description: "Mission launch placeholder.", allowedRoles: STUDENT_ROLES },
   { path: "/app/studio", title: "Studio", description: "Artifact creation workspace placeholder.", allowedRoles: STUDENT_ROLES },
   { path: "/app/portfolio", title: "Portfolio", description: "Evidence portfolio placeholder.", allowedRoles: STUDENT_ROLES },
-  { path: "/app/credentials", title: "Credentials", description: "Credential summary placeholder.", allowedRoles: STUDENT_ROLES },
+  { path: "/app/credentials", title: "Credentials", description: "Credential summary view.", allowedRoles: STUDENT_ROLES },
   { path: "/app/settings", title: "Settings", description: "Student settings placeholder.", allowedRoles: STUDENT_ROLES },
   { path: "/app/command-center", title: "Command Center", description: "Teacher operations placeholder.", allowedRoles: TEACHER_ROLE },
   { path: "/app/cohorts", title: "Cohorts", description: "Teacher cohort management placeholder.", allowedRoles: TEACHER_ROLE },
@@ -39,7 +39,7 @@ export const APP_ROUTE_DEFINITIONS: readonly AppRouteDefinition[] = [
   { path: "/app/reviews", title: "Reviews", description: "Teacher review queue placeholder.", allowedRoles: TEACHER_ROLE },
   { path: "/app/builder", title: "Builder", description: "Teacher builder placeholder.", allowedRoles: TEACHER_ROLE },
   { path: "/app/standards", title: "Standards", description: "Admin standards placeholder.", allowedRoles: ADMIN_ROLE },
-  { path: "/app/evidence", title: "Evidence", description: "Admin evidence controls placeholder.", allowedRoles: ADMIN_ROLE },
+  { path: "/app/evidence", title: "Evidence", description: "Admin evidence read view.", allowedRoles: ADMIN_ROLE },
   { path: "/app/exports", title: "Exports", description: "Admin export tools placeholder.", allowedRoles: ADMIN_ROLE },
   { path: "/app/forbidden", title: "Access Restricted", description: "In-app 403 view.", allowedRoles: ALL_ROLES }
 ] as const;

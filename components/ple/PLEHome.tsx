@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/coreState/session";
 import type { RuntimeMissionStage } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
@@ -35,6 +36,10 @@ export default function PLEHome() {
   }, []);
 
   useEffect(() => {
+    if (!phase3FeatureFlags.enableRuntime) {
+      return;
+    }
+
     const runtimeState = readRuntimeState();
     const mission = runtimeState.missions[MISSION_ID];
     if (mission) {
@@ -49,6 +54,10 @@ export default function PLEHome() {
   }, [missionDraft]);
 
   const missionSummary = useMemo(() => {
+    if (!phase3FeatureFlags.enableRuntime) {
+      return "Runtime disabled.";
+    }
+
     if (missionStage === "submitted") {
       return "Submitted and awaiting verification.";
     }
@@ -61,6 +70,10 @@ export default function PLEHome() {
   }, [missionStage]);
 
   const startMission = () => {
+    if (!phase3FeatureFlags.enableRuntime) {
+      return;
+    }
+
     const now = new Date().toISOString();
 
     dispatchRuntimeEvent({
@@ -78,6 +91,10 @@ export default function PLEHome() {
   };
 
   const submitMission = () => {
+    if (!phase3FeatureFlags.enableRuntime) {
+      return;
+    }
+
     const now = new Date().toISOString();
     dispatchRuntimeEvent({
       type: "MISSION_ADVANCED",
@@ -94,6 +111,11 @@ export default function PLEHome() {
       <p className="text-sm text-slate-700" data-tour="page-description">
         Plan missions, track progress, and launch studio work from this learner workspace.
       </p>
+      {!phase3FeatureFlags.enableRuntime ? (
+        <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          Runtime is disabled. Enable `NEXT_PUBLIC_ENABLE_RUNTIME` to activate mission events.
+        </p>
+      ) : null}
       <label className="block space-y-2" data-tour="mission-draft">
         <span className="text-sm font-medium text-slate-700">Mission Draft</span>
         <textarea
@@ -105,10 +127,10 @@ export default function PLEHome() {
         />
       </label>
       <div className="flex flex-wrap gap-2" data-tour="mission-actions">
-        <button className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white" type="button" onClick={startMission}>
+        <button className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50" type="button" onClick={startMission} disabled={!phase3FeatureFlags.enableRuntime}>
           Start Mission
         </button>
-        <button className="rounded border border-slate-300 px-3 py-2 text-sm" type="button" onClick={submitMission}>
+        <button className="rounded border border-slate-300 px-3 py-2 text-sm disabled:opacity-50" type="button" onClick={submitMission} disabled={!phase3FeatureFlags.enableRuntime}>
           Mark Submitted
         </button>
       </div>

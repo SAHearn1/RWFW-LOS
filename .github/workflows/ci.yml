@@ -30,3 +30,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Runtime Route Smoke
+        run: npm run verify:runtime-routes

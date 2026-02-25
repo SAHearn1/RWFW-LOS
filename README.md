@@ -1,6 +1,6 @@
 # RootWork LOS
 
-This repo now runs a Next.js App Router front-door shell for Phase 1 and active Phase 2 core migration.
+This repo now runs a Next.js App Router front-door shell with active Phase 2 and Phase 3 migration layers.
 
 ## Local Setup
 1. Install dependencies:
@@ -15,6 +15,7 @@ This repo now runs a Next.js App Router front-door shell for Phase 1 and active 
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+- `npm run verify:runtime-routes`
 
 ## Routes to Verify
 - `/` public landing page
@@ -22,6 +23,8 @@ This repo now runs a Next.js App Router front-door shell for Phase 1 and active 
 - `/sign-up` auth entry
 - `/app` PLE route (role-protected)
 - `/app/studio` Studio route (role-protected)
+- `/app/credentials` learner evidence summary
+- `/app/evidence` admin evidence read view
 - `/app/core` temporary core mount route (flag-gated)
 - `/app/profile` role + org profile
 
@@ -31,6 +34,8 @@ This repo now runs a Next.js App Router front-door shell for Phase 1 and active 
 - `NEXT_PUBLIC_ENABLE_PICKUP`
 - `NEXT_PUBLIC_ENABLE_OFFLINE`
 - `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT`
+- `NEXT_PUBLIC_ENABLE_RUNTIME`
+- `NEXT_PUBLIC_ENABLE_STANDARDS_VERIFIER`
 
 ## Auth and RBAC
 - Roles:
@@ -47,8 +52,9 @@ This repo now runs a Next.js App Router front-door shell for Phase 1 and active 
 - Tour restart is available from Help -> `Restart tour`.
 - Disabled features are skipped safely when flags are off.
 
-## Phase 2 Cutover
-- See `docs/phase2-cutover.md` for deploy checks and rollback procedure.
+## Phase 2 and 3 Cutover
+- Phase 2 runbook: `docs/phase2-cutover.md`
+- Phase 3 runbook: `docs/phase3-cutover.md`
 
 ## Pre-commit Secret Scanning
 `git-secrets` hooks are installed locally for this repository.
