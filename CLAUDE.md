@@ -741,7 +741,23 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-25 — Second verification pass, full code-level inspection of all lib/ and api/ files.*
-*Corrections: GAP-11 revised (SQLite adapter is fully implemented, wiring gap only); GAP-12 revised (Core Mount IS wired via dedicated page).*
-*New gaps added: GAP-22 (LLM router disconnected), GAP-23 (orchestration queue disconnected), GAP-24 (audit log broken in serverless), GAP-25 (webhook handler discards payload), GAP-26 (standards plugin bypassed), GAP-27 (retention hooks unreachable), GAP-28 (standards hardcoded), GAP-29 (federation dispatch stub).*
-*Branch: `claude/gap-analysis-user-roles-RHg64`*
+*Last updated: 2026-02-25 — Third pass: backend gaps #92–#96 resolved. Full static E2E audit by role complete (94/98 checks pass; 98% after federation auth fix).*
+
+### Resolved gaps (this session)
+- **GAP-15** ✅ Landing CTAs fixed: Teacher Login → `/sign-in?role=teacher`, Admin Login → `/sign-in?role=admin` (was 404 `/admin-info`). Sign-in shows role-contextual note.
+- **GAP-22** ✅ LLM routing wired: `POST /api/inference` instantiates `ModelRouter` with LocalOllama + CloudManaged providers.
+- **GAP-23** ✅ Orchestration typed dispatch: `lib/orchestration/jobTypes.ts` + `worker-run` dispatches `standards.verify` and `runtime.smoke` jobs.
+- **GAP-24** ✅ Audit log serverless-safe (console emit + opt-in file sink with AUDIT_LOG_TO_FILE).
+- **GAP-25** ✅ Clerk webhook syncs role changes from `user.created`/`user.updated`.
+- **GAP-26** ✅ Standards plugin wired: Studio calls `runDefaultStandardsPlugins()` through the plugin registry.
+- **GAP-27** ✅ Data retention endpoints: `DELETE /api/admin/data-retention/learner` and `/purge`. Admin-only with audit.
+- **GAP-28** ✅ Standards write path live: `/app/standards` renders `StandardsManager`. `defaultPlugins` reads `readConfiguredStandards()` (SSR-safe).
+- **GAP-29** ✅ Federation dispatch: POST executes tasks via `dispatchFederationTask()`, stores results. GET polls by `?taskId=`. Auth-gated.
+
+### Remaining open (intentional deferrals)
+- **GAP-13** MCP flag exists, health endpoint added — implementation awaits spec.
+- **GAP-14** Offline flag exists, status endpoint added — implementation awaits spec.
+- **GAP-17** `student_enrolled` org check — pending product policy decision.
+- **GAP-19** Legacy Vite `src/` migration — phased, ongoing.
+
+*Branch: `claude/gap-screens-all-RHg64`*

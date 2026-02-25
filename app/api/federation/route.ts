@@ -1,5 +1,7 @@
+import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { parseAppRole } from "@/lib/auth/userRole";
 import { createFederationRequest, createFederationResponse } from "@/lib/federation/protocol";
 import { getFederationDiscovery, resolveFederationAssignment } from "@/lib/federation/registry";
 import { dispatchFederationTask } from "@/lib/federation/taskDispatch";
@@ -60,6 +62,15 @@ export async function POST(request: Request): Promise<Response> {
   const blocked = ensureFederationEnabled(traceId);
   if (blocked) {
     return blocked;
+  }
+
+  const user = await currentUser();
+  const role = parseAppRole(user?.publicMetadata?.role);
+  if (!role) {
+    return NextResponse.json(
+      { error: "Authenticated role required to dispatch federation tasks." },
+      { status: 403, headers: { [TRACE_HEADER]: traceId } }
+    );
   }
 
   const body = (await request.json()) as { task?: FederationTaskEnvelope };
