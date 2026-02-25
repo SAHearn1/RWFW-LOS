@@ -21,10 +21,16 @@
 - [ ] Additional routes tested:
 
 ## Verification
+- [ ] `npm run verify:release-gate`
 - [ ] `npm run lint`
 - [ ] `npm run typecheck`
 - [ ] `npm run build`
 - [ ] `npm run verify:env`
+- [ ] `npm run verify:env-parity`
+- [ ] `npm run verify:engine-smoke`
+- [ ] `npm run verify:webhook-contract`
+- [ ] `npm run verify:branch-policy`
+- [ ] `npm run verify:swarm-overlap`
 - [ ] `npm run verify:role-routes`
 - [ ] `npm run verify:runtime-routes`
 - [ ] `npm run verify:onboarding`

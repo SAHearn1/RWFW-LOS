@@ -16,7 +16,10 @@
                     "verify:role-e2e":  "node scripts/verify-role-e2e.mjs",
                     "verify:env-parity":  "node scripts/verify-env-parity.mjs",
                     "verify:release-gate":  "node scripts/verify-release-gate.mjs",
-                    "verify:engine-smoke":  "node scripts/verify-engine-smoke.mjs"
+                    "verify:engine-smoke":  "node scripts/verify-engine-smoke.mjs",
+                    "verify:webhook-contract":  "node scripts/verify-webhook-contract.mjs",
+                    "verify:branch-policy":  "node scripts/verify-branch-policy.mjs",
+                    "verify:swarm-overlap":  "node scripts/verify-swarm-overlap.mjs"
                 },
     "dependencies":  {
                          "@clerk/nextjs":  "^6.31.6",

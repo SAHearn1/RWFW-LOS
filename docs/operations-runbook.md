@@ -7,6 +7,7 @@
 - runtime/ledger consistency issue
 - onboarding selector issue
 - cloud/local parity issue
+- federation or webhook signature issue
 
 2. Run local verification bundle:
 - `npm run verify:release-gate`
@@ -16,6 +17,10 @@
   - `npm run build`
   - `npm run verify:env`
   - `npm run verify:env-parity`
+  - `npm run verify:engine-smoke`
+  - `npm run verify:webhook-contract`
+  - `npm run verify:branch-policy`
+  - `npm run verify:swarm-overlap`
   - `npm run verify:role-routes`
   - `npm run verify:runtime-routes`
   - `npm run verify:onboarding`
@@ -60,6 +65,7 @@
 - If runtime/ledger issue: disable `NEXT_PUBLIC_ENABLE_RUNTIME` and/or `NEXT_PUBLIC_ENABLE_LEDGER`.
 - If verifier/onboarding issue: disable feature flag and revert offending selector updates.
 - If cloud/local parity issue: disable `NEXT_PUBLIC_ENABLE_LOCAL_OLLAMA` and `NEXT_PUBLIC_ENABLE_FEDERATION` until keys are corrected.
+- If webhook verification issue: disable webhook endpoint route and rotate `CLERK_WEBHOOK_SECRET`.
 
 ## Recovery Steps
 1. Apply containment flag changes.

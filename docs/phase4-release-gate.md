@@ -9,6 +9,10 @@
 - `npm run build`
 - `npm run verify:env`
 - `npm run verify:env-parity`
+- `npm run verify:engine-smoke`
+- `npm run verify:webhook-contract`
+- `npm run verify:branch-policy`
+- `npm run verify:swarm-overlap`
 - `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
@@ -21,6 +25,8 @@
 - `/app/evidence`
 - `/app/settings`
 - `/app/exports`
+- `/api/health`
+- `/api/federation`
 
 ## Role Validation
 - Students can access learner routes; denied for teacher/admin routes.
