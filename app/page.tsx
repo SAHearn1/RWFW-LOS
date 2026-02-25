@@ -51,11 +51,11 @@ export default function HomePage() {
         <Link className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white" href="/sign-up">
           Start as Independent Learner
         </Link>
-        <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/sign-in">
+        <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/sign-in?role=teacher">
           Teacher Login
         </Link>
-        <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/admin-info">
-          Admin Info
+        <Link className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800" href="/sign-in?role=admin">
+          Admin Login
         </Link>
       </section>
     </main>

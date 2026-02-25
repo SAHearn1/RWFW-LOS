@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { createFederationRequest, createFederationResponse } from "@/lib/federation/protocol";
 import { getFederationDiscovery, resolveFederationAssignment } from "@/lib/federation/registry";
+import { dispatchFederationTask } from "@/lib/federation/taskDispatch";
+import { storeFederationResult, getFederationResult } from "@/lib/federation/taskStore";
 import type { FederationTaskEnvelope } from "@/lib/federation/types";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
@@ -31,6 +33,16 @@ export async function GET(request: Request): Promise<Response> {
   const blocked = ensureFederationEnabled(traceId);
   if (blocked) {
     return blocked;
+  }
+
+  const url = new URL(request.url);
+  const taskId = url.searchParams.get("taskId");
+  if (taskId) {
+    const result = getFederationResult(taskId);
+    if (!result) {
+      return NextResponse.json({ error: "task_not_found" }, { status: 404, headers: { [TRACE_HEADER]: traceId } });
+    }
+    return NextResponse.json(result, { status: 200, headers: { [TRACE_HEADER]: traceId } });
   }
 
   const discovery = getFederationDiscovery();
@@ -81,6 +93,9 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  const taskResult = dispatchFederationTask(body.task, assignment.assignedAgentId!);
+  storeFederationResult(taskResult);
+
   const responseEnvelope = createFederationResponse({
     taskId: body.task.taskId,
     correlationId: body.task.correlationId,
@@ -88,7 +103,8 @@ export async function POST(request: Request): Promise<Response> {
     output: {
       accepted: true,
       protocol: requestEnvelope.version,
-      assignedAgentId: assignment.assignedAgentId
+      assignedAgentId: assignment.assignedAgentId,
+      ...taskResult.output
     }
   });
 
