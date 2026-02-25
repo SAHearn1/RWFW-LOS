@@ -26,6 +26,10 @@
     "verify:release-drill": "node scripts/verify-release-drill.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.997.0",
+    "@aws-sdk/client-eventbridge": "^3.997.0",
+    "@aws-sdk/client-sqs": "^3.997.0",
+    "@aws-sdk/lib-dynamodb": "^3.997.0",
     "@clerk/nextjs": "^6.31.6",
     "@google/genai": "^1.29.0",
     "better-sqlite3": "^12.4.1",

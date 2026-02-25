@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
 import type { OrchestrationJobEnvelope } from "@/lib/orchestration/contracts";
+import { DynamoOrchestrationStateStore } from "@/lib/orchestration/dynamoStateStore";
 import { InMemoryQueueAdapter } from "@/lib/orchestration/queueAdapter";
+import { SqsQueueAdapter } from "@/lib/orchestration/sqsQueueAdapter";
 import { runWorkerLifecycle } from "@/lib/orchestration/workerRunner";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
@@ -36,6 +38,14 @@ function buildJob(body: WorkerRunBody, traceId: string): OrchestrationJobEnvelop
   };
 }
 
+function canUseAwsQueue(): boolean {
+  return Boolean(process.env.AWS_SQS_QUEUE_URL && process.env.AWS_REGION);
+}
+
+function canUseDynamo(): boolean {
+  return Boolean(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE && process.env.AWS_REGION);
+}
+
 export async function POST(request: Request): Promise<Response> {
   const traceId = getTraceIdFromRequest(request);
   const user = await currentUser();
@@ -49,10 +59,22 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const body = (await request.json().catch(() => ({}))) as WorkerRunBody;
-  const queue = new InMemoryQueueAdapter<Record<string, unknown>>();
-  const enqueued = queue.enqueue(buildJob(body, traceId));
+  const enqueuedJob = buildJob(body, traceId);
 
-  const lease = queue.leaseNext({
+  const dynamicStore = canUseDynamo()
+    ? new DynamoOrchestrationStateStore<Record<string, unknown>>(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE as string)
+    : null;
+
+  const queue = canUseAwsQueue()
+    ? new SqsQueueAdapter<Record<string, unknown>>(process.env.AWS_SQS_QUEUE_URL as string)
+    : new InMemoryQueueAdapter<Record<string, unknown>>();
+
+  const enqueued = await queue.enqueue(enqueuedJob);
+  if (dynamicStore) {
+    await dynamicStore.upsert(enqueued);
+  }
+
+  const lease = await queue.leaseNext({
     workerId: "worker.local",
     leaseTtlMs: 15_000,
     nowIso: nowIso()
@@ -65,7 +87,9 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  queue.markStarted(lease.job.jobId, nowIso());
+  if ("markStarted" in queue && typeof queue.markStarted === "function") {
+    queue.markStarted(lease.job.jobId, nowIso());
+  }
 
   const lifecycle = await runWorkerLifecycle(lease.job, {
     workerId: "worker.local",
@@ -78,10 +102,24 @@ export async function POST(request: Request): Promise<Response> {
     }
   });
 
+  let finalJob = lease.job;
+
   if (lifecycle.status === "succeeded") {
-    queue.markSucceeded(lease.job.jobId, nowIso());
+    if ("markSucceeded" in queue && typeof queue.markSucceeded === "function") {
+      finalJob = queue.markSucceeded(lease.job.jobId, nowIso());
+    } else {
+      finalJob = { ...lease.job, status: "succeeded", updatedAtIso: nowIso() };
+    }
   } else if (lifecycle.status === "failed") {
-    queue.markFailed(lease.job.jobId, nowIso(), "worker_failure", lifecycle.reason ?? "unknown", true);
+    if ("markFailed" in queue && typeof queue.markFailed === "function") {
+      finalJob = queue.markFailed(lease.job.jobId, nowIso(), "worker_failure", lifecycle.reason ?? "unknown", true);
+    } else {
+      finalJob = { ...lease.job, status: "failed", updatedAtIso: nowIso(), lastErrorMessage: lifecycle.reason, lastErrorCode: "worker_failure" };
+    }
+  }
+
+  if (dynamicStore) {
+    await dynamicStore.upsert(finalJob);
   }
 
   return NextResponse.json(
@@ -89,7 +127,11 @@ export async function POST(request: Request): Promise<Response> {
       enqueued,
       lease,
       lifecycle,
-      snapshot: queue.snapshot()
+      finalJob,
+      backend: {
+        queue: canUseAwsQueue() ? "sqs" : "in_memory",
+        stateStore: dynamicStore ? "dynamodb" : "none"
+      }
     },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
   );

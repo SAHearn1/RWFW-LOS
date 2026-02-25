@@ -1,3 +1,5 @@
+import { EventBridgeClient, PutEventsCommand } from "@aws-sdk/client-eventbridge";
+
 import type { ModelInferenceRequest, ModelInferenceResponse, ModelProvider } from "../providerContracts";
 
 export class CloudManagedProvider implements ModelProvider {
@@ -19,12 +21,47 @@ export class CloudManagedProvider implements ModelProvider {
       };
     }
 
-    return {
-      requestId: request.requestId,
-      provider: "cloud_managed",
-      outputText: `Cloud managed stub response for model ${request.model}.`,
-      latencyMs: 0,
-      usedFallback: false
-    };
+    const startedAt = Date.now();
+
+    try {
+      const client = new EventBridgeClient({ region: process.env.AWS_REGION });
+      const put = await client.send(
+        new PutEventsCommand({
+          Entries: [
+            {
+              EventBusName: process.env.AWS_EVENTBRIDGE_BUS_NAME,
+              Source: "rwfw.los.inference",
+              DetailType: "cloud.inference.requested",
+              Detail: JSON.stringify({
+                requestId: request.requestId,
+                model: request.model,
+                role: request.role,
+                privacyMode: request.privacyMode,
+                maxTokens: request.maxTokens,
+                temperature: request.temperature
+              })
+            }
+          ]
+        })
+      );
+
+      const eventId = put.Entries?.[0]?.EventId ?? "unknown";
+
+      return {
+        requestId: request.requestId,
+        provider: "cloud_managed",
+        outputText: `Cloud inference request accepted (eventId=${eventId}).`,
+        latencyMs: Date.now() - startedAt,
+        usedFallback: false
+      };
+    } catch (error) {
+      return {
+        requestId: request.requestId,
+        provider: "cloud_managed",
+        outputText: `Cloud inference request failed (${error instanceof Error ? error.message : "unknown_error"}).`,
+        latencyMs: Date.now() - startedAt,
+        usedFallback: true
+      };
+    }
   }
 }
