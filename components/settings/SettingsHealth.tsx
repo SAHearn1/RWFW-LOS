@@ -1,9 +1,36 @@
 "use client";
 
+import { useState } from "react";
+
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 
 export default function SettingsHealth() {
   const localStorageReady = typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+  const [exportState, setExportState] = useState<"idle" | "working" | "done" | "error">("idle");
+
+  const exportDiagnostics = async () => {
+    try {
+      setExportState("working");
+      const response = await fetch("/api/support/diagnostics", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`support_diagnostics_${response.status}`);
+      }
+
+      const payload = await response.json();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      anchor.href = url;
+      anchor.download = `rootwork-support-diagnostics-${timestamp}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+
+      setExportState("done");
+    } catch {
+      setExportState("error");
+    }
+  };
 
   return (
     <section className="space-y-4">
@@ -15,6 +42,25 @@ export default function SettingsHealth() {
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Ledger Flag</dt><dd>{phase3FeatureFlags.enableLedger ? "enabled" : "disabled"}</dd></div>
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Standards Verifier Flag</dt><dd>{phase3FeatureFlags.enableStandardsVerifier ? "enabled" : "disabled"}</dd></div>
       </dl>
+
+      <section className="rounded-lg border border-slate-200 bg-white p-4" data-tour="support-diagnostics">
+        <h2 className="text-lg font-semibold text-slate-900">Support Diagnostics</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Download a redacted diagnostics bundle for support triage (flags, verifier snapshots, and env presence only).
+        </p>
+        <div className="mt-3 flex items-center gap-3">
+          <button
+            type="button"
+            className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+            onClick={exportDiagnostics}
+            disabled={exportState === "working"}
+          >
+            {exportState === "working" ? "Exporting..." : "Download Diagnostics"}
+          </button>
+          {exportState === "done" ? <p className="text-xs text-emerald-700">Diagnostics export generated.</p> : null}
+          {exportState === "error" ? <p className="text-xs text-rose-700">Diagnostics export failed.</p> : null}
+        </div>
+      </section>
     </section>
   );
 }
