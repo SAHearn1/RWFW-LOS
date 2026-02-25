@@ -42,3 +42,6 @@ jobs:
 
       - name: Onboarding Selector Verify
         run: npm run verify:onboarding
+
+      - name: Live HTTP Smoke
+        run: npm run verify:http-smoke

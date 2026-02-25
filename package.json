@@ -11,7 +11,8 @@
     "verify:runtime-routes": "node scripts/verify-runtime-routes.mjs",
     "verify:role-routes": "node scripts/verify-role-routes.mjs",
     "verify:env": "node scripts/verify-env.mjs",
-    "verify:onboarding": "node scripts/verify-onboarding.mjs"
+    "verify:onboarding": "node scripts/verify-onboarding.mjs",
+    "verify:http-smoke": "node scripts/verify-http-smoke.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",

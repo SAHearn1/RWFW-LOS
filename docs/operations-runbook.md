@@ -15,12 +15,22 @@
 - `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
+- `npm run verify:http-smoke`
 
 3. Scope impact by role:
 - student_independent
 - student_enrolled
 - teacher
 - admin
+
+## Known Failure Mode: Malformed Clerk Publishable Key
+- Symptom: global HTTP 500 on all routes during runtime.
+- Root cause: auth middleware initializes Clerk with invalid publishable key.
+- Mitigation in code:
+  - `middleware.ts` now bypasses Clerk and fails safe for protected routes when key is invalid.
+  - sign-in/sign-up routes show controlled unavailable state instead of crashing.
+- Regression prevention:
+  - `npm run verify:http-smoke` in CI.
 
 ## Rollback Decision Tree
 - If auth fallback/regression: revert latest auth/layout commit and redeploy.

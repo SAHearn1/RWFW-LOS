@@ -8,6 +8,7 @@
 - `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
+- `npm run verify:http-smoke`
 
 ## Route Validation
 - `/app`
@@ -26,6 +27,7 @@
 - Missing session redirects to `/sign-in`.
 - Missing role displays friendly in-app block.
 - Teacher/admin without org displays explicit organization assignment block.
+- Malformed Clerk publishable key does not cause global 500; protected routes fail safely.
 
 ## Final Signoff
 - CI green on `main`

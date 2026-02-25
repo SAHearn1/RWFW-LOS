@@ -19,6 +19,7 @@ This repo runs a Next.js App Router shell with active Phase 2-4 hardening work.
 - `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
+- `npm run verify:http-smoke`
 
 ## Key Routes
 - `/app`
