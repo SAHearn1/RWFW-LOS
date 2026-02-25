@@ -1,0 +1,13 @@
+131	OPEN	[#PR-212] QA and documentation closure for Phase 9	area:ci, area:docs, type:chore, risk:low, agent:solo	2026-02-25T18:16:53Z
+130	OPEN	[#PR-211] Admin surfaces: Standards and Exports baseline functionality	area:nav, area:docs, type:feature, risk:med, agent:swarm	2026-02-25T18:16:51Z
+129	OPEN	[#PR-210] Facilitator utilities: Builder and Pickups screens	area:nav, area:onboarding, type:feature, risk:med, agent:swarm	2026-02-25T18:16:49Z
+128	OPEN	[#PR-209] Teacher surfaces: Command Center, Cohorts, Reviews	area:nav, type:feature, risk:med, agent:swarm	2026-02-25T18:16:47Z
+127	OPEN	[#PR-208] Enforce cloud smoke in release gate and PR checklist	area:ci, type:chore, risk:med, agent:solo, area:release	2026-02-25T18:16:45Z
+126	OPEN	[#PR-207] Durable AWS credential strategy for Vercel runtime	area:docs, type:chore, risk:med, agent:solo, area:cloud, area:release	2026-02-25T18:15:02Z
+125	OPEN	[#PR-206] Restore SQS+Dynamo as primary worker backend in production	risk:high, agent:solo, area:runtime, type:bug, area:cloud	2026-02-25T18:15:01Z
+124	OPEN	[#PR-205] Federation POST must dispatch, not acknowledge-only	risk:high, agent:solo, type:bug, area:cloud, area:federation	2026-02-25T18:15:00Z
+123	OPEN	[#PR-204] Enforce learner-level authorization in ledger API	risk:high, agent:solo, area:ledger, area:auth, type:bug, area:security	2026-02-25T18:14:58Z
+122	OPEN	[#PR-203] Clerk webhook event application for role/org propagation	risk:high, agent:solo, area:auth, type:bug, area:security	2026-02-25T18:14:57Z
+121	OPEN	[#PR-202] Durable audit transport for serverless runtime	risk:high, agent:solo, type:bug, area:security, area:observability	2026-02-25T18:14:55Z
+120	OPEN	[#PR-201] Serverless-safe ledger persistence on Vercel	risk:high, agent:solo, area:ledger, type:bug, area:data	2026-02-25T18:14:54Z
+119	OPEN	[#PR-EPIC] Production Readiness Stabilization	type:feature, risk:high, agent:swarm, area:release	2026-02-25T18:14:53Z
