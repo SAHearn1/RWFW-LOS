@@ -1,0 +1,51 @@
+import type { AppRole } from "@/lib/auth/roles";
+
+export type NavItem = {
+  href: string;
+  label: string;
+};
+
+export const NAV_ITEMS_BY_ROLE: Readonly<Record<AppRole, readonly NavItem[]>> = {
+  student_independent: [
+    { href: "/app", label: "Home (PLE)" },
+    { href: "/app/missions", label: "Missions" },
+    { href: "/app/studio", label: "Studio" },
+    { href: "/app/portfolio", label: "Portfolio" },
+    { href: "/app/credentials", label: "Credentials" },
+    { href: "/app/settings", label: "Settings" },
+    { href: "/app/core", label: "Core" },
+    { href: "/app/profile", label: "Profile" }
+  ],
+  student_enrolled: [
+    { href: "/app", label: "Home (PLE)" },
+    { href: "/app/missions", label: "Missions" },
+    { href: "/app/studio", label: "Studio" },
+    { href: "/app/portfolio", label: "Portfolio" },
+    { href: "/app/credentials", label: "Credentials" },
+    { href: "/app/settings", label: "Settings" },
+    { href: "/app/core", label: "Core" },
+    { href: "/app/profile", label: "Profile" }
+  ],
+  teacher: [
+    { href: "/app", label: "Home" },
+    { href: "/app/command-center", label: "Command Center" },
+    { href: "/app/cohorts", label: "Cohorts" },
+    { href: "/app/pickups", label: "Pickups" },
+    { href: "/app/reviews", label: "Reviews" },
+    { href: "/app/builder", label: "Builder" },
+    { href: "/app/core", label: "Core" },
+    { href: "/app/profile", label: "Profile" }
+  ],
+  admin: [
+    { href: "/app", label: "Home" },
+    { href: "/app/standards", label: "Standards" },
+    { href: "/app/evidence", label: "Evidence" },
+    { href: "/app/exports", label: "Exports" },
+    { href: "/app/core", label: "Core" },
+    { href: "/app/profile", label: "Profile" }
+  ]
+} as const;
+
+export function getNavItemsForRole(role: AppRole): readonly NavItem[] {
+  return NAV_ITEMS_BY_ROLE[role];
+}
