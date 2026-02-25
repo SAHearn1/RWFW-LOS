@@ -4,6 +4,7 @@ const envExample = readFileSync(".env.example", "utf8");
 
 const requiredKeys = [
   "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+  "CLERK_PUBLISHABLE_KEY",
   "CLERK_SECRET_KEY",
   "NEXT_PUBLIC_ENABLE_LEDGER",
   "NEXT_PUBLIC_ENABLE_MCP",
@@ -133,12 +134,14 @@ const boolFlagErrors = boolFlagKeys
   })
   .filter(Boolean);
 
-const examplePkError = validatePublishableKey(envExampleMap.get("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") ?? "", { allowPlaceholders: true });
+const examplePublicPkError = validatePublishableKey(envExampleMap.get("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") ?? "", { allowPlaceholders: true });
+const exampleServerPkError = validatePublishableKey(envExampleMap.get("CLERK_PUBLISHABLE_KEY") ?? "", { allowPlaceholders: true });
 const exampleSkError = validateSecretKey(envExampleMap.get("CLERK_SECRET_KEY") ?? "", { allowPlaceholders: true });
 
-if (examplePkError || exampleSkError || boolFlagErrors.length > 0) {
+if (examplePublicPkError || exampleServerPkError || exampleSkError || boolFlagErrors.length > 0) {
   const errors = [
-    ...(examplePkError ? [`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ${examplePkError} in .env.example`] : []),
+    ...(examplePublicPkError ? [`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ${examplePublicPkError} in .env.example`] : []),
+    ...(exampleServerPkError ? [`CLERK_PUBLISHABLE_KEY ${exampleServerPkError} in .env.example`] : []),
     ...(exampleSkError ? [`CLERK_SECRET_KEY ${exampleSkError} in .env.example`] : []),
     ...boolFlagErrors
   ];
@@ -162,13 +165,16 @@ for (const file of localEnvCandidates) {
   }
 }
 
-const runtimePk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? localEnvMap.get("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") ?? process.env.CLERK_PUBLISHABLE_KEY ?? localEnvMap.get("CLERK_PUBLISHABLE_KEY");
+const runtimePk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  ?? localEnvMap.get("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY")
+  ?? process.env.CLERK_PUBLISHABLE_KEY
+  ?? localEnvMap.get("CLERK_PUBLISHABLE_KEY");
 const runtimeSk = process.env.CLERK_SECRET_KEY ?? localEnvMap.get("CLERK_SECRET_KEY");
 
 if (runtimePk) {
   const runtimePkError = validatePublishableKey(runtimePk);
   if (runtimePkError) {
-    console.error(`Invalid NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${runtimePkError}`);
+    console.error(`Invalid Clerk publishable key: ${runtimePkError}`);
     process.exit(1);
   }
 }

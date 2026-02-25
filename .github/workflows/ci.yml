@@ -22,26 +22,13 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Release Gate Aggregate
+        run: npm run verify:release-gate
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Build
-        run: npm run build
-
-      - name: Runtime Route Smoke
-        run: npm run verify:runtime-routes
-
-      - name: Role Route Verify
-        run: npm run verify:role-routes
-
-      - name: Env Completeness Verify
-        run: npm run verify:env
-
-      - name: Onboarding Selector Verify
-        run: npm run verify:onboarding
-
-      - name: Live HTTP Smoke
-        run: npm run verify:http-smoke
+      - name: Upload Release Gate Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-report
+          path: docs/status/release-gate-latest.json
+          if-no-files-found: warn

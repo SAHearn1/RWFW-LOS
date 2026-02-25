@@ -6,21 +6,27 @@
 - route protection issue
 - runtime/ledger consistency issue
 - onboarding selector issue
+- cloud/local parity issue
 
 2. Run local verification bundle:
-- `npm run lint`
-- `npm run typecheck`
-- `npm run build`
-- `npm run verify:env`
-- `npm run verify:role-routes`
-- `npm run verify:runtime-routes`
-- `npm run verify:onboarding`
-- `npm run verify:http-smoke`
+- `npm run verify:release-gate`
+- or granular checks:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run build`
+  - `npm run verify:env`
+  - `npm run verify:env-parity`
+  - `npm run verify:role-routes`
+  - `npm run verify:runtime-routes`
+  - `npm run verify:onboarding`
+  - `npm run verify:http-smoke`
 
 3. Scope impact by role:
 - student_independent
 - student_enrolled
+- adult_learner
 - teacher
+- professional_development
 - admin
 
 ## Known Failure Mode: Malformed Clerk Publishable Key
@@ -40,11 +46,20 @@
   - `npm run verify:env`
   - `npm run verify:http-smoke`
 
+## Cloud + Local Parity Protocol
+- Keep `.env.example` as the canonical contract for AWS + Ollama + federation keys.
+- Validate parity with:
+  - `npm run verify:env-parity`
+- If local Ollama is enabled (`NEXT_PUBLIC_ENABLE_LOCAL_OLLAMA=true`), both `OLLAMA_BASE_URL` and `OLLAMA_MODEL` must be present.
+- If federation is enabled (`NEXT_PUBLIC_ENABLE_FEDERATION=true`), `FEDERATION_GATEWAY_SHARED_SECRET` must be set.
+- Partial AWS config is treated as invalid; all orchestration keys must be set together.
+
 ## Rollback Decision Tree
 - If auth fallback/regression: revert latest auth/layout commit and redeploy.
 - If route contract mismatch: restore `lib/auth/routeAccess.ts` from last green commit.
 - If runtime/ledger issue: disable `NEXT_PUBLIC_ENABLE_RUNTIME` and/or `NEXT_PUBLIC_ENABLE_LEDGER`.
 - If verifier/onboarding issue: disable feature flag and revert offending selector updates.
+- If cloud/local parity issue: disable `NEXT_PUBLIC_ENABLE_LOCAL_OLLAMA` and `NEXT_PUBLIC_ENABLE_FEDERATION` until keys are corrected.
 
 ## Recovery Steps
 1. Apply containment flag changes.

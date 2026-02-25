@@ -1,10 +1,14 @@
 # Phase 4 Release Gate
 
 ## Required Green Checks
+- `npm run verify:release-gate`
+
+## Included Automated Checks
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
 - `npm run verify:env`
+- `npm run verify:env-parity`
 - `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
@@ -32,6 +36,7 @@
 ## Required Manual Evidence
 - Role captures: see `docs/qa/manual-role-e2e-checklist.md`
 - Browser quality pass: see `docs/qa/browser-quality-smoke.md`
+- Release report artifact: `docs/status/release-gate-latest.json`
 
 ## Final Signoff
 - CI green on `main`
