@@ -19,7 +19,7 @@ This repo runs a Next.js App Router shell with active Phase 2-5 hardening work.
 - `npm run verify:role-routes`
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
-- `npm run verify:http-smoke`
+- `npm run verify:http-smoke`\r\n- `npm run verify:role-e2e` (requires E2E role credentials)
 
 ## Key Routes
 - `/app`

@@ -1,7 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 
-import { sanitizePublishableKey, sanitizePublicUrl } from "@/lib/config/envGuards";
+import { getConfiguredPublishableKey, sanitizePublicUrl } from "@/lib/config/envGuards";
 
 import "./globals.css";
 
@@ -15,7 +15,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const publishableKey = sanitizePublishableKey(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const publishableKey = getConfiguredPublishableKey();
   const signInUrl = sanitizePublicUrl(process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL);
   const signUpUrl = sanitizePublicUrl(process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL);
 

@@ -11,6 +11,11 @@ export function sanitizePublishableKey(raw: string | undefined): string | null {
   return cleaned;
 }
 
+export function getConfiguredPublishableKey(): string | null {
+  return sanitizePublishableKey(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+    ?? sanitizePublishableKey(process.env.CLERK_PUBLISHABLE_KEY);
+}
+
 export function sanitizePublicUrl(raw: string | undefined): string | null {
   if (!raw) {
     return null;

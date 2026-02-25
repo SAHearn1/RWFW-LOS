@@ -8,16 +8,18 @@ Use this checklist for release candidates and any PR that changes auth, nav, onb
 - Test users available for each role:
   - `student_independent`
   - `student_enrolled`
+  - `adult_learner`
   - `teacher`
+  - `professional_development`
   - `admin`
 
 ## Required Captures
 Attach screenshots (desktop + mobile where UI changed) for these routes:
-- Student:
+- Learner roles (`student_independent`, `student_enrolled`, `adult_learner`):
   - `/app`
   - `/app/studio`
   - `/app/credentials`
-- Teacher:
+- Facilitator roles (`teacher`, `professional_development`):
   - `/app`
   - `/app/command-center`
   - `/app/cohorts`
@@ -46,6 +48,7 @@ Attach screenshots (desktop + mobile where UI changed) for these routes:
 - `npm run verify:runtime-routes`
 - `npm run verify:onboarding`
 - `npm run verify:http-smoke`
+- `npm run verify:role-e2e` (requires Clerk role test accounts)
 
 ## Failure Handling
 - If auth fails: validate Clerk keys, remove quotes/whitespace, rerun `npm run verify:env`.

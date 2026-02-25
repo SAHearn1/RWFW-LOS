@@ -27,9 +27,21 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour from Help if needed." },
     { id: "core", selector: "[data-tour='core-mount']", title: "Core Mount", body: "Legacy core screens are available during migration.", requiredFlag: "NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT" }
   ],
+  adult_learner: [
+    { id: "nav", selector: "[data-tour='primary-nav']", title: "Navigation", body: "Use your adult learner navigation to move from goals to evidence." },
+    { id: "home", selector: "[data-tour='page-title']", title: "Adult Workspace", body: "Track applied objectives and professional artifacts from this home view." },
+    { id: "mission", selector: "[data-tour='mission-draft']", title: "Current Goal", body: "Capture your current objective and launch a mission cycle." },
+    { id: "studio", selector: "[data-tour='studio-entry']", title: "Studio", body: "Move into Studio to finalize your adult learning artifact." },
+    { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart this tour at any time from Help." }
+  ],
   teacher: [
     { id: "nav", selector: "[data-tour='primary-nav']", title: "Command Navigation", body: "Teacher tools are grouped in your role navigation." },
     { id: "home", selector: "[data-tour='page-title']", title: "Workspace", body: "This page reflects your current operational area." },
+    { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour any time from Help." }
+  ],
+  professional_development: [
+    { id: "nav", selector: "[data-tour='primary-nav']", title: "PD Navigation", body: "Professional development tools are grouped for facilitation work." },
+    { id: "home", selector: "[data-tour='page-title']", title: "PD Workspace", body: "Coordinate cohorts, reviews, and session flow from this home view." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour any time from Help." }
   ],
   admin: [

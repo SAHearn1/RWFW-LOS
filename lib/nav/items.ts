@@ -26,8 +26,28 @@ export const NAV_ITEMS_BY_ROLE: Readonly<Record<AppRole, readonly NavItem[]>> = 
     { href: "/app/core", label: "Core" },
     { href: "/app/profile", label: "Profile" }
   ],
+  adult_learner: [
+    { href: "/app", label: "Home (Adult)" },
+    { href: "/app/missions", label: "Missions" },
+    { href: "/app/studio", label: "Studio" },
+    { href: "/app/portfolio", label: "Portfolio" },
+    { href: "/app/credentials", label: "Credentials" },
+    { href: "/app/settings", label: "Settings" },
+    { href: "/app/core", label: "Core" },
+    { href: "/app/profile", label: "Profile" }
+  ],
   teacher: [
     { href: "/app", label: "Home" },
+    { href: "/app/command-center", label: "Command Center" },
+    { href: "/app/cohorts", label: "Cohorts" },
+    { href: "/app/pickups", label: "Pickups" },
+    { href: "/app/reviews", label: "Reviews" },
+    { href: "/app/builder", label: "Builder" },
+    { href: "/app/core", label: "Core" },
+    { href: "/app/profile", label: "Profile" }
+  ],
+  professional_development: [
+    { href: "/app", label: "Home (PD)" },
     { href: "/app/command-center", label: "Command Center" },
     { href: "/app/cohorts", label: "Cohorts" },
     { href: "/app/pickups", label: "Pickups" },

@@ -2,10 +2,10 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { sanitizePublishableKey } from "@/lib/config/envGuards";
+import { getConfiguredPublishableKey } from "@/lib/config/envGuards";
 
 const isAppRoute = createRouteMatcher(["/app(.*)"]);
-const hasValidClerkKey = Boolean(sanitizePublishableKey(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY));
+const hasValidClerkKey = Boolean(getConfiguredPublishableKey());
 
 const clerkProtectedMiddleware = clerkMiddleware(async (auth, req) => {
   if (isAppRoute(req)) {

@@ -19,7 +19,9 @@ const requiredRoutes = [
 const roleToExpectedNav = {
   student_independent: ["/app/studio", "/app/credentials", "/app/settings"],
   student_enrolled: ["/app/studio", "/app/credentials", "/app/settings"],
+  adult_learner: ["/app/studio", "/app/credentials", "/app/settings"],
   teacher: ["/app/command-center", "/app/cohorts", "/app/reviews"],
+  professional_development: ["/app/command-center", "/app/cohorts", "/app/reviews"],
   admin: ["/app/evidence", "/app/exports", "/app/standards"]
 };
 
@@ -38,4 +40,3 @@ for (const [role, routes] of Object.entries(roleToExpectedNav)) {
 }
 
 console.log("Role-route verifier passed.");
-

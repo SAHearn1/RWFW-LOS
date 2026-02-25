@@ -162,7 +162,7 @@ for (const file of localEnvCandidates) {
   }
 }
 
-const runtimePk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? localEnvMap.get("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY");
+const runtimePk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? localEnvMap.get("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") ?? process.env.CLERK_PUBLISHABLE_KEY ?? localEnvMap.get("CLERK_PUBLISHABLE_KEY");
 const runtimeSk = process.env.CLERK_SECRET_KEY ?? localEnvMap.get("CLERK_SECRET_KEY");
 
 if (runtimePk) {
