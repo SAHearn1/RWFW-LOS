@@ -1,13 +1,20 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
+import { readAwsCredentials, readAwsRegion } from "@/lib/cloud/awsEnv";
+
 import type { OrchestrationJobEnvelope } from "./contracts";
 
 export class DynamoOrchestrationStateStore<TPayload = unknown> {
   private readonly client: DynamoDBDocumentClient;
 
-  constructor(private readonly tableName: string, region = process.env.AWS_REGION) {
-    this.client = DynamoDBDocumentClient.from(new DynamoDBClient({ region }));
+  constructor(private readonly tableName: string, region = readAwsRegion()) {
+    this.client = DynamoDBDocumentClient.from(
+      new DynamoDBClient({
+        region,
+        credentials: readAwsCredentials()
+      })
+    );
   }
 
   async upsert(job: OrchestrationJobEnvelope<TPayload>): Promise<OrchestrationJobEnvelope<TPayload>> {

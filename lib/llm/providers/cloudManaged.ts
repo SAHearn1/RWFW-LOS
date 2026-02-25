@@ -1,12 +1,14 @@
 import { EventBridgeClient, PutEventsCommand } from "@aws-sdk/client-eventbridge";
 
+import { readAwsCredentials, readAwsRegion, readEventBridgeBusName } from "@/lib/cloud/awsEnv";
+
 import type { ModelInferenceRequest, ModelInferenceResponse, ModelProvider } from "../providerContracts";
 
 export class CloudManagedProvider implements ModelProvider {
   readonly name = "cloud_managed" as const;
 
   async isAvailable(): Promise<boolean> {
-    return Boolean(process.env.AWS_REGION && process.env.AWS_EVENTBRIDGE_BUS_NAME);
+    return Boolean(readAwsRegion() && readEventBridgeBusName());
   }
 
   async infer(request: ModelInferenceRequest): Promise<ModelInferenceResponse> {
@@ -24,12 +26,15 @@ export class CloudManagedProvider implements ModelProvider {
     const startedAt = Date.now();
 
     try {
-      const client = new EventBridgeClient({ region: process.env.AWS_REGION });
+      const client = new EventBridgeClient({
+        region: readAwsRegion(),
+        credentials: readAwsCredentials()
+      });
       const put = await client.send(
         new PutEventsCommand({
           Entries: [
             {
-              EventBusName: process.env.AWS_EVENTBRIDGE_BUS_NAME,
+              EventBusName: readEventBridgeBusName(),
               Source: "rwfw.los.inference",
               DetailType: "cloud.inference.requested",
               Detail: JSON.stringify({

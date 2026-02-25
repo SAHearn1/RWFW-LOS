@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
+import { readAwsRegion, readDynamoTable, readSqsQueueUrl } from "@/lib/cloud/awsEnv";
 import type { OrchestrationJobEnvelope, QueueLeaseResult } from "@/lib/orchestration/contracts";
 import { DynamoOrchestrationStateStore } from "@/lib/orchestration/dynamoStateStore";
 import { InMemoryQueueAdapter } from "@/lib/orchestration/queueAdapter";
@@ -53,11 +54,19 @@ function buildJob(body: WorkerRunBody, traceId: string): OrchestrationJobEnvelop
 }
 
 function canUseAwsQueue(): boolean {
-  return Boolean(process.env.AWS_SQS_QUEUE_URL && process.env.AWS_REGION);
+  return Boolean(readSqsQueueUrl() && readAwsRegion());
 }
 
 function canUseDynamo(): boolean {
-  return Boolean(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE && process.env.AWS_REGION);
+  return Boolean(readDynamoTable() && readAwsRegion());
+}
+
+function shouldAllowAwsFallback(): boolean {
+  if (process.env.ALLOW_AWS_WORKER_FALLBACK === "true") {
+    return true;
+  }
+
+  return process.env.VERCEL_ENV !== "production";
 }
 
 async function executeWorker(
@@ -142,10 +151,10 @@ export async function POST(request: Request): Promise<Response> {
   const enqueuedJob = buildJob(body, traceId);
 
   const preferredStore = canUseDynamo()
-    ? new DynamoOrchestrationStateStore<Record<string, unknown>>(process.env.AWS_DYNAMODB_ORCHESTRATION_TABLE as string)
+    ? new DynamoOrchestrationStateStore<Record<string, unknown>>(readDynamoTable() as string)
     : null;
   const preferredQueue = canUseAwsQueue()
-    ? new SqsQueueAdapter<Record<string, unknown>>(process.env.AWS_SQS_QUEUE_URL as string)
+    ? new SqsQueueAdapter<Record<string, unknown>>(readSqsQueueUrl() as string)
     : new InMemoryQueueAdapter<Record<string, unknown>>();
   const preferredBackend: WorkerBackend = {
     queue: canUseAwsQueue() ? "sqs" : "in_memory",
@@ -161,6 +170,17 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         { error: error instanceof Error ? error.message : "worker_execution_failed" },
         { status: 500, headers: { [TRACE_HEADER]: traceId } }
+      );
+    }
+
+    if (!shouldAllowAwsFallback()) {
+      return NextResponse.json(
+        {
+          error: error instanceof Error ? error.message : "aws_backend_failure",
+          backend: preferredBackend,
+          fallbackBlocked: true
+        },
+        { status: 502, headers: { [TRACE_HEADER]: traceId } }
       );
     }
 

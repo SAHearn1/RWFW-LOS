@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { dispatchFederationTask } from "@/lib/federation/dispatch";
 import { createFederationRequest, createFederationResponse } from "@/lib/federation/protocol";
 import { getFederationDiscovery, resolveFederationAssignment } from "@/lib/federation/registry";
 import type { FederationTaskEnvelope } from "@/lib/federation/types";
@@ -58,7 +59,7 @@ export async function POST(request: Request): Promise<Response> {
   const requestEnvelope = createFederationRequest(body.task);
   const assignment = resolveFederationAssignment(body.task);
 
-  if (!assignment.accepted) {
+  if (!assignment.accepted || !assignment.assignedAgentId) {
     recordAuditEvent({
       traceId,
       eventType: "federation.request.rejected",
@@ -81,30 +82,35 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  const dispatch = await dispatchFederationTask(body.task, assignment.assignedAgentId);
+
   const responseEnvelope = createFederationResponse({
     taskId: body.task.taskId,
     correlationId: body.task.correlationId,
-    status: "success",
-    output: {
-      accepted: true,
-      protocol: requestEnvelope.version,
-      assignedAgentId: assignment.assignedAgentId
-    }
+    status: dispatch.status,
+    ...(dispatch.status === "success"
+      ? { output: dispatch.output }
+      : { errorCode: dispatch.errorCode ?? "dispatch_failed", errorMessage: dispatch.errorMessage ?? "dispatch_failed" })
   });
 
   recordAuditEvent({
     traceId,
-    eventType: "federation.request.accepted",
+    eventType: dispatch.status === "success" ? "federation.request.dispatched" : "federation.request.dispatch_failed",
     role: body.task.requestedByRole,
-    severity: "info",
+    severity: dispatch.status === "success" ? "info" : "error",
     createdAtIso: new Date().toISOString(),
     metadata: {
       taskId: body.task.taskId,
       requestedAgentId: body.task.assignedAgentId,
       assignedAgentId: assignment.assignedAgentId,
-      capabilityId: body.task.capabilityId
+      capabilityId: body.task.capabilityId,
+      dispatchStatus: dispatch.status,
+      dispatchError: dispatch.errorMessage
     }
   });
 
-  return NextResponse.json(responseEnvelope, { status: 200, headers: { [TRACE_HEADER]: traceId } });
+  return NextResponse.json(responseEnvelope, {
+    status: dispatch.status === "success" ? 200 : 502,
+    headers: { [TRACE_HEADER]: traceId }
+  });
 }

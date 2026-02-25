@@ -1,12 +1,17 @@
 import { SQSClient, SendMessageCommand, ReceiveMessageCommand } from "@aws-sdk/client-sqs";
 
+import { readAwsCredentials, readAwsRegion } from "@/lib/cloud/awsEnv";
+
 import type { OrchestrationJobEnvelope, QueueLeaseRequest, QueueLeaseResult } from "./contracts";
 
 export class SqsQueueAdapter<TPayload = unknown> {
   private readonly client: SQSClient;
 
-  constructor(private readonly queueUrl: string, region = process.env.AWS_REGION) {
-    this.client = new SQSClient({ region });
+  constructor(private readonly queueUrl: string, region = readAwsRegion()) {
+    this.client = new SQSClient({
+      region,
+      credentials: readAwsCredentials()
+    });
   }
 
   async enqueue(job: OrchestrationJobEnvelope<TPayload>): Promise<OrchestrationJobEnvelope<TPayload>> {
