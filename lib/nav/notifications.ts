@@ -30,6 +30,10 @@ const ROLE_NOTIFICATIONS: Readonly<Record<AppRole, readonly AppNotification[]>> 
   admin: [
     { id: "admin-health", level: "info", message: "Pilot health cards are available in Exports." },
     { id: "admin-release", level: "warning", message: "Confirm release gate and synthetic smoke before promotion." }
+  ],
+  super_admin: [
+    { id: "super-admin-trials", level: "warning", message: "Check License Manager for trials expiring within 7 days." },
+    { id: "super-admin-teachers", level: "info", message: "Review pending teacher assignment requests." }
   ]
 } as const;
 

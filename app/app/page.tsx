@@ -2,6 +2,7 @@ import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
 import AdminHome from "@/components/dashboards/AdminHome";
 import AdultLearnerHome from "@/components/dashboards/AdultLearnerHome";
 import ProfessionalDevelopmentHome from "@/components/dashboards/ProfessionalDevelopmentHome";
+import SuperAdminHome from "@/components/dashboards/SuperAdminHome";
 import TeacherHome from "@/components/dashboards/TeacherHome";
 import PLEHome from "@/components/ple/PLEHome";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
@@ -32,6 +33,10 @@ export default async function AppHomePage() {
 
   if (role === "admin") {
     return <AdminHome />;
+  }
+
+  if (role === "super_admin") {
+    return <SuperAdminHome />;
   }
 
   return <PLEHome />;

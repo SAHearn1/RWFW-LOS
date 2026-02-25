@@ -8,6 +8,7 @@ const appText = [
   readFileSync("components/core-mount/CoreMountRuntime.tsx", "utf8"),
   readFileSync("components/credentials/CredentialsSummary.tsx", "utf8"),
   readFileSync("components/evidence/AdminEvidenceView.tsx", "utf8"),
+  readFileSync("components/dashboards/SuperAdminHome.tsx", "utf8"),
   readFileSync("app/app/[[...slug]]/page.tsx", "utf8")
 ].join("\n");
 
