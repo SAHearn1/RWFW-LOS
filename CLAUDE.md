@@ -108,7 +108,7 @@ npm run verify:swarm-overlap    # File-overlap conflict detection for parallel P
 ```
 
 **Known non-blocking lint warnings (pre-existing):**
-- 2 `react-hooks/exhaustive-deps` warnings in `PLEHome` and `StudioWorkspace` — do not suppress with eslint-disable; fix in a dedicated chore ticket.
+- None currently. The 2 `react-hooks/exhaustive-deps` warnings in `PLEHome` and `StudioWorkspace` were resolved (GAP-18 fixed).
 
 ---
 
@@ -184,11 +184,9 @@ Role groupings (used in route access contracts):
 | student_independent | `PLEHome` | ✅ Implemented |
 | student_enrolled | `PLEHome` | ✅ Implemented |
 | adult_learner | `AdultLearnerHome` | ✅ Implemented |
-| teacher | `PLEHome` | ⚠️ **GAP** — falls through to student UI |
+| teacher | `TeacherHome` | ✅ Implemented |
 | professional_development | `ProfessionalDevelopmentHome` | ✅ Implemented |
-| admin | `PLEHome` | ⚠️ **GAP** — falls through to student UI |
-
-> **Critical gap**: `teacher` and `admin` currently render `PLEHome` because `app/app/page.tsx` has no branch for these roles. Both need dedicated home dashboards.
+| admin | `AdminHome` | ✅ Implemented |
 
 ---
 
@@ -253,29 +251,29 @@ Defined in `lib/nav/items.ts`. Every role gets its own `readonly NavItem[]` — 
 | Studio | `/app/studio` | `components/studio/StudioWorkspace.tsx` | ✅ Implemented | Artifact editor, ledger save, standards verification |
 | Credentials | `/app/credentials` | `components/credentials/CredentialsSummary.tsx` | ✅ Implemented | Counts from ledger (flag-gated) |
 | Settings | `/app/settings` | `components/settings/SettingsHealth.tsx` | ✅ Implemented | Flag health checks |
-| Missions | `/app/missions` | catch-all placeholder | ⚠️ Placeholder | No dedicated component or mission list UI |
-| Portfolio | `/app/portfolio` | catch-all placeholder | ⚠️ Placeholder | No dedicated component |
+| Missions | `/app/missions` | `components/missions/MissionsList.tsx` | ✅ Implemented | Mission list with lifecycle actions; `/api/missions` route |
+| Portfolio | `/app/portfolio` | `components/portfolio/PortfolioGallery.tsx` | ✅ Implemented | Evidence portfolio, artifact gallery, credential progress |
 
 ### Facilitator Screens
 
 | Screen | Route | Component | Status | Notes |
 |--------|-------|-----------|--------|-------|
 | PD Home | `/app` (pd role) | `components/dashboards/ProfessionalDevelopmentHome.tsx` | ✅ Implemented | Session pipeline, reviews, cohort health |
-| Teacher Home | `/app` (teacher role) | `PLEHome` (wrong) | ❌ **GAP** | Teacher should NOT see PLE |
-| Command Center | `/app/command-center` | catch-all placeholder | ⚠️ Placeholder | — |
-| Cohorts | `/app/cohorts` | catch-all placeholder | ⚠️ Placeholder | — |
-| Pickups | `/app/pickups` | catch-all placeholder | ⚠️ Placeholder | Feature flag `NEXT_PUBLIC_ENABLE_PICKUP` exists |
-| Reviews | `/app/reviews` | catch-all placeholder | ⚠️ Placeholder | — |
-| Builder | `/app/builder` | catch-all placeholder | ⚠️ Placeholder | — |
+| Teacher Home | `/app` (teacher role) | `components/dashboards/TeacherHome.tsx` | ✅ Implemented | Command Center summary, cohorts, review queue snapshot |
+| Command Center | `/app/command-center` | `components/command-center/CommandCenterDashboard.tsx` | ✅ Implemented | Teacher/PD operational dashboard (mock data) |
+| Cohorts | `/app/cohorts` | `components/cohorts/CohortsList.tsx` | ✅ Implemented | Cohort list with learner counts (mock data) |
+| Pickups | `/app/pickups` | `components/pickups/PickupsPanel.tsx` | ✅ Implemented | Flag-gated (`NEXT_PUBLIC_ENABLE_PICKUP`); disabled message when flag off |
+| Reviews | `/app/reviews` | `components/reviews/ReviewQueue.tsx` | ✅ Implemented | Artifact review queue, verdict submission UI (mock data) |
+| Builder | `/app/builder` | `components/builder/BuilderWorkspace.tsx` | ✅ Implemented | Mission/cohort builder (mock data) |
 
 ### Admin Screens
 
 | Screen | Route | Component | Status | Notes |
 |--------|-------|-----------|--------|-------|
-| Admin Home | `/app` (admin role) | `PLEHome` (wrong) | ❌ **GAP** | Admin should NOT see PLE |
+| Admin Home | `/app` (admin role) | `components/dashboards/AdminHome.tsx` | ✅ Implemented | Standards summary, evidence volume, export readiness |
 | Evidence | `/app/evidence` | `components/evidence/AdminEvidenceView.tsx` | ✅ Implemented | Ledger record viewer (flag-gated) |
 | Exports | `/app/exports` | `components/exports/ExportReadiness.tsx` | ✅ Implemented | Readiness summary |
-| Standards | `/app/standards` | catch-all placeholder | ⚠️ Placeholder | — |
+| Standards | `/app/standards` | `components/standards/StandardsRegistry.tsx` | ✅ Implemented | Reads DEFAULT_STANDARDS; admin view of standards registry |
 
 ### System / Shared Screens
 
@@ -308,16 +306,15 @@ Defined in `lib/nav/items.ts`. Every role gets its own `readonly NavItem[]` — 
 | student_independent | 9 | primary-nav, page-title, mission-draft, mission-actions, studio-entry, artifact-save, verification-summary, help-menu, core-mount |
 | student_enrolled | 4 | primary-nav, page-title, help-menu, core-mount |
 | adult_learner | 5 | primary-nav, page-title, mission-draft, studio-entry, help-menu |
-| teacher | 3 | primary-nav, page-title, help-menu |
+| teacher | 8 | primary-nav, page-title, command-center, cohorts, reviews, builder, pickups, help-menu |
 | professional_development | 3 | primary-nav, page-title, help-menu |
-| admin | 3 | primary-nav, page-title, help-menu |
+| admin | 7 | primary-nav, page-title, standards, evidence, exports, data-retention, help-menu |
 
 **Flag-gated steps:**
 - `core-mount` step (student_independent, student_enrolled): requires `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT=true`
 
 **Tour gaps:**
-- Teacher and admin tours have only 3 generic steps — no role-specific content
-- No tour steps for command-center, cohorts, reviews, builder, standards screens
+- professional_development tour still has only 3 generic steps — no role-specific content for command-center, cohorts, reviews, builder screens
 
 ---
 
@@ -331,7 +328,7 @@ All flags are read at module-load time from `process.env`. Default to `false` if
 |------|---------|---------|--------|
 | `NEXT_PUBLIC_ENABLE_LEDGER` | false | Enables local ledger persistence in Studio/Credentials/Evidence | ✅ Wired |
 | `NEXT_PUBLIC_ENABLE_MCP` | false | MCP integration | ⚠️ **GAP** — flag exists, no implementation |
-| `NEXT_PUBLIC_ENABLE_PICKUP` | false | Pickups feature in facilitator nav | ⚠️ **GAP** — Pickups is placeholder only |
+| `NEXT_PUBLIC_ENABLE_PICKUP` | false | Pickups feature in facilitator nav | ✅ Wired — PickupsPanel renders when on, disabled message when off |
 | `NEXT_PUBLIC_ENABLE_OFFLINE` | false | Offline mode | ⚠️ **GAP** — flag exists, no implementation |
 | `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT` | false | Shows legacy core bridge at `/app/core` | ✅ Wired |
 
@@ -341,7 +338,7 @@ All flags are read at module-load time from `process.env`. Default to `false` if
 |------|---------|---------|--------|
 | `NEXT_PUBLIC_ENABLE_RUNTIME` | false | Activates runtime event dispatch (mission lifecycle) | ✅ Wired |
 | `NEXT_PUBLIC_ENABLE_LEDGER` | false | (shared with Phase 1) | ✅ Wired |
-| `NEXT_PUBLIC_ENABLE_DB_LEDGER` | false | DB-backed ledger via SQLite adapter | ⚠️ **GAP** — contract exists, no SQLite wiring |
+| `NEXT_PUBLIC_ENABLE_DB_LEDGER` | false | DB-backed ledger via SQLite adapter | ✅ Wired — `shouldUseDbLedger()` called in StudioWorkspace, CredentialsSummary, AdminEvidenceView |
 | `NEXT_PUBLIC_ENABLE_STANDARDS_VERIFIER` | false | Keyword-based standards verification in Studio | ✅ Wired |
 
 ### Phase 4 Flags (env only, no featureFlags.ts constant group)
@@ -357,116 +354,135 @@ All flags are read at module-load time from `process.env`. Default to `false` if
 
 This section documents every known gap between the product spec and the current implementation, ranked by severity.
 
-### 🔴 Critical Gaps (wrong UX / broken role experience)
+### ✅ Resolved Critical Gaps (wrong UX / broken role experience)
 
 #### GAP-01: Teacher home shows student PLE UI
 - **File:** `app/app/page.tsx:20`
-- **Issue:** `teacher` role has no branch in home page logic. Falls through to `<PLEHome />` — a student screen with mission drafts and studio entry.
+- **Issue:** **RESOLVED** ✅ `teacher` role has no branch in home page logic. Falls through to `<PLEHome />` — a student screen with mission drafts and studio entry.
 - **Expected:** A `TeacherHome` dashboard component showing Command Center summary, active cohorts, review queue snapshot.
 - **Fix:** Add `if (role === "teacher") return <TeacherHome />;` and create `components/dashboards/TeacherHome.tsx`.
+- **Resolution:** `components/dashboards/TeacherHome.tsx` implemented; `app/app/page.tsx` dispatches teacher role to it.
 
 #### GAP-02: Admin home shows student PLE UI
 - **File:** `app/app/page.tsx:20`
-- **Issue:** `admin` role has no branch in home page logic. Falls through to `<PLEHome />`.
+- **Issue:** **RESOLVED** ✅ `admin` role has no branch in home page logic. Falls through to `<PLEHome />`.
 - **Expected:** An `AdminHome` dashboard component showing standards summary, evidence volume, export readiness.
 - **Fix:** Add `if (role === "admin") return <AdminHome />;` and create `components/dashboards/AdminHome.tsx`.
+- **Resolution:** `components/dashboards/AdminHome.tsx` implemented; `app/app/page.tsx` dispatches admin role to it.
 
-### 🟠 High-Priority Gaps (placeholder screens with no content)
+### ✅ Resolved High-Priority Gaps (placeholder screens with no content)
 
 #### GAP-03: Missions screen — no implementation
 - **Route:** `/app/missions`
-- **Current:** Generic catch-all placeholder ("Placeholder for the Missions experience.")
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder ("Placeholder for the Missions experience.")
 - **Expected:** Mission list, launch flow, mission lifecycle actions (start, submit).
 - **Missing:** `components/missions/` directory, dedicated `app/app/missions/page.tsx`.
+- **Resolution:** `components/missions/MissionsList.tsx` implemented with lifecycle actions; `app/app/missions/page.tsx` dedicated route; `/api/missions` API route added.
 
 #### GAP-04: Portfolio screen — no implementation
 - **Route:** `/app/portfolio`
-- **Current:** Generic catch-all placeholder.
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder.
 - **Expected:** Evidence portfolio view, artifact gallery, credential progress.
 - **Missing:** `components/portfolio/` directory, dedicated `app/app/portfolio/page.tsx`.
+- **Resolution:** `components/portfolio/PortfolioGallery.tsx` implemented; `app/app/portfolio/page.tsx` dedicated route.
 
 #### GAP-05: Command Center — no implementation
 - **Route:** `/app/command-center`
-- **Current:** Generic catch-all placeholder.
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder.
 - **Expected:** Teacher/PD operational dashboard (active cohorts, pickup queue, review backlog).
 - **Missing:** `components/command-center/` directory, dedicated `app/app/command-center/page.tsx`.
+- **Resolution:** `components/command-center/CommandCenterDashboard.tsx` implemented (mock data); dedicated page route added.
 
 #### GAP-06: Cohorts — no implementation
 - **Route:** `/app/cohorts`
-- **Current:** Generic catch-all placeholder.
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder.
 - **Expected:** Cohort list with learner counts, assignment controls.
 - **Missing:** `components/cohorts/` directory.
+- **Resolution:** `components/cohorts/CohortsList.tsx` implemented (mock data); dedicated page route added.
 
 #### GAP-07: Reviews — no implementation
 - **Route:** `/app/reviews`
-- **Current:** Generic catch-all placeholder.
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder.
 - **Expected:** Artifact review queue, verdict submission (approve/return/flag).
 - **Missing:** `components/reviews/` directory.
+- **Resolution:** `components/reviews/ReviewQueue.tsx` implemented with approve/return/flag verdict UI (mock data); dedicated page route added.
 
 #### GAP-08: Standards — no implementation
 - **Route:** `/app/standards`
-- **Current:** Generic catch-all placeholder.
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder.
 - **Expected:** Standards registry admin view, plugin config.
 - **Missing:** `components/standards/` directory.
+- **Resolution:** `components/standards/StandardsRegistry.tsx` implemented; reads `DEFAULT_STANDARDS` from `localVerifier.ts`; dedicated page route added. Note: standards registry is still read-only in admin UI — see GAP-28.
 
 #### GAP-09: Builder — no implementation
 - **Route:** `/app/builder`
-- **Current:** Generic catch-all placeholder. Feature flag `NEXT_PUBLIC_ENABLE_PICKUP` exists but is unrelated.
+- **Current:** **RESOLVED** ✅ Generic catch-all placeholder. Feature flag `NEXT_PUBLIC_ENABLE_PICKUP` exists but is unrelated.
 - **Expected:** Mission/cohort builder for facilitators.
 - **Missing:** `components/builder/` directory.
+- **Resolution:** `components/builder/BuilderWorkspace.tsx` implemented (mock data); dedicated page route added.
 
 #### GAP-10: Pickups — no implementation behind flag
 - **Route:** `/app/pickups`
-- **Current:** Generic placeholder. `NEXT_PUBLIC_ENABLE_PICKUP` flag defined but not checked anywhere in pickups route.
+- **Current:** **RESOLVED** ✅ Generic placeholder. `NEXT_PUBLIC_ENABLE_PICKUP` flag defined but not checked anywhere in pickups route.
 - **Expected:** When flag on: pickup assignment UI. When flag off: disabled message.
 - **Missing:** `components/pickups/` directory, flag gate in route.
+- **Resolution:** `components/pickups/PickupsPanel.tsx` implemented with `NEXT_PUBLIC_ENABLE_PICKUP` flag gate; dedicated page route added.
 
 ### 🟡 Medium-Priority Gaps (contracts exist, no wiring)
 
 #### GAP-11: DB Ledger implemented but never selected
 - **File:** `lib/ledger/dbAdapter.ts`
-- **Issue:** `createDbLedgerAdapter()` is a **fully functional SQLite implementation** — it opens a real DB file, creates the `ledger_records` table, and has prepared statements for `readAll`, `upsert` (with `ON CONFLICT`), and `findByMission`. A `shouldUseDbLedger()` helper also exists and reads the flag. However, no consumer ever calls `shouldUseDbLedger()` — `StudioWorkspace`, `CredentialsSummary`, and `AdminEvidenceView` all import `localLedgerAdapter` directly and unconditionally. Enabling `NEXT_PUBLIC_ENABLE_DB_LEDGER=true` currently has no effect.
+- **Issue:** **RESOLVED** ✅ `createDbLedgerAdapter()` is a **fully functional SQLite implementation** — it opens a real DB file, creates the `ledger_records` table, and has prepared statements for `readAll`, `upsert` (with `ON CONFLICT`), and `findByMission`. A `shouldUseDbLedger()` helper also exists and reads the flag. However, no consumer ever calls `shouldUseDbLedger()` — `StudioWorkspace`, `CredentialsSummary`, and `AdminEvidenceView` all import `localLedgerAdapter` directly and unconditionally. Enabling `NEXT_PUBLIC_ENABLE_DB_LEDGER=true` currently has no effect.
 - **Fix:** In each ledger consumer, replace the direct `localLedgerAdapter` import with a conditional: `shouldUseDbLedger() ? createDbLedgerAdapter() : localLedgerAdapter`.
+- **Resolution:** `shouldUseDbLedger()` now called in `StudioWorkspace`, `CredentialsSummary`, and `AdminEvidenceView`; `/api/ledger/records` API route added.
 
 #### GAP-12: Dead code in catch-all for `/app/core` and `/app/forbidden`
 - **File:** `app/app/[[...slug]]/page.tsx:40-88`
-- **Issue:** The catch-all contains explicit handling blocks for `/app/core` (static text, lines 68-88) and `/app/forbidden` (lines 40-42), but **dedicated pages take Next.js App Router priority**: `app/app/core/page.tsx` and `app/app/forbidden/page.tsx` both exist and are the actual handlers. The catch-all branches are unreachable dead code.
+- **Issue:** **RESOLVED** ✅ The catch-all contains explicit handling blocks for `/app/core` (static text, lines 68-88) and `/app/forbidden` (lines 40-42), but **dedicated pages take Next.js App Router priority**: `app/app/core/page.tsx` and `app/app/forbidden/page.tsx` both exist and are the actual handlers. The catch-all branches are unreachable dead code.
 - **Note:** `CoreMountRuntime.tsx` and `CoreMountRuntimeLoader.tsx` ARE properly wired — `app/app/core/page.tsx` imports and uses them correctly via `createCoreMountRuntime()`.
 - **Fix:** Remove the `/app/core` and `/app/forbidden` handling blocks from the catch-all to eliminate confusion.
+- **Resolution:** Dead `/core` and `/forbidden` branches removed from `app/app/[[...slug]]/page.tsx`.
 
 #### GAP-13: MCP integration missing
 - **Issue:** `NEXT_PUBLIC_ENABLE_MCP=true` flag has no corresponding implementation, component, API route, or UI entry point.
 - **Fix:** Define the MCP integration contract before implementation; create a dedicated ticket.
+- **Status:** Still open — stub only.
 
 #### GAP-14: Offline mode missing
 - **Issue:** `NEXT_PUBLIC_ENABLE_OFFLINE=true` flag has no corresponding implementation (service worker, offline ledger sync, etc.).
 - **Fix:** Define the offline contract before implementation; create a dedicated ticket.
+- **Status:** Still open — stub only.
 
 #### GAP-22: LLM routing layer never instantiated
 - **Files:** `lib/llm/router.ts`, `lib/llm/providers/localOllama.ts`, `lib/llm/providers/cloudManaged.ts`
-- **Issue:** `ModelRouter`, `LocalOllamaProvider`, and `CloudManagedProvider` are fully typed and implemented but **no API route or component ever instantiates or calls them**. The entire LLM routing layer is a disconnected island — enabling `NEXT_PUBLIC_ENABLE_LOCAL_OLLAMA` or configuring AWS does nothing visible in the app.
+- **Issue:** **RESOLVED** ✅ `ModelRouter`, `LocalOllamaProvider`, and `CloudManagedProvider` are fully typed and implemented but **no API route or component ever instantiates or calls them**. The entire LLM routing layer is a disconnected island — enabling `NEXT_PUBLIC_ENABLE_LOCAL_OLLAMA` or configuring AWS does nothing visible in the app.
 - **Sub-issue:** `LocalOllamaProvider.infer()` calls `buildFallbackResponse()` with `usedFallback: false` even when the provider is disabled. This means if `ModelRouter` were ever wired up, a disabled Ollama provider would appear to "succeed," preventing the router from triggering cloud fallback.
 - **Fix:** Create an API route (e.g. `app/api/infer/route.ts`) that instantiates `ModelRouter` with the configured providers, then wire it to a UI entry point (e.g. studio AI assist). Fix `LocalOllamaProvider` to return `usedFallback: true` when disabled.
+- **Resolution:** `ModelRouter` instantiated in `/api/inference` route; `LocalOllamaProvider` fixed to return `usedFallback: true` when disabled.
 
 #### GAP-23: Orchestration queue never instantiated
 - **Files:** `lib/orchestration/queueAdapter.ts`, `lib/orchestration/workerRunner.ts`, `lib/orchestration/stateMachine.ts`
-- **Issue:** `InMemoryQueueAdapter` and `runWorkerLifecycle` are fully implemented (priority sorting, idempotency keying, retry logic, deterministic state machine) but **no API route or background job ever creates an instance or enqueues work**. The orchestration system runs nowhere.
+- **Issue:** **RESOLVED** ✅ `InMemoryQueueAdapter` and `runWorkerLifecycle` are fully implemented (priority sorting, idempotency keying, retry logic, deterministic state machine) but **no API route or background job ever creates an instance or enqueues work**. The orchestration system runs nowhere.
 - **Fix:** Create at minimum an API route that accepts job submissions and a worker invocation path. Long-term: back the adapter with SQS as contracted in `infra/aws-baseline.json`.
+- **Resolution:** `InMemoryQueueAdapter` and `runWorkerLifecycle` wired in `/api/orchestration/worker-run` route.
 
 #### GAP-24: Audit log writes to disk — broken in serverless
 - **File:** `lib/observability/audit.ts`
-- **Issue:** `recordAuditEvent()` uses `appendFileSync` to write NDJSON to `docs/status/audit-log.ndjson` via a **synchronous filesystem write** to a project-relative path. In Vercel's serverless runtime the project directory is read-only — these writes fail silently, and any writes that do succeed on a local/container run are ephemeral and lost on the next deploy. The audit trail (federation events, webhook events) is never actually persisted in production.
+- **Issue:** **RESOLVED** ✅ `recordAuditEvent()` uses `appendFileSync` to write NDJSON to `docs/status/audit-log.ndjson` via a **synchronous filesystem write** to a project-relative path. In Vercel's serverless runtime the project directory is read-only — these writes fail silently, and any writes that do succeed on a local/container run are ephemeral and lost on the next deploy. The audit trail (federation events, webhook events) is never actually persisted in production.
 - **Fix:** Replace `appendFileSync` with an append to a durable store — at minimum a writable path like `/tmp` for local dev, and a real append destination (DynamoDB, logging service, or Vercel Log Drains) for production.
+- **Resolution:** `audit.ts` now writes to `/tmp` in dev and uses `console.log` in production (serverless-safe).
 
 #### GAP-25: Clerk webhook handler discards event payload
 - **File:** `app/api/webhooks/clerk/route.ts`
-- **Issue:** The HMAC signature verification is correctly implemented using `timingSafeEqual`. However, after accepting the verified webhook, the handler **does nothing with the body** — it reads it only for signature verification, then returns `{ ok: true }`. No `user.created`, `user.updated`, or `session.created` events are processed. Role changes in Clerk do not propagate to any app-side record or cache.
+- **Issue:** **RESOLVED** ✅ The HMAC signature verification is correctly implemented using `timingSafeEqual`. However, after accepting the verified webhook, the handler **does nothing with the body** — it reads it only for signature verification, then returns `{ ok: true }`. No `user.created`, `user.updated`, or `session.created` events are processed. Role changes in Clerk do not propagate to any app-side record or cache.
 - **Fix:** Parse the webhook event type and payload, then handle relevant events (e.g. sync `publicMetadata.role` changes to a server-side store, invalidate role caches).
+- **Resolution:** Webhook handler now parses and handles `user.created`, `user.updated`, and `session.created` event types.
 
 #### GAP-26: Standards plugin architecture defined but bypassed
 - **File:** `lib/standards/contracts/plugins.ts`
-- **Issue:** `createRulePlugin()` and `runStandardsPlugins()` implement a complete plugin dispatch system for standards verification. However, `StudioWorkspace` calls `verifyArtifactText()` directly from `lib/standards/verifier/localVerifier.ts`, which internally calls `keywordStandardsRule` without going through the plugin registry. The plugin system is fully coded but never invoked anywhere.
+- **Issue:** **RESOLVED** ✅ `createRulePlugin()` and `runStandardsPlugins()` implement a complete plugin dispatch system for standards verification. However, `StudioWorkspace` calls `verifyArtifactText()` directly from `lib/standards/verifier/localVerifier.ts`, which internally calls `keywordStandardsRule` without going through the plugin registry. The plugin system is fully coded but never invoked anywhere.
 - **Fix:** Wire `runStandardsPlugins()` into the verification call in `StudioWorkspace`, replacing the direct `verifyArtifactText()` call, so that additional plugins can be registered and composed.
+- **Resolution:** `runStandardsPlugins()` now called in `StudioWorkspace` instead of `verifyArtifactText()` directly.
 
 ### 🟢 Low-Priority Gaps (polish / UX improvements)
 
@@ -474,30 +490,35 @@ This section documents every known gap between the product spec and the current 
 - **File:** `app/page.tsx`
 - **Issue:** "Teacher Login" and "Admin Info" both route to `/sign-in`. No role-prefill or separate onboarding paths.
 - **Expected:** Teacher/admin CTAs should either pre-set a role hint or route to dedicated onboarding.
+- **Status:** Partially improved by the landing page redesign; full role-prefill path not yet implemented.
 
 #### GAP-16: Teacher & admin onboarding tours are minimal
 - **File:** `lib/onboarding/tourSteps.ts`
-- **Issue:** Teacher and admin tours have only 3 generic steps (nav, home, help). No steps for command-center, cohorts, reviews, standards.
+- **Issue:** **RESOLVED** ✅ Teacher and admin tours have only 3 generic steps (nav, home, help). No steps for command-center, cohorts, reviews, standards.
 - **Fix:** Add role-specific steps once those screens exist.
+- **Resolution:** Teacher tour expanded to 8 steps (primary-nav, page-title, command-center, cohorts, reviews, builder, pickups, help-menu); admin tour expanded to 7 steps (primary-nav, page-title, standards, evidence, exports, data-retention, help-menu).
 
 #### GAP-17: student_enrolled org check not enforced
 - **File:** `app/app/layout.tsx:32`
 - **Issue:** `student_enrolled` role is not in the org-required check (only teacher, professional_development, admin). Enrolled students belong to classrooms — they may need org validation too.
 - **Fix:** Confirm product decision; if org required for enrolled students, add to check.
+- **Status:** Still open — pending product decision.
 
 #### GAP-18: React hook dependency warnings
 - **Files:** `components/ple/PLEHome.tsx`, `components/studio/StudioWorkspace.tsx`
-- **Issue:** 2 `react-hooks/exhaustive-deps` ESLint warnings (non-blocking but add review noise).
+- **Issue:** **RESOLVED** ✅ 2 `react-hooks/exhaustive-deps` ESLint warnings (non-blocking but add review noise).
 - **Fix:** Wrap dependent values in `useCallback`/`useMemo` as appropriate.
+- **Resolution:** `useCallback`/`useMemo` applied in both `PLEHome` and `StudioWorkspace`; lint warnings cleared.
 
 #### GAP-19: Legacy Vite core (`src/`) migration incomplete
 - **Files:** `src/App.tsx`, `src/main.tsx`, `src/services/geminiService.ts`
 - **Issue:** The Vite core exists in `src/` and `vite.config.ts` is present but the migration path to Next.js routes is only partially defined.
 - **Fix:** Screen-by-screen migration per Phase 2 cutover doc (`docs/phase2-cutover.md`).
+- **Status:** Still open — ongoing migration work.
 
 #### GAP-20: `docs/qa/role-matrix.md` incomplete — 6 routes missing
 - **File:** `docs/qa/role-matrix.md`
-- **Issue:** The QA matrix only documents 12 routes, but `lib/auth/routeAccess.ts` defines 17 routes. Six are absent from the matrix:
+- **Issue:** **RESOLVED** ✅ The QA matrix only documents 12 routes, but `lib/auth/routeAccess.ts` defines 17 routes. Six are absent from the matrix:
   - `/app/portfolio`
   - `/app/pickups`
   - `/app/builder`
@@ -505,31 +526,36 @@ This section documents every known gap between the product spec and the current 
   - `/app/exports`
   - `/app/forbidden`
 - **Fix:** Add the 6 missing rows to `docs/qa/role-matrix.md` and run `verify:role-routes` to confirm parity.
+- **Resolution:** `docs/qa/role-matrix.md` updated with all 21+ routes including the previously missing 6.
 
 #### GAP-21: No sign-out button in AppShell
 - **File:** `components/app-shell/AppShell.tsx`
-- **Issue:** The shell header shows role label and user name but has no sign-out link or button. Users authenticated via Clerk have no in-app path to log out. The Help `<details>` menu only contains "Restart tour". Signing out currently requires the user to navigate to `/sign-in` manually or clear their session.
+- **Issue:** **RESOLVED** ✅ The shell header shows role label and user name but has no sign-out link or button. Users authenticated via Clerk have no in-app path to log out. The Help `<details>` menu only contains "Restart tour". Signing out currently requires the user to navigate to `/sign-in` manually or clear their session.
 - **Fix:** Add a Clerk `<SignOutButton>` (or equivalent redirect to `/sign-in`) inside the Help menu or as a standalone header control.
+- **Resolution:** Clerk `<SignOutButton>` added to the Help menu in `AppShell`.
 
 #### GAP-27: Data retention and deletion hooks never triggered
 - **Files:** `lib/ledger/adapter.ts`, `lib/runtime/engine/store.ts`
-- **Issue:** Four data lifecycle functions exist but nothing calls them:
+- **Issue:** **RESOLVED** ✅ Four data lifecycle functions exist but nothing calls them:
   - `purgeLedgerRecordsBefore(cutoffIso)` — time-based ledger retention
   - `deleteLedgerRecordsByLearner(learnerId)` — GDPR-style learner deletion from ledger
   - `purgeRuntimeStateBefore(cutoffIso)` — runtime state retention
   - `deleteRuntimeStateByLearner(learnerId)` — GDPR-style runtime state deletion
   No UI, API endpoint, admin screen, or scheduled job invokes any of these. The data retention/right-to-erasure mechanism is implemented but completely unconnected.
 - **Fix:** Wire to an admin API endpoint and/or an admin UI control in the Standards or Evidence screens.
+- **Resolution:** `/api/admin/data-retention/*` routes added, wiring all 4 retention/deletion functions.
 
 #### GAP-28: Standards registry is hardcoded — no admin path to configure
 - **File:** `lib/standards/verifier/localVerifier.ts`
 - **Issue:** `DEFAULT_STANDARDS` contains exactly 2 hardcoded standards (`rw.mission.clarity`, `rw.artifact.reflection`) with keyword sets. The `/app/standards` admin screen is a placeholder. There is no way for an admin to add, modify, disable, or weight standards through the UI. The plugin architecture (`plugins.ts`) exists but is also bypassed (see GAP-26).
 - **Fix:** Implement the Standards admin screen to read/write a standards registry; connect it to the verifier and plugin system.
+- **Status:** Partially improved — `StandardsRegistry` admin UI now displays `DEFAULT_STANDARDS`; the registry is still read-only (hardcoded in `localVerifier.ts`). Full write/configure path not yet implemented.
 
 #### GAP-29: Federation dispatch is a stub — tasks accepted but never routed
 - **File:** `app/api/federation/route.ts`
-- **Issue:** The federation POST endpoint validates the flag, validates the task envelope, and returns `{ accepted: true }` — but it never actually dispatches the task to any agent. No agent registry lookup occurs, no capability matching runs, `buildCapabilityIndex` from `registryContracts.ts` is never called, and there is no GET endpoint for agent discovery. The federation control plane accepts work but does nothing with it.
+- **Issue:** **RESOLVED** ✅ The federation POST endpoint validates the flag, validates the task envelope, and returns `{ accepted: true }` — but it never actually dispatches the task to any agent. No agent registry lookup occurs, no capability matching runs, `buildCapabilityIndex` from `registryContracts.ts` is never called, and there is no GET endpoint for agent discovery. The federation control plane accepts work but does nothing with it.
 - **Fix:** Implement agent registry persistence, capability routing via `buildCapabilityIndex`, and actual task dispatch. Add a GET endpoint for agent discovery.
+- **Resolution:** `/api/federation` POST now dispatches via `buildCapabilityIndex` for capability routing; GET endpoint added for agent discovery.
 
 ---
 
@@ -560,8 +586,8 @@ This section documents every known gap between the product spec and the current 
 | `components/ple/PLEHome.tsx` | Student learner home (si, se) |
 | `components/dashboards/AdultLearnerHome.tsx` | Adult learner home |
 | `components/dashboards/ProfessionalDevelopmentHome.tsx` | PD facilitator home |
-| *(missing)* | TeacherHome — **GAP-01** |
-| *(missing)* | AdminHome — **GAP-02** |
+| `components/dashboards/TeacherHome.tsx` | Teacher home (resolved GAP-01) |
+| `components/dashboards/AdminHome.tsx` | Admin home (resolved GAP-02) |
 
 ### Core App Routes
 
@@ -570,7 +596,7 @@ This section documents every known gap between the product spec and the current 
 | `app/page.tsx` | Public landing page |
 | `app/app/layout.tsx` | Protected shell layout (auth check, role extraction, nav, onboarding) |
 | `app/app/page.tsx` | Home route — dispatches to role-specific dashboard |
-| `app/app/[[...slug]]/page.tsx` | Catch-all for unimplemented routes (placeholder + profile inline) — has dead branches for `/app/core` and `/app/forbidden` (see GAP-12) |
+| `app/app/[[...slug]]/page.tsx` | Catch-all for unimplemented routes (placeholder + profile inline) — dead branches for `/app/core` and `/app/forbidden` removed (GAP-12 resolved) |
 | `app/app/core/page.tsx` | Core mount route — `createCoreMountRuntime()` + `CoreMountRuntimeLoader` (dedicated, takes App Router priority) |
 | `app/app/forbidden/page.tsx` | In-app 403 route — renders `ForbiddenPanel` directly (dedicated page) |
 | `app/app/studio/page.tsx` | Studio route (role guard + StudioWorkspace) |
@@ -587,7 +613,7 @@ This section documents every known gap between the product spec and the current 
 | `lib/runtime/engine/store.ts` | `readRuntimeState()`, `writeRuntimeState()`, `dispatchRuntimeEvent()` |
 | `lib/runtime/engine/reducer.ts` | Event reducer for mission/artifact/verification lifecycle |
 | `lib/ledger/adapter.ts` | Local in-memory ledger with localStorage persistence |
-| `lib/ledger/dbAdapter.ts` | SQLite adapter contract (not yet wired — GAP-11) |
+| `lib/ledger/dbAdapter.ts` | SQLite adapter — now wired via `shouldUseDbLedger()` in consumers (GAP-11 resolved) |
 | `lib/coreState/session.ts` | CoreSessionState merge functions |
 
 ### Onboarding
@@ -741,7 +767,7 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-25 — Second verification pass, full code-level inspection of all lib/ and api/ files.*
-*Corrections: GAP-11 revised (SQLite adapter is fully implemented, wiring gap only); GAP-12 revised (Core Mount IS wired via dedicated page).*
-*New gaps added: GAP-22 (LLM router disconnected), GAP-23 (orchestration queue disconnected), GAP-24 (audit log broken in serverless), GAP-25 (webhook handler discards payload), GAP-26 (standards plugin bypassed), GAP-27 (retention hooks unreachable), GAP-28 (standards hardcoded), GAP-29 (federation dispatch stub).*
+*Last updated: 2026-02-26 — Gap resolution pass: 22 of 29 gaps marked resolved.*
+*Resolved in this pass: GAP-01, GAP-02, GAP-03, GAP-04, GAP-05, GAP-06, GAP-07, GAP-08, GAP-09, GAP-10, GAP-11, GAP-12, GAP-16, GAP-18, GAP-20, GAP-21, GAP-22, GAP-23, GAP-24, GAP-25, GAP-26, GAP-27, GAP-29.*
+*Still open: GAP-13 (MCP stub), GAP-14 (offline stub), GAP-15 (landing CTA differentiation, partial), GAP-17 (enrolled org check, pending product decision), GAP-19 (Vite migration, ongoing), GAP-28 (standards registry hardcoded, partial).*
 *Branch: `claude/gap-analysis-user-roles-RHg64`*
