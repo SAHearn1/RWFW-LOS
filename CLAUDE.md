@@ -767,7 +767,7 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-26 — Gap resolution pass: 22 of 29 gaps marked resolved.*
+*Last updated: 2026-02-26 — Sprint 6 complete: 8/8 integration tickets closed. Gap resolution: 23 of 29 gaps resolved (GAP-26 fixed in Sprint 6).*
 *Resolved in this pass: GAP-01, GAP-02, GAP-03, GAP-04, GAP-05, GAP-06, GAP-07, GAP-08, GAP-09, GAP-10, GAP-11, GAP-12, GAP-16, GAP-18, GAP-20, GAP-21, GAP-22, GAP-23, GAP-24, GAP-25, GAP-26, GAP-27, GAP-29.*
 *Still open: GAP-13 (MCP stub), GAP-14 (offline stub), GAP-15 (landing CTA differentiation, partial), GAP-17 (enrolled org check, pending product decision), GAP-19 (Vite migration, ongoing), GAP-28 (standards registry hardcoded, partial).*
 *Branch: `claude/gap-analysis-user-roles-RHg64`*
@@ -784,14 +784,14 @@ A change is done only when:
 
 | Ticket | Title | Lane | Owner Files | Status |
 |--------|-------|------|-------------|--------|
-| #300 | Wire CohortsList to real `/api/cohorts` | C | `components/cohorts/CohortsList.tsx` | 🟡 Executing |
-| #301 | DB ledger schema: add 7 missing columns | C | `lib/ledger/dbAdapter.ts` | 🟡 Executing |
-| #302 | Standards admin CRUD API + SQLite persistence | C | `lib/standards/adapter.ts` (new), `app/api/admin/standards/route.ts` (new), `components/standards/StandardsRegistry.tsx` | 🟡 Executing |
-| #303 | Fix GAP-26: wire `runStandardsPlugins` in Studio | C | `components/studio/StudioWorkspace.tsx`, `lib/standards/contracts/plugins.ts` | 🟡 Executing |
-| #304 | Wire AES-GCM encryption into ledger + runtime adapters | C | `lib/ledger/adapter.ts`, `lib/runtime/engine/store.ts` | 🟡 Executing |
-| #305 | Session timer: emit TRACE phase events to runtime store | C | `lib/session/timer.ts`, `lib/session/events.ts` (new) | 🟡 Executing |
-| #306 | Orchestration executor: implement job dispatch | D | `app/api/orchestration/worker-run/route.ts`, `lib/orchestration/executors.ts` (new) | 🟡 Executing |
-| #307 | Federation: complete agent task dispatch + persistence | D | `app/api/federation/route.ts`, `lib/federation/dispatch.ts` (new) | 🟡 Executing |
+| #300 | Wire CohortsList to real `/api/cohorts` | C | `components/cohorts/CohortsList.tsx` | ✅ Done |
+| #301 | DB ledger schema: add 7 missing columns | C | `lib/ledger/dbAdapter.ts` | ✅ Done |
+| #302 | Standards admin CRUD API + SQLite persistence | C | `lib/standards/adapter.ts` (new), `app/api/admin/standards/route.ts` (new), `components/standards/StandardsRegistry.tsx` | ✅ Done |
+| #303 | Fix GAP-26: wire `runStandardsPlugins` in Studio | C | `components/studio/StudioWorkspace.tsx`, `lib/standards/contracts/plugins.ts` | ✅ Done |
+| #304 | Wire AES-GCM encryption into ledger + runtime adapters | C | `lib/ledger/adapter.ts`, `lib/runtime/engine/store.ts` | ✅ Done |
+| #305 | Session timer: emit TRACE phase events to runtime store | C | `lib/session/timer.ts`, `lib/session/events.ts` (new) | ✅ Done |
+| #306 | Orchestration executor: implement job dispatch | D | `app/api/orchestration/worker-run/route.ts`, `lib/orchestration/executors.ts` (new) | ✅ Done |
+| #307 | Federation: complete agent task dispatch + persistence | D | `app/api/federation/route.ts`, `lib/federation/dispatch.ts` (new) | ✅ Done |
 
 ### Swarm Overlap Verification
 
