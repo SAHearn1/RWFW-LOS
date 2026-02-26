@@ -8,6 +8,13 @@ const appText = [
   readFileSync("components/core-mount/CoreMountRuntime.tsx", "utf8"),
   readFileSync("components/credentials/CredentialsSummary.tsx", "utf8"),
   readFileSync("components/evidence/AdminEvidenceView.tsx", "utf8"),
+  readFileSync("components/command-center/CommandCenterDashboard.tsx", "utf8"),
+  readFileSync("components/cohorts/CohortsList.tsx", "utf8"),
+  readFileSync("components/reviews/ReviewQueue.tsx", "utf8"),
+  readFileSync("components/builder/BuilderWorkspace.tsx", "utf8"),
+  readFileSync("components/pickups/PickupsPanel.tsx", "utf8"),
+  readFileSync("components/standards/StandardsRegistry.tsx", "utf8"),
+  readFileSync("components/super-admin/InstitutionsPanel.tsx", "utf8"),
   readFileSync("app/app/[[...slug]]/page.tsx", "utf8")
 ].join("\n");
 
