@@ -805,7 +805,7 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-26 — Sprint 6 complete: 8/8 integration tickets closed. Gap resolution: 23 of 29 gaps resolved (GAP-26 fixed in Sprint 6).*
+*Last updated: 2026-02-26 — Sprint 7 complete: 7/7 live-data wiring tickets closed. Cumulative gap resolution: 29 of 35 gaps resolved. Remaining open: GAP-13 (MCP), GAP-14 (offline), GAP-17 (enrolled org), GAP-19 (Vite migration) — all deferred by contract/product decision.*
 *Resolved in this pass: GAP-01, GAP-02, GAP-03, GAP-04, GAP-05, GAP-06, GAP-07, GAP-08, GAP-09, GAP-10, GAP-11, GAP-12, GAP-16, GAP-18, GAP-20, GAP-21, GAP-22, GAP-23, GAP-24, GAP-25, GAP-26, GAP-27, GAP-29.*
 *Still open: GAP-13 (MCP stub), GAP-14 (offline stub), GAP-15 (landing CTA differentiation, partial), GAP-17 (enrolled org check, pending product decision), GAP-19 (Vite migration, ongoing), GAP-28 (standards registry hardcoded, partial).*
 *Branch: `claude/gap-analysis-user-roles-RHg64`*
@@ -881,13 +881,13 @@ Zero shared files. `app/app/layout.tsx` untouched by all agents.
 
 | Ticket | Title | Gap | Lane | Owner Files | Status |
 |--------|-------|-----|------|-------------|--------|
-| #400 | Expand PD onboarding tour (GAP-32) | GAP-32 | B | `lib/onboarding/tourSteps.ts` | 🟡 Queued |
-| #401 | CommandCenter real data API (GAP-30a) | GAP-30 | C | `components/command-center/CommandCenterDashboard.tsx`, `app/api/command-center/route.ts` (new) | 🟡 Queued |
-| #402 | ReviewQueue real data API (GAP-30b) | GAP-30 | C | `components/reviews/ReviewQueue.tsx`, `app/api/reviews/route.ts` (new) | 🟡 Queued |
-| #403 | BuilderWorkspace wire to missions (GAP-30c) | GAP-30 | C | `components/builder/BuilderWorkspace.tsx` | 🟡 Queued |
-| #404 | Wire verification to DB standards + seed fallback (GAP-31, GAP-35) | GAP-31+35 | C | `lib/standards/contracts/plugins.ts`, `components/studio/StudioWorkspace.tsx`, `components/standards/StandardsRegistry.tsx` | 🟡 Queued |
-| #405 | Landing page role-prefill CTAs (GAP-33) | GAP-33 | B | `app/page.tsx` | 🟡 Queued |
-| #406 | Federation dispatch SQLite persistence (GAP-34) | GAP-34 | D | `lib/federation/dispatch.ts`, `lib/federation/persistence.ts` (new) | 🟡 Queued |
+| #400 | Expand PD onboarding tour (GAP-32) | GAP-32 | B | `lib/onboarding/tourSteps.ts` | ✅ Done |
+| #401 | CommandCenter real data API (GAP-30a) | GAP-30 | C | `components/command-center/CommandCenterDashboard.tsx`, `app/api/command-center/route.ts` (new) | ✅ Done |
+| #402 | ReviewQueue real data API (GAP-30b) | GAP-30 | C | `components/reviews/ReviewQueue.tsx`, `app/api/reviews/route.ts` (new) | ✅ Done |
+| #403 | BuilderWorkspace wire to missions (GAP-30c) | GAP-30 | C | `components/builder/BuilderWorkspace.tsx` | ✅ Done |
+| #404 | Wire verification to DB standards + seed fallback (GAP-31, GAP-35) | GAP-31+35 | C | `lib/standards/contracts/plugins.ts`, `components/studio/StudioWorkspace.tsx`, `components/standards/StandardsRegistry.tsx` | ✅ Done |
+| #405 | Landing page role-prefill CTAs (GAP-33) | GAP-33 | B | `app/page.tsx` | ✅ Done |
+| #406 | Federation dispatch SQLite persistence (GAP-34) | GAP-34 | D | `lib/federation/dispatch.ts`, `lib/federation/persistence.ts` (new) | ✅ Done |
 
 ### Swarm Overlap Verification
 
@@ -914,12 +914,12 @@ Zero shared files. `app/app/layout.tsx` untouched by all agents.
 
 ### Sprint 7 Acceptance Criteria
 
-- [ ] `npm run verify:release-gate` passes after all merges
-- [ ] PD tour has ≥ 6 steps including command-center, cohorts, reviews, builder
-- [ ] CommandCenter shows real cohort counts from `/api/cohorts`
-- [ ] ReviewQueue shows real ledger artifacts pending review
-- [ ] BuilderWorkspace mission creation POSTs to `/api/missions`
-- [ ] Studio verification fetches DB standards; falls back gracefully if empty
-- [ ] StandardsRegistry auto-seeds DEFAULT_STANDARDS into DB on first empty load
-- [ ] Landing teacher CTA links to `/sign-in?role=teacher`; admin to `/sign-in?role=admin`
-- [ ] Federation task log survives process restart (SQLite-backed)
+- [x] `npm run verify:release-gate` passes after all merges ✅ (14/14)
+- [x] PD tour has ≥ 6 steps including command-center, cohorts, reviews, builder ✅ (7 steps)
+- [x] CommandCenter shows real cohort counts from `/api/cohorts` ✅
+- [x] ReviewQueue shows real ledger artifacts pending review ✅
+- [x] BuilderWorkspace mission creation POSTs to `/api/missions` ✅
+- [x] Studio verification fetches DB standards; falls back gracefully if empty ✅
+- [x] StandardsRegistry auto-seeds DEFAULT_STANDARDS into DB on first empty load ✅
+- [x] Landing teacher CTA links to `/sign-in?role=teacher`; admin to `/sign-in?role=admin` ✅
+- [x] Federation task log survives process restart (SQLite-backed) ✅
