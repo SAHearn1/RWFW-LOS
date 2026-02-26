@@ -1,4 +1,5 @@
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
+import ReviewQueue from "@/components/reviews/ReviewQueue";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
 import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
 
@@ -10,18 +11,8 @@ export default async function ReviewsPage() {
   }
 
   if (!isRoleAllowedForPath("/app/reviews", role)) {
-    return <ForbiddenPanel message="Your current role does not have access to this route." />;
+    return <ForbiddenPanel message="Reviews is restricted to facilitators." />;
   }
 
-  return (
-    <section className="space-y-4">
-      <h1 className="text-2xl font-semibold" data-tour="page-title">
-        Reviews
-      </h1>
-      <p className="text-sm text-slate-600">Artifact review queue and verdict submission.</p>
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
-        Review queue coming soon.
-      </div>
-    </section>
-  );
+  return <ReviewQueue />;
 }
