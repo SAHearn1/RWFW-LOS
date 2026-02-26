@@ -1,4 +1,5 @@
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
+import StandardsRegistry from "@/components/standards/StandardsRegistry";
 import { getCurrentAppRole } from "@/lib/auth/currentRole";
 import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
 
@@ -10,18 +11,8 @@ export default async function StandardsPage() {
   }
 
   if (!isRoleAllowedForPath("/app/standards", role)) {
-    return <ForbiddenPanel message="Your current role does not have access to this route." />;
+    return <ForbiddenPanel message="Standards registry is restricted to administrators." />;
   }
 
-  return (
-    <section className="space-y-4">
-      <h1 className="text-2xl font-semibold" data-tour="page-title">
-        Standards
-      </h1>
-      <p className="text-sm text-slate-600">Standards registry administration and plugin configuration.</p>
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
-        Standards admin view coming soon.
-      </div>
-    </section>
-  );
+  return <StandardsRegistry />;
 }
