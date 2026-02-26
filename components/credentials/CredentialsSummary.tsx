@@ -4,7 +4,6 @@ import { useMemo } from "react";
 
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
-import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
 
 export default function CredentialsSummary() {
   const records = useMemo(() => {
@@ -12,7 +11,7 @@ export default function CredentialsSummary() {
       return [];
     }
 
-    const ledger = shouldUseDbLedger() ? createDbLedgerAdapter() : localLedgerAdapter;
+    const ledger = localLedgerAdapter;
     return ledger.readAll();
   }, []);
 

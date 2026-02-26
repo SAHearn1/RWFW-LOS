@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/coreState/session";
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
-import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
 import type { VerificationEvent } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
 import { runStandardsPlugins, createRulePlugin } from "@/lib/standards/contracts/plugins";
@@ -56,7 +55,7 @@ export default function StudioWorkspace() {
 
     const now = new Date().toISOString();
     const artifactId = "artifact.primary";
-    const ledger = shouldUseDbLedger() ? createDbLedgerAdapter() : localLedgerAdapter;
+    const ledger = localLedgerAdapter;
 
     if (phase3FeatureFlags.enableRuntime) {
       dispatchRuntimeEvent({
