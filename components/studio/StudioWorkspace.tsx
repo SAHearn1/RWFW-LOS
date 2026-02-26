@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/coreState/session";
@@ -15,10 +15,18 @@ const STORAGE_KEY = "rootwork.core.session";
 const MISSION_ID = "mission.primary";
 const LEARNER_ID = "learner.local";
 
+function readRuntimeMissionState(): string {
+  if (!phase3FeatureFlags.enableRuntime) {
+    return "runtime_disabled";
+  }
+  return readRuntimeState().missions[MISSION_ID]?.stage ?? "not_started";
+}
+
 export default function StudioWorkspace() {
   const [artifactDraft, setArtifactDraft] = useState("");
   const [lastSavedIso, setLastSavedIso] = useState<string | null>(null);
   const [verificationSummary, setVerificationSummary] = useState<string>("No verification recorded yet.");
+  const [runtimeMissionState, setRuntimeMissionState] = useState<string>(() => readRuntimeMissionState());
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -137,15 +145,8 @@ export default function StudioWorkspace() {
     }
 
     setLastSavedIso(now);
+    setRuntimeMissionState(readRuntimeMissionState());
   };
-
-  const runtimeMissionState = useMemo(() => {
-    if (!phase3FeatureFlags.enableRuntime) {
-      return "runtime_disabled";
-    }
-
-    return readRuntimeState().missions[MISSION_ID]?.stage ?? "not_started";
-  }, [lastSavedIso]);
 
   return (
     <section className="space-y-4">

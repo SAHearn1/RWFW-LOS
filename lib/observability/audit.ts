@@ -1,5 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
-import { resolve } from "node:path";
+import { appendFileSync } from "node:fs";
 
 export type AuditSeverity = "info" | "warning" | "error";
 
@@ -14,13 +13,21 @@ export type AuditEvent = {
   createdAtIso: string;
 };
 
-const AUDIT_LOG_PATH = resolve("docs", "status", "audit-log.ndjson");
-
 export function recordAuditEvent(event: AuditEvent): void {
-  const directory = resolve("docs", "status");
-  if (!existsSync(directory)) {
-    mkdirSync(directory, { recursive: true });
+  if (process.env.NODE_ENV === "production") {
+    // In production (Vercel serverless), write to stdout as structured JSON
+    // so Vercel Log Drains can capture the audit trail.
+    console.log(JSON.stringify(event));
+    return;
   }
 
-  appendFileSync(AUDIT_LOG_PATH, `${JSON.stringify(event)}\n`, "utf8");
+  // In local development, append to /tmp to avoid project-directory write
+  // failures and to keep audit entries across restarts of the dev server.
+  try {
+    appendFileSync("/tmp/rootwork-audit.ndjson", `${JSON.stringify(event)}\n`, "utf8");
+  } catch {
+    // Last-resort fallback: if /tmp write fails, echo to console so the event
+    // is never silently dropped.
+    console.log(JSON.stringify(event));
+  }
 }

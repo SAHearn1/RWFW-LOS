@@ -16,6 +16,11 @@ function verifySignature(body: string, signature: string, secret: string): boole
   return timingSafeEqual(Buffer.from(expected), Buffer.from(provided));
 }
 
+type ClerkWebhookPayload = {
+  type: string;
+  data?: Record<string, unknown>;
+};
+
 export async function POST(request: Request): Promise<Response> {
   const traceId = getTraceIdFromRequest(request);
   const secret = process.env.CLERK_WEBHOOK_SECRET;
@@ -52,6 +57,41 @@ export async function POST(request: Request): Promise<Response> {
     severity: "info",
     createdAtIso: new Date().toISOString()
   });
+
+  let parsed: ClerkWebhookPayload | null = null;
+  try {
+    parsed = JSON.parse(body) as ClerkWebhookPayload;
+  } catch {
+    // Body could not be parsed as JSON — proceed without event handling.
+  }
+
+  if (parsed) {
+    const now = new Date().toISOString();
+    const eventType = parsed.type ?? "unknown";
+
+    const knownEventTypes = ["user.created", "user.updated", "session.created"];
+    const severity = "info" as const;
+
+    if (knownEventTypes.includes(eventType)) {
+      recordAuditEvent({
+        traceId,
+        eventType,
+        role: "system",
+        severity,
+        createdAtIso: now,
+        metadata: { clerkEventType: eventType }
+      });
+    } else {
+      recordAuditEvent({
+        traceId,
+        eventType,
+        role: "system",
+        severity,
+        createdAtIso: now,
+        metadata: { clerkEventType: eventType }
+      });
+    }
+  }
 
   return NextResponse.json({ ok: true }, { status: 200, headers: { [TRACE_HEADER]: traceId } });
 }
