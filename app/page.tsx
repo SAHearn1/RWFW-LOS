@@ -75,22 +75,22 @@ export default function HomePage() {
             {/* CTAs */}
             <div className="flex flex-wrap justify-center gap-3">
               <Link
-                href="/sign-up"
+                href="/sign-up?role=student_independent"
                 className="rounded-xl bg-rootwork-olive px-6 py-3 text-sm font-semibold text-rootwork-bg shadow-sm transition-opacity hover:opacity-90"
               >
                 Start as Independent Learner
               </Link>
               <Link
-                href="/sign-in"
+                href="/sign-up?role=adult_learner"
                 className="rounded-xl border border-rootwork-gold bg-white px-6 py-3 text-sm font-semibold text-rootwork-olive shadow-sm transition-colors hover:bg-rootwork-gold/10"
               >
-                Teacher Login
+                Adult Learner
               </Link>
               <Link
                 href="/sign-in"
                 className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
               >
-                Admin Info
+                Teacher / Admin Sign In
               </Link>
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function HomePage() {
                   workspace. Your progress, your pace.
                 </p>
                 <Link
-                  href="/sign-up"
+                  href="/sign-up?role=student_independent"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-rootwork-teal transition-colors hover:text-rootwork-olive"
                 >
                   Start for free
@@ -292,7 +292,7 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
-                href="/sign-up"
+                href="/sign-up?role=student_independent"
                 className="rounded-xl bg-rootwork-gold px-7 py-3 text-sm font-semibold text-rootwork-ink shadow-sm transition-opacity hover:opacity-90"
               >
                 Start as Independent Learner

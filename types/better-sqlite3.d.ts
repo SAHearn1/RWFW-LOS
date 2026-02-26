@@ -7,6 +7,7 @@ declare module "better-sqlite3" {
   interface Statement<BindParams extends unknown[] = unknown[]> {
     run(...params: BindParams): RunResult;
     all(...params: BindParams): unknown[];
+    get(...params: BindParams): unknown;
   }
 
   interface Database {

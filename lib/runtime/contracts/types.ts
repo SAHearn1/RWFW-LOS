@@ -1,3 +1,7 @@
+import type { ArtifactModality } from "@/lib/cognition/rigor";
+import type { SessionPhase } from "@/lib/cognition/session";
+import type { TraceStep } from "@/lib/cognition/trace";
+
 export type RuntimeMissionStage = "not_started" | "in_progress" | "submitted" | "verified";
 
 export type RuntimeMission = {
@@ -6,6 +10,9 @@ export type RuntimeMission = {
   title: string;
   stage: RuntimeMissionStage;
   updatedAtIso: string;
+  // TRACE / session enrichment (optional — populated by session engine)
+  tracePhase?: TraceStep;
+  sessionPhase?: SessionPhase;
 };
 
 export type RuntimeArtifact = {
@@ -14,6 +21,10 @@ export type RuntimeArtifact = {
   learnerId: string;
   content: string;
   updatedAtIso: string;
+  // Modality: default "text"; set by multimodal inputs (ticket #223)
+  modality?: ArtifactModality;
+  // Reasoning metadata (ticket #211)
+  reasoning?: string;
 };
 
 export type VerificationEvent = {

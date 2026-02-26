@@ -30,11 +30,8 @@ export default async function ProtectedAppLayout({
   const role = parseAppRole(user.publicMetadata?.role);
 
   if (!role) {
-    return (
-      <main className="mx-auto w-full max-w-4xl px-6 py-8">
-        <ForbiddenPanel message="Your account is authenticated but has no valid role assigned. Please contact an administrator." />
-      </main>
-    );
+    // No role assigned yet — send to onboarding wizard to select one.
+    redirect("/onboarding");
   }
 
   if ((role === "teacher" || role === "professional_development" || role === "admin") && !orgId) {

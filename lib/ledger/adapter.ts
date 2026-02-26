@@ -1,15 +1,25 @@
 import type { RuntimeArtifact, RuntimeMission, VerificationEvent } from "@/lib/runtime/contracts/types";
 
-export type LedgerRecordType = "mission" | "artifact" | "verification";
+export type LedgerRecordType = "mission" | "artifact" | "verification" | "reflection";
+
+export type DataTier = "tier-0" | "tier-1" | "tier-2" | "tier-3";
 
 export type LedgerRecord = {
   id: string;
   type: LedgerRecordType;
   missionId: string;
   learnerId: string;
-  payload: RuntimeMission | RuntimeArtifact | VerificationEvent;
+  payload: RuntimeMission | RuntimeArtifact | VerificationEvent | Record<string, unknown>;
   createdAtIso: string;
   updatedAtIso: string;
+  // Pedagogical enrichment fields (all optional — backward compatible)
+  competencies?: string[];
+  rigorLevel?: number;       // 1–6, matching RigorLayer index
+  verifiedBy?: string;       // educator Clerk userId
+  verificationMethod?: "performance" | "analytical" | "applied" | "transfer";
+  revisionHistory?: string[];
+  reflectionId?: string;     // links artifact to a reflection record
+  dataTier?: DataTier;       // FERPA data classification (ticket #240)
 };
 
 export type LedgerAdapter = {
@@ -66,18 +76,33 @@ export function deleteLedgerRecordsByLearner(learnerId: string): number {
   return records.length - kept.length;
 }
 
+function inferDataTier(type: LedgerRecordType): DataTier {
+  switch (type) {
+    case "verification": return "tier-0";
+    case "artifact": return "tier-1";
+    case "mission": return "tier-1";
+    case "reflection": return "tier-3";
+    default: return "tier-1";
+  }
+}
+
 export const localLedgerAdapter: LedgerAdapter = {
   readAll() {
     return readRecords();
   },
   upsert(record) {
+    // Auto-classify dataTier if not explicitly set (#240 FERPA classification)
+    const withTier: LedgerRecord = {
+      ...record,
+      dataTier: record.dataTier ?? inferDataTier(record.type),
+    };
     const records = readRecords();
     const next = records.filter((item) => item.id !== record.id);
-    next.push(record);
+    next.push(withTier);
     writeRecords(next);
-    return record;
+    return withTier;
   },
   findByMission(missionId) {
     return readRecords().filter((record) => record.missionId === missionId);
-  }
+  },
 };

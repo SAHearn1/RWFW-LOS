@@ -1,8 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
+
+const JoinCohortPanel = dynamic(() => import("@/components/cohorts/JoinCohortPanel"), { ssr: false });
 import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/coreState/session";
 import type { RuntimeMissionStage } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
@@ -138,6 +141,8 @@ export default function PLEHome() {
       <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600" data-tour="studio-entry">
         PLE migration is active in Next.js. Continue to Studio to refine your artifact draft.
       </div>
+      {/* Join a classroom — shown for independent learners */}
+      <JoinCohortPanel />
     </section>
   );
 }
