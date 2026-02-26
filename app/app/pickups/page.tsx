@@ -1,0 +1,42 @@
+import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
+import { getCurrentAppRole } from "@/lib/auth/currentRole";
+import { isRoleAllowedForPath } from "@/lib/auth/routeAccess";
+
+export default async function PickupsPage() {
+  const role = await getCurrentAppRole();
+
+  if (!role) {
+    return <ForbiddenPanel message="No valid role is assigned to your account." />;
+  }
+
+  if (!isRoleAllowedForPath("/app/pickups", role)) {
+    return <ForbiddenPanel message="Your current role does not have access to this route." />;
+  }
+
+  const pickupEnabled = process.env.NEXT_PUBLIC_ENABLE_PICKUP === "true";
+
+  if (!pickupEnabled) {
+    return (
+      <section className="space-y-4">
+        <h1 className="text-2xl font-semibold" data-tour="page-title">
+          Pickups
+        </h1>
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+          This feature is not yet enabled.
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-4">
+      <h1 className="text-2xl font-semibold" data-tour="page-title">
+        Pickups
+      </h1>
+      <p className="text-sm text-slate-600">Pickup assignment and facilitation tools.</p>
+      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+        Pickup assignment UI coming soon.
+      </div>
+    </section>
+  );
+}
