@@ -174,8 +174,7 @@ const runtimePk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 const runtimeSk = process.env.CLERK_SECRET_KEY ?? localEnvMap.get("CLERK_SECRET_KEY");
 
 if (runtimePk) {
-  // Allow known placeholder values — they mean "not yet configured locally"
-  // and should not fail the gate (real key format is enforced when present).
+  // Allow known placeholder values — treat as unconfigured (safe to run without real keys).
   const runtimePkError = validatePublishableKey(runtimePk, { allowPlaceholders: true });
   if (runtimePkError) {
     console.error(`Invalid Clerk publishable key: ${runtimePkError}`);
