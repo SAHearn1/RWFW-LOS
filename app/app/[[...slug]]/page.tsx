@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import ForbiddenPanel from "@/components/app-shell/ForbiddenPanel";
 import { getRouteDefinition, isKnownAppPath, isRoleAllowedForPath } from "@/lib/auth/routeAccess";
 import { parseAppRole } from "@/lib/auth/userRole";
-import { phase1FeatureFlags } from "@/lib/config/featureFlags";
 
 type AppCatchAllPageProps = {
   params: Promise<{ slug?: string[] }>;
@@ -37,10 +36,6 @@ export default async function AppCatchAllPage({ params }: AppCatchAllPageProps) 
     return <ForbiddenPanel message="Your current role does not have access to this route." />;
   }
 
-  if (pathname === "/app/forbidden") {
-    return <ForbiddenPanel message="Your role cannot access the requested route." />;
-  }
-
   const definition = getRouteDefinition(pathname);
   if (!definition) {
     notFound();
@@ -61,28 +56,6 @@ export default async function AppCatchAllPage({ params }: AppCatchAllPageProps) 
             <dd>{orgId ?? "No organization assigned"}</dd>
           </div>
         </dl>
-      </section>
-    );
-  }
-
-  if (pathname === "/app/core") {
-    if (!phase1FeatureFlags.enableCoreViteMount) {
-      return (
-        <section className="space-y-4" data-tour="core-mount">
-          <h1 className="text-2xl font-semibold">Core Mount Disabled</h1>
-          <p className="text-sm text-slate-700">
-            `NEXT_PUBLIC_ENABLE_CORE_VITE_MOUNT` is off. Enable it to activate the temporary bridge.
-          </p>
-        </section>
-      );
-    }
-
-    return (
-      <section className="space-y-4" data-tour="core-mount">
-        <h1 className="text-2xl font-semibold">Core Mount Bridge</h1>
-        <p className="text-sm text-slate-700">
-          Legacy LOS core integration is enabled. Screen migration to native Next.js routes is in progress.
-        </p>
       </section>
     );
   }

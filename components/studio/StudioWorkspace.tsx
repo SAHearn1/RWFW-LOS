@@ -5,9 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 import { createInitialCoreSessionState, mergeCoreSessionState } from "@/lib/coreState/session";
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
+import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
 import type { VerificationEvent } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
-import { verifyArtifactText } from "@/lib/standards/verifier/localVerifier";
+import { runStandardsPlugins, createRulePlugin } from "@/lib/standards/contracts/plugins";
+import { DEFAULT_STANDARDS, keywordStandardsRule } from "@/lib/standards/verifier/localVerifier";
 
 const STORAGE_KEY = "rootwork.core.session";
 const MISSION_ID = "mission.primary";
@@ -46,6 +48,7 @@ export default function StudioWorkspace() {
 
     const now = new Date().toISOString();
     const artifactId = "artifact.primary";
+    const ledger = shouldUseDbLedger() ? createDbLedgerAdapter() : localLedgerAdapter;
 
     if (phase3FeatureFlags.enableRuntime) {
       dispatchRuntimeEvent({
@@ -61,7 +64,7 @@ export default function StudioWorkspace() {
     }
 
     if (phase3FeatureFlags.enableLedger) {
-      localLedgerAdapter.upsert({
+      ledger.upsert({
         id: `ledger.artifact.${artifactId}`,
         type: "artifact",
         missionId: MISSION_ID,
@@ -79,7 +82,18 @@ export default function StudioWorkspace() {
     }
 
     if (phase3FeatureFlags.enableStandardsVerifier) {
-      const results = verifyArtifactText(artifactDraft);
+      const plugins = [
+        createRulePlugin(
+          "keyword-standards-plugin",
+          "Keyword-based standards rule",
+          "1.0.0",
+          keywordStandardsRule
+        )
+      ];
+      const results = runStandardsPlugins(plugins, {
+        artifactText: artifactDraft,
+        standards: [...DEFAULT_STANDARDS]
+      });
       const verification: VerificationEvent = {
         id: `verification.${Date.now()}`,
         missionId: MISSION_ID,
@@ -98,7 +112,7 @@ export default function StudioWorkspace() {
       }
 
       if (phase3FeatureFlags.enableLedger) {
-        localLedgerAdapter.upsert({
+        ledger.upsert({
           id: `ledger.verification.${verification.id}`,
           type: "verification",
           missionId: MISSION_ID,

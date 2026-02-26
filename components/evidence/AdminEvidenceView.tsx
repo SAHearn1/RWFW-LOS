@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
+import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
 
 export default function AdminEvidenceView() {
   const records = useMemo(() => {
@@ -11,7 +12,8 @@ export default function AdminEvidenceView() {
       return [];
     }
 
-    return localLedgerAdapter.readAll();
+    const ledger = shouldUseDbLedger() ? createDbLedgerAdapter() : localLedgerAdapter;
+    return ledger.readAll();
   }, []);
 
   return (
