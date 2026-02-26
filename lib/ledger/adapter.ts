@@ -1,4 +1,5 @@
 import type { RuntimeArtifact, RuntimeMission, VerificationEvent } from "@/lib/runtime/contracts/types";
+import { decryptFromStorage, encryptForStorage } from "@/lib/crypto/localStorageEncryption";
 
 export type LedgerRecordType = "mission" | "artifact" | "verification" | "reflection";
 
@@ -31,25 +32,48 @@ export type LedgerAdapter = {
 const LEDGER_STORAGE_KEY = "rootwork.ledger.records";
 let ledgerFallback: LedgerRecord[] = [];
 
+// In-memory cache that is always authoritative for synchronous reads.
+// Populated from localStorage (with decryption) on first access.
+let memoryCache: LedgerRecord[] | null = null;
+let cacheLoadInitiated = false;
+
 function canUseLocalStorage(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+/**
+ * Initiates an async load from localStorage into memoryCache (runs once).
+ * Callers that need fresh data should trigger this and re-read after the
+ * promise resolves, but synchronous callers use ledgerFallback / memoryCache.
+ */
+async function initCacheFromStorage(): Promise<void> {
+  if (!canUseLocalStorage()) return;
+  const raw = window.localStorage.getItem(LEDGER_STORAGE_KEY);
+  if (!raw) {
+    memoryCache = [];
+    return;
+  }
+  try {
+    const decrypted = await decryptFromStorage(raw);
+    memoryCache = JSON.parse(decrypted) as LedgerRecord[];
+  } catch {
+    memoryCache = [];
+  }
+}
+
+function ensureCacheLoaded(): void {
+  if (!cacheLoadInitiated) {
+    cacheLoadInitiated = true;
+    void initCacheFromStorage();
+  }
 }
 
 function readRecords(): LedgerRecord[] {
   if (!canUseLocalStorage()) {
     return ledgerFallback;
   }
-
-  const raw = window.localStorage.getItem(LEDGER_STORAGE_KEY);
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(raw) as LedgerRecord[];
-  } catch {
-    return [];
-  }
+  ensureCacheLoaded();
+  return memoryCache ?? [];
 }
 
 function writeRecords(records: LedgerRecord[]): LedgerRecord[] {
@@ -58,7 +82,19 @@ function writeRecords(records: LedgerRecord[]): LedgerRecord[] {
     return records;
   }
 
-  window.localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(records));
+  // Update the in-memory cache synchronously so subsequent reads see the new data.
+  memoryCache = records;
+
+  // Persist to localStorage asynchronously with encryption (fire-and-forget).
+  const serialized = JSON.stringify(records);
+  encryptForStorage(serialized)
+    .then((stored) => {
+      window.localStorage.setItem(LEDGER_STORAGE_KEY, stored);
+    })
+    .catch(() => {
+      // Encryption or storage failure — in-memory cache remains authoritative.
+    });
+
   return records;
 }
 

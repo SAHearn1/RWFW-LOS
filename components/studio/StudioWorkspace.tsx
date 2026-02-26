@@ -9,8 +9,7 @@ import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import type { LedgerRecord } from "@/lib/ledger/adapter";
 import type { VerificationEvent } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
-import { runStandardsPlugins, createRulePlugin } from "@/lib/standards/contracts/plugins";
-import { DEFAULT_STANDARDS, keywordStandardsRule } from "@/lib/standards/verifier/localVerifier";
+import { runStandardsPlugins } from "@/lib/standards/contracts/plugins";
 
 import type { UploadedFile } from "./modalities/FileUploadInput";
 import type { VoiceNote } from "./modalities/VoiceNoteInput";
@@ -130,18 +129,7 @@ export default function StudioWorkspace() {
     }
 
     if (phase3FeatureFlags.enableStandardsVerifier) {
-      const plugins = [
-        createRulePlugin(
-          "keyword-standards-plugin",
-          "Keyword-based standards rule",
-          "1.0.0",
-          keywordStandardsRule
-        ),
-      ];
-      const results = runStandardsPlugins(plugins, {
-        artifactText: artifactDraft,
-        standards: [...DEFAULT_STANDARDS],
-      });
+      const results = runStandardsPlugins({ artifactText: artifactDraft });
       const verification: VerificationEvent = {
         id: `verification.${Date.now()}`,
         missionId: MISSION_ID,

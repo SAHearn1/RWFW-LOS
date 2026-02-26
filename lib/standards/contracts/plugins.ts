@@ -1,4 +1,5 @@
 import type { StandardDescriptor, StandardsRule, VerificationRuleResult } from "./types";
+import { DEFAULT_STANDARDS, keywordStandardsRule } from "@/lib/standards/verifier/localVerifier";
 
 export type StandardsPluginContext = {
   artifactText: string;
@@ -23,7 +24,24 @@ export function createRulePlugin(id: string, description: string, version: strin
   };
 }
 
-export function runStandardsPlugins(plugins: StandardsPlugin[], context: StandardsPluginContext): VerificationRuleResult[] {
+export const DEFAULT_PLUGIN_REGISTRY: readonly StandardsPlugin[] = [
+  createRulePlugin(
+    "keyword-standards-plugin",
+    "Keyword-based standards rule",
+    "1.0.0",
+    keywordStandardsRule
+  ),
+];
+
+export function runStandardsPlugins(
+  input: { artifactText: string; standards?: StandardDescriptor[] },
+  plugins: readonly StandardsPlugin[] = DEFAULT_PLUGIN_REGISTRY
+): VerificationRuleResult[] {
+  const context: StandardsPluginContext = {
+    artifactText: input.artifactText,
+    standards: input.standards ?? [...DEFAULT_STANDARDS],
+  };
+
   const merged = new Map<string, VerificationRuleResult>();
 
   for (const plugin of plugins) {

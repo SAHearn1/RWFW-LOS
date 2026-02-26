@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { dispatchTask, getDispatchedTasks } from "@/lib/federation/dispatch";
 import { createFederationError, createFederationRequest, createFederationResponse } from "@/lib/federation/protocol";
 import { buildCapabilityIndex } from "@/lib/federation/registryContracts";
 import type { AgentRegistration, FederationTaskEnvelope } from "@/lib/federation/types";
@@ -153,6 +154,8 @@ export async function POST(request: Request): Promise<Response> {
     }
   });
 
+  const dispatchResult = dispatchTask(assignedTask);
+
   recordAuditEvent({
     traceId,
     eventType: "federation.dispatch.assigned",
@@ -162,15 +165,18 @@ export async function POST(request: Request): Promise<Response> {
     metadata: {
       taskId: assignedTask.taskId,
       assignedAgentId: matchingAgent.agentId,
-      capabilityId: assignedTask.capabilityId
+      capabilityId: assignedTask.capabilityId,
+      dispatched: dispatchResult.dispatched
     }
   });
 
   return NextResponse.json(
     {
       accepted: true,
-      assignedAgentId: matchingAgent.agentId,
       taskId: assignedTask.taskId,
+      assignedAgentId: assignedTask.assignedAgentId,
+      dispatched: dispatchResult.dispatched,
+      dispatchedAt: dispatchResult.dispatched ? dispatchResult.acceptedAt : null,
       envelope: responseEnvelope
     },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
@@ -195,11 +201,15 @@ export function GET(request: Request): Response {
     (capability, index, all) => all.findIndex((c) => c.capabilityId === capability.capabilityId) === index
   );
 
+  const dispatchedTasks = getDispatchedTasks();
+
   return NextResponse.json(
     {
       agents: AGENT_REGISTRY,
       capabilities,
       capabilityIndex,
+      pendingTasks: dispatchedTasks.length,
+      recentDispatches: dispatchedTasks.slice(-10),
       generatedAtIso: timestamp
     },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }

@@ -771,3 +771,61 @@ A change is done only when:
 *Resolved in this pass: GAP-01, GAP-02, GAP-03, GAP-04, GAP-05, GAP-06, GAP-07, GAP-08, GAP-09, GAP-10, GAP-11, GAP-12, GAP-16, GAP-18, GAP-20, GAP-21, GAP-22, GAP-23, GAP-24, GAP-25, GAP-26, GAP-27, GAP-29.*
 *Still open: GAP-13 (MCP stub), GAP-14 (offline stub), GAP-15 (landing CTA differentiation, partial), GAP-17 (enrolled org check, pending product decision), GAP-19 (Vite migration, ongoing), GAP-28 (standards registry hardcoded, partial).*
 *Branch: `claude/gap-analysis-user-roles-RHg64`*
+
+---
+
+## 17. Sprint 6 — Integration Wiring & Persistence Layer
+
+> **Status:** 🟡 In progress — 2026-02-26
+> **Branch:** `claude/gap-analysis-user-roles-RHg64`
+> **Agent swarm:** 8 tickets, all parallelisable (verified zero file overlap)
+
+### Ticket Manifest
+
+| Ticket | Title | Lane | Owner Files | Status |
+|--------|-------|------|-------------|--------|
+| #300 | Wire CohortsList to real `/api/cohorts` | C | `components/cohorts/CohortsList.tsx` | 🟡 Executing |
+| #301 | DB ledger schema: add 7 missing columns | C | `lib/ledger/dbAdapter.ts` | 🟡 Executing |
+| #302 | Standards admin CRUD API + SQLite persistence | C | `lib/standards/adapter.ts` (new), `app/api/admin/standards/route.ts` (new), `components/standards/StandardsRegistry.tsx` | 🟡 Executing |
+| #303 | Fix GAP-26: wire `runStandardsPlugins` in Studio | C | `components/studio/StudioWorkspace.tsx`, `lib/standards/contracts/plugins.ts` | 🟡 Executing |
+| #304 | Wire AES-GCM encryption into ledger + runtime adapters | C | `lib/ledger/adapter.ts`, `lib/runtime/engine/store.ts` | 🟡 Executing |
+| #305 | Session timer: emit TRACE phase events to runtime store | C | `lib/session/timer.ts`, `lib/session/events.ts` (new) | 🟡 Executing |
+| #306 | Orchestration executor: implement job dispatch | D | `app/api/orchestration/worker-run/route.ts`, `lib/orchestration/executors.ts` (new) | 🟡 Executing |
+| #307 | Federation: complete agent task dispatch + persistence | D | `app/api/federation/route.ts`, `lib/federation/dispatch.ts` (new) | 🟡 Executing |
+
+### Swarm Overlap Verification
+
+All 8 agents operate on strictly disjoint file sets:
+
+```
+Agent #300 → components/cohorts/CohortsList.tsx
+Agent #301 → lib/ledger/dbAdapter.ts
+Agent #302 → lib/standards/adapter.ts, app/api/admin/standards/route.ts, components/standards/StandardsRegistry.tsx
+Agent #303 → components/studio/StudioWorkspace.tsx, lib/standards/contracts/plugins.ts
+Agent #304 → lib/ledger/adapter.ts, lib/runtime/engine/store.ts
+Agent #305 → lib/session/timer.ts, lib/session/events.ts
+Agent #306 → app/api/orchestration/worker-run/route.ts, lib/orchestration/executors.ts
+Agent #307 → app/api/federation/route.ts, lib/federation/dispatch.ts
+```
+
+Zero shared files. `app/app/layout.tsx` untouched by all agents.
+
+### Agent Boundary Rules (Sprint 6)
+
+1. Each agent operates exclusively on its **Owner Files** — no modifications to any files outside the listed set.
+2. Agents must **not** modify `lib/auth/`, `middleware.ts`, `app/app/layout.tsx`, `app/layout.tsx`, `scripts/`, or `docs/qa/`.
+3. New files must be placed inside the owning lane's directory.
+4. All new env vars require a corresponding entry in `.env.example`.
+5. Every agent must pass `npm run lint` and `npm run typecheck` before committing.
+
+### Sprint 6 Acceptance Criteria
+
+- [ ] `npm run verify:release-gate` passes after all merges
+- [ ] CohortsList renders real org members when teacher/PD role present
+- [ ] DB ledger stores `dataTier`, `rigorLevel`, `competencies` when `NEXT_PUBLIC_ENABLE_DB_LEDGER=true`
+- [ ] Admin can add/edit/delete standards at `/app/standards`
+- [ ] Studio calls `runStandardsPlugins()` — verified by unit check of plugin dispatch path
+- [ ] localStorage encrypted when `NEXT_PUBLIC_LOCAL_STORAGE_ENCRYPTION_KEY` is set
+- [ ] TRACE phase events written to runtime store on each phase transition
+- [ ] Orchestration jobs enqueue and execute with typed job handlers (not no-op)
+- [ ] Federation POST dispatches to assigned agent endpoint; GET returns live registry
