@@ -49,8 +49,31 @@ export default function StandardsRegistry() {
       }
       const data = (await res.json()) as { standards: StandardDescriptor[] };
       const fetched = data.standards ?? [];
-      // If DB is empty, seed with defaults for display
-      setStandards(fetched.length > 0 ? fetched : [...DEFAULT_STANDARDS]);
+
+      if (fetched.length === 0) {
+        // Auto-seed DB with DEFAULT_STANDARDS on first empty load.
+        await Promise.all(
+          DEFAULT_STANDARDS.map((std) =>
+            fetch("/api/admin/standards", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title: std.title,
+                requiredKeywords: std.requiredKeywords,
+              }),
+            })
+          )
+        );
+        // Re-fetch after seeding.
+        const seededRes = await fetch("/api/admin/standards");
+        if (!seededRes.ok) {
+          throw new Error(`Failed to reload standards after seeding (${seededRes.status})`);
+        }
+        const seededData = (await seededRes.json()) as { standards: StandardDescriptor[] };
+        setStandards(seededData.standards.length > 0 ? seededData.standards : [...DEFAULT_STANDARDS]);
+      } else {
+        setStandards(fetched);
+      }
     } catch {
       setError("Could not load standards from server. Showing built-in defaults.");
       setStandards([...DEFAULT_STANDARDS]);

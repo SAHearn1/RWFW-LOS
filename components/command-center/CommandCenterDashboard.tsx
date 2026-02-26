@@ -1,32 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Activity, ClipboardList, Users, Inbox } from "lucide-react";
 
-const MOCK_ACTIVITY = [
-  {
-    id: "act-1",
-    text: "Learner submitted Mission: Define Your Why",
-    timestamp: "2026-02-26T09:14:00Z",
-    who: "Jordan M.",
-  },
-  {
-    id: "act-2",
-    text: "Artifact flagged for review in Spring 2026 Cohort A",
-    timestamp: "2026-02-26T08:47:00Z",
-    who: "System",
-  },
-  {
-    id: "act-3",
-    text: "New pickup assigned: Reflection Practice",
-    timestamp: "2026-02-26T08:20:00Z",
-    who: "Riley K.",
-  },
-  {
-    id: "act-4",
-    text: "Learner submitted Mission: Map Your Strengths",
-    timestamp: "2026-02-25T17:53:00Z",
-    who: "Sam T.",
-  },
-];
+import type { CommandCenterActivity, CommandCenterStats } from "@/app/api/command-center/route";
 
 function formatTimestamp(isoString: string): string {
   const date = new Date(isoString);
@@ -40,6 +18,47 @@ function formatTimestamp(isoString: string): string {
 }
 
 export default function CommandCenterDashboard() {
+  const [stats, setStats] = useState<CommandCenterStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/command-center");
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          throw new Error(body.error ?? `HTTP ${res.status}`);
+        }
+        const data = await res.json() as CommandCenterStats;
+        if (!cancelled) {
+          setStats(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void fetchStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const activeCohorts = stats?.activeCohorts ?? 0;
+  const pendingReviews = stats?.pendingReviews ?? 0;
+  const pickupQueueLength = stats?.pickupQueueLength ?? 0;
+  const recentActivity: CommandCenterActivity[] = stats?.recentActivity ?? [];
+
   return (
     <section className="space-y-6" data-tour="command-center-dashboard">
       <div>
@@ -51,6 +70,18 @@ export default function CommandCenterDashboard() {
         </p>
       </div>
 
+      {loading && (
+        <p className="text-sm text-slate-500" aria-live="polite">
+          Loading...
+        </p>
+      )}
+
+      {error && !loading && (
+        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+          Failed to load command center data: {error}
+        </p>
+      )}
+
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <article className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -58,7 +89,9 @@ export default function CommandCenterDashboard() {
             <Users size={20} aria-hidden="true" />
           </span>
           <div>
-            <p className="text-2xl font-bold text-slate-900">4</p>
+            <p className="text-2xl font-bold text-slate-900">
+              {loading ? "—" : activeCohorts}
+            </p>
             <p className="text-sm text-slate-600">Active Cohorts</p>
           </div>
         </article>
@@ -68,7 +101,9 @@ export default function CommandCenterDashboard() {
             <ClipboardList size={20} aria-hidden="true" />
           </span>
           <div>
-            <p className="text-2xl font-bold text-slate-900">12</p>
+            <p className="text-2xl font-bold text-slate-900">
+              {loading ? "—" : pendingReviews}
+            </p>
             <p className="text-sm text-slate-600">Pending Reviews</p>
           </div>
         </article>
@@ -78,7 +113,9 @@ export default function CommandCenterDashboard() {
             <Inbox size={20} aria-hidden="true" />
           </span>
           <div>
-            <p className="text-2xl font-bold text-slate-900">3</p>
+            <p className="text-2xl font-bold text-slate-900">
+              {loading ? "—" : pickupQueueLength}
+            </p>
             <p className="text-sm text-slate-600">Pickup Queue</p>
           </div>
         </article>
@@ -90,22 +127,31 @@ export default function CommandCenterDashboard() {
           <Activity size={16} className="text-slate-500" aria-hidden="true" />
           <h2 className="text-sm font-semibold text-slate-700">Recent Activity</h2>
         </div>
-        <ul className="divide-y divide-slate-100">
-          {MOCK_ACTIVITY.map((item) => (
-            <li key={item.id} className="flex items-start justify-between gap-4 px-4 py-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm text-slate-800">{item.text}</p>
-                <p className="mt-0.5 text-xs text-slate-500">{item.who}</p>
-              </div>
-              <time
-                dateTime={item.timestamp}
-                className="shrink-0 whitespace-nowrap text-xs text-slate-400"
+        {!loading && recentActivity.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-slate-500">
+            No recent activity to display.
+          </p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {recentActivity.map((item, idx) => (
+              <li
+                key={`${item.type}-${item.timestampIso}-${idx}`}
+                className="flex items-start justify-between gap-4 px-4 py-3"
               >
-                {formatTimestamp(item.timestamp)}
-              </time>
-            </li>
-          ))}
-        </ul>
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-slate-800">{item.label}</p>
+                  <p className="mt-0.5 text-xs text-slate-500 capitalize">{item.type}</p>
+                </div>
+                <time
+                  dateTime={item.timestampIso}
+                  className="shrink-0 whitespace-nowrap text-xs text-slate-400"
+                >
+                  {formatTimestamp(item.timestampIso)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Quick Actions */}

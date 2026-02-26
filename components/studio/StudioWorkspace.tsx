@@ -10,6 +10,7 @@ import type { LedgerRecord } from "@/lib/ledger/adapter";
 import type { VerificationEvent } from "@/lib/runtime/contracts/types";
 import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
 import { runStandardsPlugins } from "@/lib/standards/contracts/plugins";
+import type { StandardDescriptor } from "@/lib/standards/contracts/types";
 
 import type { UploadedFile } from "./modalities/FileUploadInput";
 import type { VoiceNote } from "./modalities/VoiceNoteInput";
@@ -39,6 +40,20 @@ export default function StudioWorkspace() {
   const [runtimeMissionState, setRuntimeMissionState] = useState<string>(() => readRuntimeMissionState());
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [voiceNote, setVoiceNote] = useState<VoiceNote | null>(null);
+  const [dbStandards, setDbStandards] = useState<StandardDescriptor[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/standards")
+      .then((res) => (res.ok ? (res.json() as Promise<{ standards: StandardDescriptor[] }>) : Promise.resolve({ standards: [] })))
+      .then(({ standards }) => {
+        if (standards.length > 0) {
+          setDbStandards(standards);
+        }
+      })
+      .catch(() => {
+        // Leave dbStandards as [] so DEFAULT_STANDARDS are used as fallback.
+      });
+  }, []);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -80,7 +95,7 @@ export default function StudioWorkspace() {
     ledger.upsert(record);
   }, [ledger]);
 
-  const saveArtifact = useCallback(() => {
+  const saveArtifact = useCallback(async () => {
     if (!phase3FeatureFlags.enableRuntime && !phase3FeatureFlags.enableLedger) return;
 
     const now = new Date().toISOString();
@@ -129,7 +144,10 @@ export default function StudioWorkspace() {
     }
 
     if (phase3FeatureFlags.enableStandardsVerifier) {
-      const results = runStandardsPlugins({ artifactText: artifactDraft });
+      const results = await runStandardsPlugins({
+        artifactText: artifactDraft,
+        standards: dbStandards.length > 0 ? dbStandards : undefined,
+      });
       const verification: VerificationEvent = {
         id: `verification.${Date.now()}`,
         missionId: MISSION_ID,
@@ -173,7 +191,7 @@ export default function StudioWorkspace() {
 
     setLastSavedIso(now);
     setRuntimeMissionState(readRuntimeMissionState());
-  }, [artifactDraft, ledger, uploadedFile, voiceNote]);
+  }, [artifactDraft, dbStandards, ledger, uploadedFile, voiceNote]);
 
   const canSave = phase3FeatureFlags.enableRuntime || phase3FeatureFlags.enableLedger;
 
@@ -222,7 +240,7 @@ export default function StudioWorkspace() {
             <button
               className="rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
               type="button"
-              onClick={saveArtifact}
+              onClick={() => void saveArtifact()}
               data-tour="artifact-save"
               disabled={!canSave}
             >

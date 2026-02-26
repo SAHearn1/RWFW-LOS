@@ -33,10 +33,10 @@ export const DEFAULT_PLUGIN_REGISTRY: readonly StandardsPlugin[] = [
   ),
 ];
 
-export function runStandardsPlugins(
+export async function runStandardsPlugins(
   input: { artifactText: string; standards?: StandardDescriptor[] },
   plugins: readonly StandardsPlugin[] = DEFAULT_PLUGIN_REGISTRY
-): VerificationRuleResult[] {
+): Promise<VerificationRuleResult[]> {
   const context: StandardsPluginContext = {
     artifactText: input.artifactText,
     standards: input.standards ?? [...DEFAULT_STANDARDS],

@@ -1,49 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CheckCircle, RotateCcw, AlertTriangle, X } from "lucide-react";
 
-type Verdict = "approve" | "return" | "flag";
+type ApiVerdict = "pending" | "approved" | "returned" | "flagged";
+type PostVerdict = "approved" | "returned" | "flagged";
 
 type ReviewItem = {
   id: string;
-  learnerName: string;
-  missionTitle: string;
+  missionId: string;
+  learnerId: string;
   artifactPreview: string;
-  submittedDate: string;
+  submittedAtIso: string;
+  verdict: ApiVerdict;
 };
 
-const MOCK_REVIEWS: ReviewItem[] = [
-  {
-    id: "rev-1",
-    learnerName: "Alex Rivera",
-    missionTitle: "Define Your Why",
-    artifactPreview:
-      "My mission is rooted in serving the community by bridging the gap between formal education and real-world application. I believe that learning should be purposeful and connected to...",
-    submittedDate: "Feb 24, 2026",
-  },
-  {
-    id: "rev-2",
-    learnerName: "Jordan Lee",
-    missionTitle: "Map Your Strengths",
-    artifactPreview:
-      "Through this artifact I explored how systems thinking applies to personal growth. The feedback loops I identified in my own learning process have reshaped how I approach...",
-    submittedDate: "Feb 23, 2026",
-  },
-  {
-    id: "rev-3",
-    learnerName: "Sam Patel",
-    missionTitle: "Identify Learning Pathways",
-    artifactPreview:
-      "I mapped three distinct pathways that align with my long-term goals. Each pathway includes specific milestones, accountability checkpoints, and reflection prompts designed to...",
-    submittedDate: "Feb 22, 2026",
-  },
-];
-
-const VERDICT_LABEL: Record<Verdict, string> = {
-  approve: "Approved",
-  return: "Returned for revision",
-  flag: "Flagged for follow-up",
+const VERDICT_LABEL: Record<PostVerdict, string> = {
+  approved: "Approved",
+  returned: "Returned for revision",
+  flagged: "Flagged for follow-up",
 };
 
 type Toast = {
@@ -52,19 +27,76 @@ type Toast = {
 };
 
 export default function ReviewQueue() {
+  const [items, setItems] = useState<ReviewItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  function recordVerdict(itemId: string, verdict: Verdict, learnerName: string) {
-    const message = `${VERDICT_LABEL[verdict]} — ${learnerName}`;
-    const toastId = `${itemId}-${verdict}-${Date.now()}`;
-    setToasts((prev) => [...prev, { id: toastId, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== toastId));
-    }, 4000);
+  const fetchItems = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/reviews");
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as { items: ReviewItem[] };
+      setItems(data.items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load reviews");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchItems();
+  }, [fetchItems]);
+
+  async function recordVerdict(itemId: string, verdict: PostVerdict) {
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: itemId, verdict }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+      const message = VERDICT_LABEL[verdict];
+      const toastId = `${itemId}-${verdict}-${Date.now()}`;
+      setToasts((prev) => [...prev, { id: toastId, message }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== toastId));
+      }, 4000);
+      // Refresh the list to reflect updated verdicts
+      await fetchItems();
+    } catch (err) {
+      const toastId = `err-${Date.now()}`;
+      const message = err instanceof Error ? err.message : "Verdict submission failed";
+      setToasts((prev) => [...prev, { id: toastId, message }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== toastId));
+      }, 4000);
+    }
   }
 
   function dismissToast(toastId: string) {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  }
+
+  function formatDate(isoString: string): string {
+    try {
+      return new Date(isoString).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return isoString;
+    }
   }
 
   return (
@@ -101,58 +133,92 @@ export default function ReviewQueue() {
         </div>
       )}
 
-      <div className="space-y-4" data-tour="review-queue">
-        {MOCK_REVIEWS.map((item) => (
-          <article
-            key={item.id}
-            className="rounded-lg border border-slate-200 bg-white shadow-sm"
-          >
-            <div className="px-5 py-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="font-semibold text-slate-900">{item.learnerName}</p>
-                  <p className="mt-0.5 text-sm text-slate-600">
-                    Mission: <span className="font-medium">{item.missionTitle}</span>
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-400">Submitted {item.submittedDate}</p>
+      {loading && (
+        <p className="text-sm text-slate-500" role="status">
+          Loading reviews…
+        </p>
+      )}
+
+      {!loading && error && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && items.length === 0 && (
+        <p className="text-sm text-slate-500">No submitted artifacts to review.</p>
+      )}
+
+      {!loading && !error && items.length > 0 && (
+        <div className="space-y-4" data-tour="review-queue">
+          {items.map((item) => (
+            <article
+              key={item.id}
+              className="rounded-lg border border-slate-200 bg-white shadow-sm"
+            >
+              <div className="px-5 py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900">
+                      Learner <span className="font-mono text-xs text-slate-500">{item.learnerId.slice(0, 12)}…</span>
+                    </p>
+                    <p className="mt-0.5 text-sm text-slate-600">
+                      Mission: <span className="font-medium font-mono text-xs">{item.missionId}</span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      Submitted {formatDate(item.submittedAtIso)}
+                    </p>
+                  </div>
+                  {item.verdict !== "pending" && (
+                    <span className="shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium capitalize
+                      data-[v=approved]:border-teal-300 data-[v=approved]:bg-teal-50 data-[v=approved]:text-teal-700
+                      data-[v=returned]:border-amber-300 data-[v=returned]:bg-amber-50 data-[v=returned]:text-amber-700
+                      data-[v=flagged]:border-red-300 data-[v=flagged]:bg-red-50 data-[v=flagged]:text-red-700"
+                      data-v={item.verdict}
+                    >
+                      {item.verdict}
+                    </span>
+                  )}
                 </div>
+                {item.artifactPreview && (
+                  <p className="mt-3 line-clamp-2 text-sm text-slate-600 italic">
+                    &ldquo;{item.artifactPreview}&rdquo;
+                  </p>
+                )}
               </div>
-              <p className="mt-3 line-clamp-2 text-sm text-slate-600 italic">
-                &ldquo;{item.artifactPreview}&rdquo;
-              </p>
-            </div>
-            <div className="flex items-center gap-2 border-t border-slate-100 px-5 py-3">
-              <button
-                type="button"
-                onClick={() => recordVerdict(item.id, "approve", item.learnerName)}
-                className="inline-flex items-center gap-1.5 rounded-md bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-              >
-                <CheckCircle size={14} aria-hidden="true" />
-                Approve
-              </button>
-              <button
-                type="button"
-                onClick={() => recordVerdict(item.id, "return", item.learnerName)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium text-amber-700 transition hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
-              >
-                <RotateCcw size={14} aria-hidden="true" />
-                Return
-              </button>
-              <button
-                type="button"
-                onClick={() => recordVerdict(item.id, "flag", item.learnerName)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
-              >
-                <AlertTriangle size={14} aria-hidden="true" />
-                Flag
-              </button>
-            </div>
-          </article>
-        ))}
-      </div>
+              <div className="flex items-center gap-2 border-t border-slate-100 px-5 py-3">
+                <button
+                  type="button"
+                  onClick={() => void recordVerdict(item.id, "approved")}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                >
+                  <CheckCircle size={14} aria-hidden="true" />
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void recordVerdict(item.id, "returned")}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium text-amber-700 transition hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+                >
+                  <RotateCcw size={14} aria-hidden="true" />
+                  Return
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void recordVerdict(item.id, "flagged")}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+                >
+                  <AlertTriangle size={14} aria-hidden="true" />
+                  Flag
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
 
       <p className="text-xs text-slate-400">
-        Live submissions will populate from the ledger when enabled. Verdict actions are UI-only in this phase.
+        Showing up to 50 most recent submissions from the ledger. Verdict actions are persisted immediately.
       </p>
     </section>
   );

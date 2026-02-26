@@ -45,9 +45,13 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour any time from Help." }
   ],
   professional_development: [
-    { id: "nav", selector: "[data-tour='primary-nav']", title: "PD Navigation", body: "Professional development tools are grouped for facilitation work." },
-    { id: "home", selector: "[data-tour='page-title']", title: "PD Workspace", body: "Coordinate cohorts, reviews, and session flow from this home view." },
-    { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour any time from Help." }
+    { id: "nav", selector: "[data-tour='primary-nav']", title: "Your Facilitator Navigation", body: "Use the sidebar to access your Command Center, Cohorts, Reviews, Builder, and Pickups." },
+    { id: "home", selector: "[data-tour='page-title']", title: "Professional Development Home", body: "Your PD dashboard gives you a quick view of active sessions, pending reviews, and cohort health." },
+    { id: "command-center", selector: "[data-tour='command-center-dashboard']", title: "Command Center", body: "Your operational hub: active cohorts, pickup queue, and review backlog at a glance." },
+    { id: "cohorts", selector: "[data-tour='cohorts-list']", title: "Cohorts", body: "Manage your cohorts, view member counts, and track learner progress." },
+    { id: "reviews", selector: "[data-tour='review-queue']", title: "Review Queue", body: "Approve, return, or flag learner artifacts. Your review decisions shape credential eligibility." },
+    { id: "builder", selector: "[data-tour='builder-workspace']", title: "Mission Builder", body: "Create and configure missions and cohorts for your learners." },
+    { id: "help", selector: "[data-tour='help-menu']", title: "Help & Tour Restart", body: "Click here at any time to restart this tour or get support." }
   ],
   admin: [
     { id: "nav", selector: "[data-tour='primary-nav']", title: "Admin Navigation", body: "Standards, evidence, and exports are role-scoped." },

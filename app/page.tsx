@@ -191,7 +191,7 @@ export default function HomePage() {
                   clarity. Less admin noise, more meaningful feedback.
                 </p>
                 <Link
-                  href="/sign-in"
+                  href="/sign-in?role=teacher"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-rootwork-gold transition-colors hover:text-rootwork-olive"
                 >
                   Teacher login
@@ -215,7 +215,7 @@ export default function HomePage() {
                   Full visibility without micromanagement.
                 </p>
                 <Link
-                  href="/sign-in"
+                  href="/sign-in?role=admin"
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-rootwork-teal transition-colors hover:text-rootwork-olive"
                 >
                   Admin info
