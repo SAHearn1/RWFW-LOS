@@ -1,20 +1,104 @@
 {
-  "generatedAtIso": "2026-02-26T03:43:23.277Z",
+  "generatedAtIso": "2026-02-26T04:49:35.248Z",
   "checks": [
     {
       "script": "lint",
       "passed": true,
       "exitCode": 0,
-      "startedAtIso": "2026-02-26T03:43:07.270Z",
-      "finishedAtIso": "2026-02-26T03:43:18.889Z"
+      "startedAtIso": "2026-02-26T04:48:39.483Z",
+      "finishedAtIso": "2026-02-26T04:48:46.404Z"
     },
     {
       "script": "typecheck",
-      "passed": false,
-      "exitCode": 1,
-      "startedAtIso": "2026-02-26T03:43:18.890Z",
-      "finishedAtIso": "2026-02-26T03:43:23.276Z"
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:48:46.404Z",
+      "finishedAtIso": "2026-02-26T04:48:49.409Z"
+    },
+    {
+      "script": "build",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:48:49.409Z",
+      "finishedAtIso": "2026-02-26T04:49:29.911Z"
+    },
+    {
+      "script": "verify:env",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:29.911Z",
+      "finishedAtIso": "2026-02-26T04:49:30.339Z"
+    },
+    {
+      "script": "verify:env-parity",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:30.339Z",
+      "finishedAtIso": "2026-02-26T04:49:30.759Z"
+    },
+    {
+      "script": "verify:engine-smoke",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:30.759Z",
+      "finishedAtIso": "2026-02-26T04:49:31.170Z"
+    },
+    {
+      "script": "verify:webhook-contract",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:31.170Z",
+      "finishedAtIso": "2026-02-26T04:49:31.599Z"
+    },
+    {
+      "script": "verify:security-checklist",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:31.599Z",
+      "finishedAtIso": "2026-02-26T04:49:32.044Z"
+    },
+    {
+      "script": "verify:branch-policy",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:32.044Z",
+      "finishedAtIso": "2026-02-26T04:49:32.524Z"
+    },
+    {
+      "script": "verify:swarm-overlap",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:32.524Z",
+      "finishedAtIso": "2026-02-26T04:49:32.940Z"
+    },
+    {
+      "script": "verify:role-routes",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:32.940Z",
+      "finishedAtIso": "2026-02-26T04:49:33.354Z"
+    },
+    {
+      "script": "verify:runtime-routes",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:33.354Z",
+      "finishedAtIso": "2026-02-26T04:49:33.763Z"
+    },
+    {
+      "script": "verify:onboarding",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:33.763Z",
+      "finishedAtIso": "2026-02-26T04:49:34.196Z"
+    },
+    {
+      "script": "verify:http-smoke",
+      "passed": true,
+      "exitCode": 0,
+      "startedAtIso": "2026-02-26T04:49:34.196Z",
+      "finishedAtIso": "2026-02-26T04:49:35.247Z"
     }
   ],
-  "passed": false
+  "passed": true
 }

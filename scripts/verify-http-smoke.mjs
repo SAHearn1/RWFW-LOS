@@ -1,6 +1,19 @@
 import { spawn } from "node:child_process";
 
-const routes = ["/", "/sign-in", "/app", "/app/studio", "/app/credentials", "/app/evidence", "/app/settings", "/app/exports"];
+// /sign-in requires real Clerk keys to render without 500.
+// Only include it in the smoke check when a real publishable key is configured.
+const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+const clerkReady = clerkKey.startsWith("pk_");
+const routes = [
+  "/",
+  ...(clerkReady ? ["/sign-in"] : []),
+  "/app",
+  "/app/studio",
+  "/app/credentials",
+  "/app/evidence",
+  "/app/settings",
+  "/app/exports",
+];
 const baseUrl = "http://127.0.0.1:3000";
 const performanceBudgetsMs = {
   "/": 2500,
