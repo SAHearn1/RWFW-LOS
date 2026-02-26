@@ -557,6 +557,44 @@ This section documents every known gap between the product spec and the current 
 - **Fix:** Implement agent registry persistence, capability routing via `buildCapabilityIndex`, and actual task dispatch. Add a GET endpoint for agent discovery.
 - **Resolution:** `/api/federation` POST now dispatches via `buildCapabilityIndex` for capability routing; GET endpoint added for agent discovery.
 
+### 🟡 Sprint 7 Gaps — Discovered 2026-02-26 Post-Integration Audit
+
+#### GAP-30: Facilitator screens — hardcoded mock data never replaced
+- **Files:** `components/command-center/CommandCenterDashboard.tsx`, `components/reviews/ReviewQueue.tsx`, `components/builder/BuilderWorkspace.tsx`
+- **Issue:** All three facilitator screens were implemented in Sprint 5 with mock/static data. No API routes back them. The mock data was appropriate as scaffolding, but must be replaced with live data before the product is useful.
+- **Fix:** Create `/api/command-center` aggregation route; create `/api/reviews` route from ledger; wire `BuilderWorkspace` mission creation to `/api/missions`.
+- **Status:** Open — Sprint 7 tickets #401, #402, #403.
+
+#### GAP-31: Standards verification pipeline uses DEFAULT_STANDARDS only — ignores admin-configured standards
+- **File:** `lib/standards/contracts/plugins.ts`, `components/studio/StudioWorkspace.tsx`
+- **Issue:** `runStandardsPlugins()` was wired in Sprint 6 (GAP-26 fix), but it still runs the keyword rule against `DEFAULT_STANDARDS` hardcoded in `localVerifier.ts`. The admin CRUD API and SQLite registry added in Sprint 6 (#302) are never consulted. Admins can add standards to the DB but they have no effect on verification.
+- **Fix:** Fetch standards from `/api/admin/standards` in StudioWorkspace on mount; pass to `runStandardsPlugins()`. Update plugin interface to accept `standards` parameter.
+- **Status:** Open — Sprint 7 ticket #404.
+
+#### GAP-32: Professional development onboarding tour has only 3 generic steps
+- **File:** `lib/onboarding/tourSteps.ts`
+- **Issue:** Despite the `professional_development` role having 8 nav items and role-specific screens (Command Center, Cohorts, Reviews, Builder), the tour only covers `primary-nav`, `page-title`, `help-menu`. Teacher tour was expanded to 8 steps in Sprint 5; PD tour was not.
+- **Fix:** Add 5 PD-specific tour steps: `command-center`, `cohorts`, `reviews`, `builder`, `pickups`.
+- **Status:** Open — Sprint 7 ticket #400.
+
+#### GAP-33: Landing page teacher/admin CTAs lack role prefill
+- **File:** `app/page.tsx`
+- **Issue:** Learner CTAs already carry `?role=student_independent` / `?role=adult_learner` query params. Teacher and Admin CTAs route to `/sign-in` with no role context, so the sign-in page cannot pre-select or validate the intended role.
+- **Fix:** Add `?role=teacher` and `?role=admin` to respective CTA hrefs; the sign-up/sign-in pages already parse this param.
+- **Status:** Open — Sprint 7 ticket #405.
+
+#### GAP-34: Federation dispatch in-memory only — tasks lost on process restart
+- **File:** `lib/federation/dispatch.ts`
+- **Issue:** `DISPATCHED_TASKS` is a module-level array. It works within a single Node.js process lifetime but is cleared on any restart, redeploy, or cold start. In Vercel's serverless runtime, each function invocation may be a new process. There is no durable task log.
+- **Fix:** Persist dispatched tasks to SQLite via a new `lib/federation/persistence.ts` adapter; swap `DISPATCHED_TASKS` array for DB reads/writes.
+- **Status:** Open — Sprint 7 ticket #406.
+
+#### GAP-35: GAP-28 partial resolution — StandardsRegistry UI still falls back to DEFAULT_STANDARDS when DB is empty
+- **File:** `components/standards/StandardsRegistry.tsx`
+- **Issue:** Sprint 6 added write capability to `StandardsRegistry`. However, if `/api/admin/standards` returns an empty array (DB not seeded), the component falls back to displaying `DEFAULT_STANDARDS` from `localVerifier.ts`, silently mixing the DB path with the hardcoded path. The fallback masks the fact that the DB is empty and may confuse admins.
+- **Fix:** On first load with empty DB response, auto-seed the DB with `DEFAULT_STANDARDS` via a POST to `/api/admin/standards`. Eliminates the silent fallback.
+- **Status:** Open — addressed in Sprint 7 ticket #404 (same agent).
+
 ---
 
 ## 13. Key Files Reference
@@ -820,12 +858,68 @@ Zero shared files. `app/app/layout.tsx` untouched by all agents.
 
 ### Sprint 6 Acceptance Criteria
 
+- [x] `npm run verify:release-gate` passes after all merges ✅
+- [x] CohortsList renders real org members when teacher/PD role present ✅
+- [x] DB ledger stores `dataTier`, `rigorLevel`, `competencies` when `NEXT_PUBLIC_ENABLE_DB_LEDGER=true` ✅
+- [x] Admin can add/edit/delete standards at `/app/standards` ✅
+- [x] Studio calls `runStandardsPlugins()` — verified by unit check of plugin dispatch path ✅
+- [x] localStorage encrypted when `NEXT_PUBLIC_LOCAL_STORAGE_ENCRYPTION_KEY` is set ✅
+- [x] TRACE phase events written to runtime store on each phase transition ✅
+- [x] Orchestration jobs enqueue and execute with typed job handlers (not no-op) ✅
+- [x] Federation POST dispatches to assigned agent endpoint; GET returns live registry ✅
+
+---
+
+## 18. Sprint 7 — Live Data Wiring & Gap Resolution
+
+> **Status:** 🟡 In progress — 2026-02-26
+> **Branch:** `claude/gap-analysis-user-roles-RHg64`
+> **Agent swarm:** 7 tickets, all parallelisable (verified zero file overlap)
+> **Audit basis:** Post-Sprint-6 gap analysis confirming GAP-30 through GAP-35
+
+### Ticket Manifest
+
+| Ticket | Title | Gap | Lane | Owner Files | Status |
+|--------|-------|-----|------|-------------|--------|
+| #400 | Expand PD onboarding tour (GAP-32) | GAP-32 | B | `lib/onboarding/tourSteps.ts` | 🟡 Queued |
+| #401 | CommandCenter real data API (GAP-30a) | GAP-30 | C | `components/command-center/CommandCenterDashboard.tsx`, `app/api/command-center/route.ts` (new) | 🟡 Queued |
+| #402 | ReviewQueue real data API (GAP-30b) | GAP-30 | C | `components/reviews/ReviewQueue.tsx`, `app/api/reviews/route.ts` (new) | 🟡 Queued |
+| #403 | BuilderWorkspace wire to missions (GAP-30c) | GAP-30 | C | `components/builder/BuilderWorkspace.tsx` | 🟡 Queued |
+| #404 | Wire verification to DB standards + seed fallback (GAP-31, GAP-35) | GAP-31+35 | C | `lib/standards/contracts/plugins.ts`, `components/studio/StudioWorkspace.tsx`, `components/standards/StandardsRegistry.tsx` | 🟡 Queued |
+| #405 | Landing page role-prefill CTAs (GAP-33) | GAP-33 | B | `app/page.tsx` | 🟡 Queued |
+| #406 | Federation dispatch SQLite persistence (GAP-34) | GAP-34 | D | `lib/federation/dispatch.ts`, `lib/federation/persistence.ts` (new) | 🟡 Queued |
+
+### Swarm Overlap Verification
+
+```
+Agent #400 → lib/onboarding/tourSteps.ts
+Agent #401 → components/command-center/CommandCenterDashboard.tsx, app/api/command-center/route.ts
+Agent #402 → components/reviews/ReviewQueue.tsx, app/api/reviews/route.ts
+Agent #403 → components/builder/BuilderWorkspace.tsx
+Agent #404 → lib/standards/contracts/plugins.ts, components/studio/StudioWorkspace.tsx, components/standards/StandardsRegistry.tsx
+Agent #405 → app/page.tsx
+Agent #406 → lib/federation/dispatch.ts, lib/federation/persistence.ts
+```
+
+Zero shared files. `app/app/layout.tsx` untouched by all agents.
+
+### Deferred Gaps (contract undefined / product decision pending)
+
+| Gap | Reason Deferred |
+|-----|-----------------|
+| GAP-13 (MCP) | No MCP contract defined; stub is correct holding pattern |
+| GAP-14 (Offline) | Service worker + cache API requires dedicated contract ticket |
+| GAP-17 (student_enrolled org) | Awaiting product decision |
+| GAP-19 (Vite migration) | Ongoing screen-by-screen work, out of sprint scope |
+
+### Sprint 7 Acceptance Criteria
+
 - [ ] `npm run verify:release-gate` passes after all merges
-- [ ] CohortsList renders real org members when teacher/PD role present
-- [ ] DB ledger stores `dataTier`, `rigorLevel`, `competencies` when `NEXT_PUBLIC_ENABLE_DB_LEDGER=true`
-- [ ] Admin can add/edit/delete standards at `/app/standards`
-- [ ] Studio calls `runStandardsPlugins()` — verified by unit check of plugin dispatch path
-- [ ] localStorage encrypted when `NEXT_PUBLIC_LOCAL_STORAGE_ENCRYPTION_KEY` is set
-- [ ] TRACE phase events written to runtime store on each phase transition
-- [ ] Orchestration jobs enqueue and execute with typed job handlers (not no-op)
-- [ ] Federation POST dispatches to assigned agent endpoint; GET returns live registry
+- [ ] PD tour has ≥ 6 steps including command-center, cohorts, reviews, builder
+- [ ] CommandCenter shows real cohort counts from `/api/cohorts`
+- [ ] ReviewQueue shows real ledger artifacts pending review
+- [ ] BuilderWorkspace mission creation POSTs to `/api/missions`
+- [ ] Studio verification fetches DB standards; falls back gracefully if empty
+- [ ] StandardsRegistry auto-seeds DEFAULT_STANDARDS into DB on first empty load
+- [ ] Landing teacher CTA links to `/sign-in?role=teacher`; admin to `/sign-in?role=admin`
+- [ ] Federation task log survives process restart (SQLite-backed)
