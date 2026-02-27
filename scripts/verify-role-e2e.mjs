@@ -14,38 +14,38 @@ const roleConfigs = [
   {
     role: "student_independent",
     emailEnv: "E2E_STUDENT_INDEPENDENT_EMAIL",
-    allowRoutes: ["/app", "/app/studio", "/app/credentials", "/app/missions"],
-    denyRoutes: ["/app/command-center", "/app/evidence", "/app/exports"]
+    allowRoutes: ["/app", "/app/studio", "/app/credentials", "/app/missions", "/app/portfolio", "/app/core", "/app/settings"],
+    denyRoutes: ["/app/command-center", "/app/evidence", "/app/exports", "/app/pickups"]
   },
   {
     role: "student_enrolled",
     emailEnv: "E2E_STUDENT_ENROLLED_EMAIL",
-    allowRoutes: ["/app", "/app/studio", "/app/credentials", "/app/missions"],
-    denyRoutes: ["/app/command-center", "/app/evidence", "/app/exports"]
+    allowRoutes: ["/app", "/app/studio", "/app/credentials", "/app/missions", "/app/portfolio", "/app/core", "/app/settings"],
+    denyRoutes: ["/app/command-center", "/app/evidence", "/app/exports", "/app/pickups"]
   },
   {
     role: "adult_learner",
     emailEnv: "E2E_ADULT_LEARNER_EMAIL",
-    allowRoutes: ["/app", "/app/studio", "/app/credentials", "/app/missions"],
-    denyRoutes: ["/app/command-center", "/app/evidence", "/app/exports"]
+    allowRoutes: ["/app", "/app/studio", "/app/credentials", "/app/missions", "/app/portfolio", "/app/core", "/app/settings"],
+    denyRoutes: ["/app/command-center", "/app/evidence", "/app/exports", "/app/pickups"]
   },
   {
     role: "teacher",
     emailEnv: "E2E_TEACHER_EMAIL",
-    allowRoutes: ["/app", "/app/command-center", "/app/cohorts", "/app/reviews"],
-    denyRoutes: ["/app/studio", "/app/credentials", "/app/evidence"]
+    allowRoutes: ["/app", "/app/command-center", "/app/cohorts", "/app/reviews", "/app/pickups", "/app/core"],
+    denyRoutes: ["/app/studio", "/app/credentials", "/app/evidence", "/app/portfolio", "/app/settings"]
   },
   {
     role: "professional_development",
     emailEnv: "E2E_PROFESSIONAL_DEVELOPMENT_EMAIL",
-    allowRoutes: ["/app", "/app/command-center", "/app/cohorts", "/app/reviews"],
-    denyRoutes: ["/app/studio", "/app/credentials", "/app/evidence"]
+    allowRoutes: ["/app", "/app/command-center", "/app/cohorts", "/app/reviews", "/app/pickups", "/app/core"],
+    denyRoutes: ["/app/studio", "/app/credentials", "/app/evidence", "/app/portfolio", "/app/settings"]
   },
   {
     role: "admin",
     emailEnv: "E2E_ADMIN_EMAIL",
-    allowRoutes: ["/app", "/app/evidence", "/app/exports", "/app/standards"],
-    denyRoutes: ["/app/studio", "/app/command-center", "/app/cohorts"]
+    allowRoutes: ["/app", "/app/evidence", "/app/exports", "/app/standards", "/app/core"],
+    denyRoutes: ["/app/studio", "/app/command-center", "/app/cohorts", "/app/portfolio", "/app/pickups", "/app/settings"]
   },
   {
     // REQUIRED for production readiness: provision a super_admin account in the Clerk production instance.
