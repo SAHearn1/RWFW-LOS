@@ -29,7 +29,7 @@
 
 **RootWork LOS** is a Learning Operating System that integrates learner agency, teacher guidance, and administrator visibility in one role-aware workflow. It is built on a Next.js App Router shell (the "front door") that wraps a Vite-based legacy core (`src/`) during an active screen-by-screen migration.
 
-**Current state (as of 2026-02-27):** Phases 1–6 execution complete. Phase 4 Runtime Realization complete (all engine routes wired). Release gate (verify:release-gate) fully passes including HTTP smoke. Remaining work is data governance (GAP-27, GAP-28) and low-priority polish items.
+**Current state (as of 2026-02-27, fifth pass):** Phases 1–6 execution complete. Phase 4 Runtime Realization complete (all engine routes wired). Phase 5 Data Governance complete. Phase 6 Super-Admin Clerk integration complete (user roster live data, teacher role Clerk sync). Release gate (verify:release-gate) fully passes. Only low-priority UX polish remains (GAP-15 CTA routing — needs product decision).
 
 **"First 60 Seconds" user scenario (must always pass):**
 1. Visit `/` → click "Start as Independent Learner"
@@ -171,11 +171,12 @@ Role groupings (used in route access contracts):
 | Role | Clerk org required? | Notes |
 |------|---------------------|-------|
 | student_independent | No | Self-enrolled learner |
-| student_enrolled | No | Classroom learner (org check pending — see gaps) |
+| student_enrolled | **Yes** — `orgId` required | Enrolled students require org (classroom) — enforced in `app/app/layout.tsx:40` |
 | adult_learner | No | Adult professional learning pathway |
 | teacher | **Yes** — `orgId` required | Blocked at layout if no org |
 | professional_development | **Yes** — `orgId` required | Blocked at layout if no org |
 | admin | **Yes** — `orgId` required | Blocked at layout if no org |
+| super_admin | **Yes** — `orgId` required | Platform-level super admin |
 
 ### Role-to-Home Dashboard Mapping
 
@@ -402,24 +403,18 @@ All of the following have been implemented and closed:
 | GAP-27 | Data retention hooks unreachable | ✅ `app/api/admin/retention/route.ts` wires DB purge + audit |
 | GAP-28 | Standards registry hardcoded | ✅ `StandardsRegistry` component renders real `DEFAULT_STANDARDS` |
 | Sign-in 500 | Sign-in crashed without Clerk keys | ✅ Graceful "Auth Unavailable" panel |
+| GAP-NEW-1 | Teacher role not synced to Clerk | ✅ `TeacherAssignment` calls `/api/super-admin/assign-role` on submit |
+| GAP-NEW-2 | User roster showed only demo data | ✅ `UserRoster` fetches live data from `/api/super-admin/users` (Clerk Management API) |
+| GAP-NEW-6 | GAP-17 docs incorrect — org check not enforced | ✅ `app/app/layout.tsx:40` already enforces `student_enrolled`; docs corrected |
+| GAP-NEW-12 | BuilderWorkspace buttons had no handlers | ✅ Controlled form state + validation + success/error feedback added |
 
 ### 🟢 Low-Priority Gaps (remaining — no code regression)
 
 #### GAP-15: Landing page CTA differentiation
 - **File:** `app/page.tsx`
-- **Issue:** "Teacher Login" and "Admin Info" both route to `/sign-in`. No role-prefill or separate onboarding paths.
-- **Expected:** Teacher/admin CTAs should either pre-set a role hint or route to dedicated onboarding.
-- **Note:** Low priority; requires product decision on role-prefill strategy.
-
-#### GAP-17: student_enrolled org check not enforced
-- **File:** `app/app/layout.tsx:32`
-- **Issue:** `student_enrolled` role is not in the org-required check (only teacher, professional_development, admin). Enrolled students belong to classrooms — they may need org validation too.
-- **Fix:** Confirm product decision; if org required for enrolled students, add to check.
-
-#### GAP-17: student_enrolled org check not enforced
-- **File:** `app/app/layout.tsx:32`
-- **Issue:** `student_enrolled` role is not in the org-required check. Enrolled students belong to classrooms — they may need org validation too.
-- **Fix:** Confirm product decision; if org required for enrolled students, add to check.
+- **Issue:** "Teacher Login" routes to `/sign-in`, "Admin Info" routes to `/admin-info`. No role-prefill for the sign-in flow.
+- **Expected:** Teacher CTA could pre-set a role hint (URL param or cookie) so post-login role assignment is smoother.
+- **Note:** Low priority; requires product decision on role-prefill strategy. No code regression — current routing is functional.
 
 ---
 
@@ -505,14 +500,20 @@ All of the following have been implemented and closed:
 | File | Purpose |
 |------|---------|
 | `app/api/health/route.ts` | Health check (`GET /api/health`) |
+| `app/api/ai/health/route.ts` | AI provider health — local Ollama + cloud managed + federation status |
 | `app/api/inference/route.ts` | LLM inference (ModelRouter + LocalOllama + CloudManaged) |
 | `app/api/ledger/records/route.ts` | Ledger GET/POST (role-gated, DB-backed) |
+| `app/api/timeline/learner/route.ts` | Learner timeline built from ledger records (learner roles only) |
 | `app/api/admin/retention/route.ts` | Admin data retention POST (purge_before / delete_learner, admin+super_admin only) |
+| `app/api/super-admin/users/route.ts` | Super-admin GET: live user list from Clerk Management API |
+| `app/api/super-admin/assign-role/route.ts` | Super-admin POST: update user role in Clerk publicMetadata + audit log |
 | `app/api/orchestration/worker-run/route.ts` | Orchestration worker (SQS + DynamoDB, in-memory fallback) |
 | `app/api/federation/route.ts` | Federation task dispatch + discovery (GET + POST, feature-gated) |
 | `app/api/webhooks/clerk/route.ts` | Clerk user sync webhook with HMAC validation + metadata sync |
 | `app/api/mcp/health/route.ts` | MCP health check (503 when flag disabled) |
 | `app/api/offline/status/route.ts` | Offline status (503 when flag disabled) |
+| `app/api/support/diagnostics/route.ts` | Support diagnostics bundle (release-gate status, flags, env presence) |
+| `app/api/telemetry/pilot/route.ts` | Pilot KPI event ingestion (bearer token auth) |
 
 ### Standards & Federation
 
@@ -650,8 +651,9 @@ A change is done only when:
 
 ---
 
-*Last updated: 2026-02-27 — Fourth verification pass. All critical, high, and medium-priority gaps closed. Release gate fully passes.*
-*Phase 4 Runtime Realization complete. Phase 5 Data Governance: GAP-27 wired via `/api/admin/retention`.*
-*All remaining gaps either have graceful stubs (GAP-13 MCP health, GAP-14 offline status) or are low-priority UX decisions (GAP-15 CTA routing, GAP-17 org check).*
-*Remaining open gaps: GAP-15 (CTA differentiation — low priority UX), GAP-17 (org check — pending product decision).*
+*Last updated: 2026-02-27 — Fifth verification pass. All critical, high, and medium-priority gaps closed. Release gate fully passes.*
+*Phase 6 Super-Admin Clerk integration: UserRoster now fetches live Clerk data via `/api/super-admin/users`; TeacherAssignment syncs to Clerk publicMetadata via `/api/super-admin/assign-role`.*
+*BuilderWorkspace now has controlled form state with validation and success/error feedback (GAP-NEW-12).*
+*Documentation corrected: GAP-17 was a doc error — `student_enrolled` org check IS enforced in `app/app/layout.tsx:40`.*
+*Only remaining gap: GAP-15 (landing CTA differentiation — low priority, needs product decision).*
 *Branch: `claude/gap-analysis-build-docs-96UGo`*

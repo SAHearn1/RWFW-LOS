@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { readAllTeacherAssignments, upsertTeacherAssignment, revokeTeacherAssignment } from "@/lib/licensing/store";
+
+import { readAllTeacherAssignments, revokeTeacherAssignment, upsertTeacherAssignment } from "@/lib/licensing/store";
 import type { TeacherAssignmentRecord } from "@/lib/licensing/types";
 
 function buildEmptyForm() {
@@ -15,8 +16,9 @@ export default function TeacherAssignment() {
   const [form, setForm] = useState(buildEmptyForm());
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [syncing, setSyncing] = useState(false);
 
-  function handleAssign() {
+  async function handleAssign() {
     setError("");
     setSuccess("");
     if (!form.userId.trim() || !form.email.trim() || !form.orgId.trim()) {
@@ -37,7 +39,30 @@ export default function TeacherAssignment() {
     upsertTeacherAssignment(record);
     setAssignments(readAllTeacherAssignments());
     setForm(buildEmptyForm());
-    setSuccess(`Teacher role assigned to ${record.email}.`);
+
+    // Sync role to Clerk publicMetadata so the auth layer recognizes the change.
+    setSyncing(true);
+    try {
+      const response = await fetch("/api/super-admin/assign-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: record.userId, role: "teacher", orgId: record.orgId }),
+      });
+      if (response.ok) {
+        setSuccess(`Teacher role assigned to ${record.email} and synced to auth system.`);
+      } else {
+        const data = (await response.json()) as { error?: string };
+        setSuccess(
+          `Teacher role recorded locally for ${record.email}. Auth sync failed: ${data.error ?? response.status}. Contact a system administrator.`
+        );
+      }
+    } catch {
+      setSuccess(
+        `Teacher role recorded locally for ${record.email}. Auth sync is unavailable. Contact a system administrator.`
+      );
+    } finally {
+      setSyncing(false);
+    }
   }
 
   function handleRevoke(userId: string) {
@@ -120,15 +145,12 @@ export default function TeacherAssignment() {
         {success && <p className="mt-3 text-xs text-green-700">{success}</p>}
 
         <button
-          onClick={handleAssign}
-          className="mt-4 rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+          onClick={() => void handleAssign()}
+          disabled={syncing}
+          className="mt-4 rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
         >
-          Assign Teacher Role
+          {syncing ? "Syncing…" : "Assign Teacher Role"}
         </button>
-
-        <p className="mt-3 text-xs text-amber-700">
-          Note: This stores the assignment locally. To apply the Clerk role change, connect the Clerk Management API.
-        </p>
       </div>
 
       <div>
