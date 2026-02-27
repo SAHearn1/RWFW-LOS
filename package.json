@@ -24,7 +24,11 @@
     "verify:synthetic-smoke": "node scripts/verify-synthetic-smoke.mjs",
     "verify:runtime-ledger-consistency": "node scripts/verify-runtime-ledger-consistency.mjs",
     "verify:release-drill": "node scripts/verify-release-drill.mjs",
-    "verify:cloud-aws-smoke": "node scripts/verify-cloud-aws-smoke.mjs"
+    "verify:cloud-aws-smoke": "node scripts/verify-cloud-aws-smoke.mjs",
+    "verify:super-admin-contracts": "node scripts/verify-super-admin-contracts.mjs",
+    "verify:ledger-contracts": "node scripts/verify-ledger-contracts.mjs",
+    "verify:api-auth-guards": "node scripts/verify-api-auth-guards.mjs",
+    "verify:super-admin-e2e": "node scripts/verify-super-admin-e2e.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.997.0",

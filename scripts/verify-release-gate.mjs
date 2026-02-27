@@ -16,7 +16,9 @@ const checks = [
   "verify:role-routes",
   "verify:runtime-routes",
   "verify:onboarding",
-  "verify:http-smoke"
+  "verify:http-smoke",
+  "verify:super-admin-contracts",
+  "verify:ledger-contracts"
 ];
 
 function runNpmScript(script) {
