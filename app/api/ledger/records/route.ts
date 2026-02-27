@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
 import type { LedgerRecord } from "@/lib/ledger/adapter";
-import { createDbLedgerAdapter, getDbLedgerAvailability } from "@/lib/ledger/dbAdapter";
+import { getServerLedgerAdapter } from "@/lib/ledger/server-adapter";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
 export const runtime = "nodejs";
@@ -65,9 +65,9 @@ export async function GET(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  const availability = getDbLedgerAvailability();
-  if (!availability.enabled) {
-    return withTrace(503, traceId, { error: availability.reason ?? "DB ledger unavailable." });
+  const ledger = getServerLedgerAdapter();
+  if (!ledger.available) {
+    return withTrace(503, traceId, { error: ledger.reason });
   }
 
   const requestedLearnerId = new URL(request.url).searchParams.get("learnerId")?.trim();
@@ -89,13 +89,10 @@ export async function GET(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  // availability.enabled=true guarantees databasePath is set per getDbLedgerAvailability().
-  if (!availability.databasePath) {
-    return withTrace(503, traceId, { error: "DB ledger path is unavailable." });
-  }
-  const adapter = createDbLedgerAdapter(availability.databasePath);
-  const allRecords = adapter.readAll();
-  const records = effectiveLearnerId ? allRecords.filter((record) => record.learnerId === effectiveLearnerId) : allRecords;
+  const allRecords = await ledger.adapter.readAll();
+  const records = effectiveLearnerId
+    ? allRecords.filter((record) => record.learnerId === effectiveLearnerId)
+    : allRecords;
 
   return withTrace(200, traceId, {
     records,
@@ -113,9 +110,9 @@ export async function POST(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  const availability = getDbLedgerAvailability();
-  if (!availability.enabled) {
-    return withTrace(503, traceId, { error: availability.reason ?? "DB ledger unavailable." });
+  const ledger = getServerLedgerAdapter();
+  if (!ledger.available) {
+    return withTrace(503, traceId, { error: ledger.reason });
   }
 
   let payload: unknown;
@@ -138,9 +135,6 @@ export async function POST(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  if (!availability.databasePath) {
-    return withTrace(503, traceId, { error: "DB ledger path is unavailable." });
-  }
-  const stored = createDbLedgerAdapter(availability.databasePath).upsert(payload);
+  const stored = await ledger.adapter.upsert(payload);
   return withTrace(200, traceId, { record: stored });
 }
