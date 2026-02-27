@@ -1,6 +1,6 @@
 # RWFW LOS Program Status
 
-Last Updated: 2026-02-27 (Fifth pass)
+Last Updated: 2026-02-27 (Sixth pass)
 Owner: Release Captain (Codex)
 
 ## Executive Status
@@ -8,7 +8,7 @@ Owner: Release Captain (Codex)
 - Role/Auth + RBAC + 403: **Green** ✅
 - Multi-role E2E smoke: **Green** ✅
 - CI baseline gates (lint + typecheck + build): **Green** ✅
-- Release gate (verify:release-gate): **Green** ✅ (all 14 checks pass)
+- Release gate (verify:release-gate): **Green** ✅ (all 16 checks pass)
 - Sign-in/sign-up graceful degradation: **Green** ✅
 - Cloud orchestration (AWS/SQS/DynamoDB): **Green** ✅
 - Local private model path (Ollama HTTP): **Green** ✅
@@ -51,18 +51,19 @@ Owner: Release Captain (Codex)
 - **GAP-NEW-1**: Teacher role assignment now syncs to Clerk publicMetadata via `/api/super-admin/assign-role` ✅
 - **GAP-NEW-2**: UserRoster now fetches live data from Clerk Management API via `/api/super-admin/users` ✅
 - **GAP-NEW-12**: BuilderWorkspace buttons now have controlled state, validation, success/error feedback ✅
+- **GAP-15**: Landing CTAs use `?intent=teacher` / `?intent=admin`; contextual banner shown in sign-in page; dead `/admin-info` link replaced ✅
+- **Test suite sprint**: 4 new verification scripts; release gate expanded to 16 checks (`verify:super-admin-contracts`, `verify:ledger-contracts` added) ✅
+- **Best practices pass**: DB singleton, userId format validation, `ORG_REQUIRED_ROLES` enforcement, `nodejs` runtime declarations, accessibility improvements ✅
 
-## Remaining Open Gaps (Low Priority Only)
+## Remaining Open Gaps
 
-| Gap | Description | Priority |
-|-----|-------------|----------|
-| GAP-15 | Landing page CTA differentiation (Teacher/Admin sign-in role-prefill) | Low — needs product decision |
+**None.** All known gaps are closed as of the sixth pass (2026-02-27).
 
 ## Program Epics
 - `#104` Phase 4 Runtime Realization — **COMPLETE**
 - Phase 5 Data Governance — **COMPLETE** (GAP-27 retention API, GAP-28 standards UI)
 - Phase 6 Super-Admin Clerk Integration — **COMPLETE** (GAP-NEW-1, GAP-NEW-2, GAP-NEW-12)
-- Phase 7 (planned): UX Polish (GAP-15 when product decision made)
+- Phase 7 UX Polish — **COMPLETE** (GAP-15 closed with `?intent=` param approach)
 
 ## Guardrail Enforcement
 - One PR per issue, <= 15 files unless approved.

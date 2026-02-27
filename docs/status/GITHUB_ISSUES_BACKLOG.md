@@ -1,6 +1,6 @@
 # GitHub Issues Backlog — RootWork LOS
 
-Generated: 2026-02-27 (Updated after fifth inspection pass)
+Generated: 2026-02-27 (Updated after sixth inspection pass)
 Status: Accurate as of full codebase re-inspection (third pass)
 
 ---
@@ -73,14 +73,12 @@ CLAUDE.md and PROGRAM_STATUS.md corrected to reflect actual code
 ### Issue #114 — [GAP-15] Landing page role-specific CTA routing
 **Priority:** Low
 **Lane:** Lane E (UX backlog)
-**Status:** Open — needs product decision
+**Status:** ✅ **CLOSED** — Implemented in sixth pass
 
-**Problem:** "Teacher Login" routes to `/sign-in` with no role hint. "Admin Info" routes to `/admin-info` (informational page).
-
-**Acceptance Criteria:**
-- [ ] Teacher CTA either passes a role hint query param or sets a cookie so post-login role assignment is smoother
-- [ ] `npm run verify:release-gate` passes
-- **Note:** Requires product decision on role-prefill strategy before implementation
+**Resolution:**
+- `app/page.tsx`: "Teacher Login" → `/sign-in?intent=teacher`; "Admin Info" → `/sign-in?intent=admin` (dead `/admin-info` link removed)
+- `app/sign-in/[[...sign-in]]/page.tsx`: reads `searchParams.intent`, renders a role-contextual banner above the Clerk `<SignIn>` component for `teacher` and `admin` intents; unknown or missing intents degrade gracefully to the default sign-in UI
+- No cookie, no new route, no framework additions — URL params only; role assignment remains in Clerk `publicMetadata`
 
 ---
 
@@ -92,7 +90,7 @@ CLAUDE.md and PROGRAM_STATUS.md corrected to reflect actual code
 | #111 | GAP-28 Standards admin UI | ✅ CLOSED | — |
 | #112 | GAP-13 MCP integration | ✅ CLOSED | — |
 | #113 | GAP-14 Offline mode | ✅ CLOSED | — |
-| #114 | GAP-15 Landing CTA routing | Open — low priority UX | Low |
+| #114 | GAP-15 Landing CTA routing | ✅ CLOSED | — |
 | #115 | GAP-16 Tour steps | ✅ CLOSED | — |
 | #116 | GAP-18 Hook warnings | ✅ CLOSED | — |
 | #117 | GAP-NEW-2 User roster live data | ✅ CLOSED | — |
@@ -100,4 +98,4 @@ CLAUDE.md and PROGRAM_STATUS.md corrected to reflect actual code
 | #119 | GAP-NEW-12 Builder form handlers | ✅ CLOSED | — |
 | #120 | GAP-17 doc error correction | ✅ CLOSED | — |
 
-**Remaining actionable work: Issue #114 (GAP-15) only — awaiting product decision.**
+**All issues closed. No remaining actionable work.**

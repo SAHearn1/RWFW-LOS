@@ -29,7 +29,7 @@
 
 **RootWork LOS** is a Learning Operating System that integrates learner agency, teacher guidance, and administrator visibility in one role-aware workflow. It is built on a Next.js App Router shell (the "front door") that wraps a Vite-based legacy core (`src/`) during an active screen-by-screen migration.
 
-**Current state (as of 2026-02-27, fifth pass):** Phases 1–6 execution complete. Phase 4 Runtime Realization complete (all engine routes wired). Phase 5 Data Governance complete. Phase 6 Super-Admin Clerk integration complete (user roster live data, teacher role Clerk sync). Release gate (verify:release-gate) fully passes. Only low-priority UX polish remains (GAP-15 CTA routing — needs product decision).
+**Current state (as of 2026-02-27, sixth pass):** Phases 1–6 execution complete. Phase 4 Runtime Realization complete (all engine routes wired). Phase 5 Data Governance complete. Phase 6 Super-Admin Clerk integration complete (user roster live data, teacher role Clerk sync). Test suite sprint complete (4 new verification scripts, release gate expanded to 16 checks). GAP-15 resolved: landing CTAs use `?intent=` params with contextual sign-in banners. **All known gaps closed. Release gate (verify:release-gate) fully passes with 16/16 checks.**
 
 **"First 60 Seconds" user scenario (must always pass):**
 1. Visit `/` → click "Start as Independent Learner"
@@ -408,13 +408,11 @@ All of the following have been implemented and closed:
 | GAP-NEW-6 | GAP-17 docs incorrect — org check not enforced | ✅ `app/app/layout.tsx:40` already enforces `student_enrolled`; docs corrected |
 | GAP-NEW-12 | BuilderWorkspace buttons had no handlers | ✅ Controlled form state + validation + success/error feedback added |
 
-### 🟢 Low-Priority Gaps (remaining — no code regression)
+| GAP-15 | Landing page CTA differentiation | ✅ `?intent=teacher` / `?intent=admin` params + contextual banner in sign-in page |
 
-#### GAP-15: Landing page CTA differentiation
-- **File:** `app/page.tsx`
-- **Issue:** "Teacher Login" routes to `/sign-in`, "Admin Info" routes to `/admin-info`. No role-prefill for the sign-in flow.
-- **Expected:** Teacher CTA could pre-set a role hint (URL param or cookie) so post-login role assignment is smoother.
-- **Note:** Low priority; requires product decision on role-prefill strategy. No code regression — current routing is functional.
+### No remaining gaps
+
+All known gaps are resolved as of the sixth pass (2026-02-27).
 
 ---
 
@@ -655,5 +653,7 @@ A change is done only when:
 *Phase 6 Super-Admin Clerk integration: UserRoster now fetches live Clerk data via `/api/super-admin/users`; TeacherAssignment syncs to Clerk publicMetadata via `/api/super-admin/assign-role`.*
 *BuilderWorkspace now has controlled form state with validation and success/error feedback (GAP-NEW-12).*
 *Documentation corrected: GAP-17 was a doc error — `student_enrolled` org check IS enforced in `app/app/layout.tsx:40`.*
-*Only remaining gap: GAP-15 (landing CTA differentiation — low priority, needs product decision).*
+*GAP-15 closed: landing CTAs now use `?intent=teacher` / `?intent=admin` with contextual banner in `app/sign-in/[[...sign-in]]/page.tsx`. Dead `/admin-info` link replaced with `/sign-in?intent=admin`.*
+*Test suite sprint complete: `verify:super-admin-contracts`, `verify:ledger-contracts` added to release gate (16 checks total). `verify:api-auth-guards` and `verify:super-admin-e2e` available as standalone scripts.*
+*All known gaps closed. No remaining open items.*
 *Branch: `claude/gap-analysis-build-docs-96UGo`*
