@@ -28,7 +28,9 @@
     "verify:super-admin-contracts": "node scripts/verify-super-admin-contracts.mjs",
     "verify:ledger-contracts": "node scripts/verify-ledger-contracts.mjs",
     "verify:api-auth-guards": "node scripts/verify-api-auth-guards.mjs",
-    "verify:super-admin-e2e": "node scripts/verify-super-admin-e2e.mjs"
+    "verify:super-admin-e2e": "node scripts/verify-super-admin-e2e.mjs",
+    "verify:federation-smoke": "node scripts/verify-federation-smoke.mjs",
+    "verify:health-check": "node scripts/verify-health-check.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.999.0",
