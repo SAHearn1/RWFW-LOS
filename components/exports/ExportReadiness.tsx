@@ -16,18 +16,55 @@ const KPI_LABELS: Record<PilotMetricKey, string> = {
   admin_export_readiness_rate: "Admin Export Readiness"
 };
 
+function triggerDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function ExportReadiness() {
   const summary = useMemo(() => {
     const records = localLedgerAdapter.readAll();
     const runtime = readRuntimeState();
 
     return {
+      records,
       missionCount: Object.keys(runtime.missions).length,
       artifactCount: records.filter((record) => record.type === "artifact").length,
       verificationCount: records.filter((record) => record.type === "verification").length,
       pilotSnapshot: createPilotSnapshotFromLocalState(runtime, records)
     };
   }, []);
+
+  function handleExportJson() {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const data = {
+      exportedAt: new Date().toISOString(),
+      missionCount: summary.missionCount,
+      artifactCount: summary.artifactCount,
+      verificationCount: summary.verificationCount,
+      pilotSnapshot: summary.pilotSnapshot,
+      records: summary.records,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    triggerDownload(blob, `rwfw-snapshot-${timestamp}.json`);
+  }
+
+  function handleExportCsv() {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const header = "id,type,mission_id,learner_id,created_at_iso";
+    const rows = summary.records.map((r) =>
+      [r.id, r.type, r.missionId, r.learnerId, r.createdAtIso]
+        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+        .join(",")
+    );
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    triggerDownload(blob, `rwfw-ledger-${timestamp}.csv`);
+  }
 
   return (
     <section className="space-y-6">
@@ -43,6 +80,23 @@ export default function ExportReadiness() {
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Ledger Artifacts</dt><dd>{summary.artifactCount}</dd></div>
         <div className="grid grid-cols-[220px_1fr] gap-3"><dt className="font-medium text-slate-600">Ledger Verifications</dt><dd>{summary.verificationCount}</dd></div>
       </dl>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={handleExportJson}
+          className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        >
+          Export Snapshot
+        </button>
+        <button
+          type="button"
+          onClick={handleExportCsv}
+          className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Export CSV
+        </button>
+      </div>
 
       <section className="space-y-3" data-tour="admin-pilot-health">
         <h2 className="text-lg font-semibold text-slate-900">Pilot Health</h2>

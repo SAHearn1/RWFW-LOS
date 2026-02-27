@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { localLedgerAdapter } from "@/lib/ledger/adapter";
+
 function buildEmptyMission() {
   return { title: "", objective: "" };
 }
@@ -21,6 +23,17 @@ export default function BuilderWorkspace() {
       setMissionStatus({ type: "error", message: "Mission title is required." });
       return;
     }
+    const missionId = `mission.${Date.now()}`;
+    const now = new Date().toISOString();
+    localLedgerAdapter.upsert({
+      id: missionId,
+      type: "mission",
+      missionId,
+      learnerId: "builder.teacher",
+      payload: { title: mission.title.trim(), objective: mission.objective.trim() } as never,
+      createdAtIso: now,
+      updatedAtIso: now,
+    });
     setMissionStatus({ type: "success", message: `Mission "${mission.title.trim()}" created. It will appear in your learners' mission lists.` });
     setMission(buildEmptyMission());
   }
@@ -37,6 +50,19 @@ export default function BuilderWorkspace() {
     if (learnerIds.length === 0) {
       setCohortStatus({ type: "error", message: "At least one learner ID is required." });
       return;
+    }
+    const now = new Date().toISOString();
+    for (const learnerId of learnerIds) {
+      const missionId = `mission.${Date.now()}.${learnerId}`;
+      localLedgerAdapter.upsert({
+        id: missionId,
+        type: "mission",
+        missionId,
+        learnerId,
+        payload: { cohortName: cohort.name.trim() } as never,
+        createdAtIso: now,
+        updatedAtIso: now,
+      });
     }
     setCohortStatus({
       type: "success",
