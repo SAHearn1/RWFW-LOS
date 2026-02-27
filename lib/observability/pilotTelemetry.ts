@@ -1,4 +1,5 @@
 import { appendFile, mkdir } from "node:fs/promises";
+import { timingSafeEqual } from "node:crypto";
 import { resolve } from "node:path";
 
 import { isPilotKpiEvent, type PilotKpiEvent } from "@/lib/observability/pilotKpiContracts";
@@ -66,11 +67,27 @@ async function persistTelemetryEvent(event: PilotKpiEvent): Promise<void> {
 
 export function isTelemetryTokenAuthorized(requestToken: string | null): boolean {
   const expected = process.env.ROOTWORK_TELEMETRY_INGEST_TOKEN?.trim();
+  // If no token is configured, all requests are authorized (dev mode).
+  // Intentional: document this behavior here so it is not surprising.
   if (!expected) {
     return true;
   }
 
-  return requestToken === expected;
+  if (!requestToken) {
+    return false;
+  }
+
+  // Use constant-time comparison to prevent timing-based token enumeration.
+  try {
+    const expectedBuf = Buffer.from(expected, "utf8");
+    const providedBuf = Buffer.from(requestToken, "utf8");
+    if (expectedBuf.length !== providedBuf.length) {
+      return false;
+    }
+    return timingSafeEqual(expectedBuf, providedBuf);
+  } catch {
+    return false;
+  }
 }
 
 export function ingestPilotKpiEvent(input: unknown, traceId: string): { accepted: true; eventId: string } {

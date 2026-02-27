@@ -70,6 +70,7 @@ export const NAV_ITEMS_BY_ROLE: Readonly<Record<AppRole, readonly NavItem[]>> = 
     { href: "/app/super-admin/teachers", label: "Teacher Assignment" },
     { href: "/app/super-admin/licenses", label: "Licenses" },
     { href: "/app/super-admin/institutions", label: "Institutions" },
+    { href: "/app/core", label: "Core" },
     { href: "/app/profile", label: "Profile" }
   ]
 } as const;

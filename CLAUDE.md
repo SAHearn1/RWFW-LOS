@@ -122,7 +122,7 @@ npm run verify:swarm-overlap    # File-overlap conflict detection for parallel P
   └── layout.tsx   → AppShell (nav + onboarding) wraps all /app/* routes
 ```
 
-**Middleware** (`middleware.ts`): All `/app(.*)` routes require Clerk session. Graceful fallback to `/sign-in?auth=unavailable` when Clerk key is missing. Every response carries a trace ID header (`X-Trace-Id`).
+**Middleware** (`middleware.ts`): All `/app(.*)` routes require Clerk session. Graceful fallback to `/sign-in?auth=unavailable` when Clerk key is missing. Every response carries a trace ID header (`x-rootwork-trace-id`, defined in `lib/observability/trace.ts`).
 
 **Role assignment**: Stored in Clerk `publicMetadata.role`. All role decisions flow from `lib/auth/roles.ts` → `lib/auth/routeAccess.ts`. No ad hoc role logic anywhere else.
 
@@ -655,5 +655,13 @@ A change is done only when:
 *Documentation corrected: GAP-17 was a doc error — `student_enrolled` org check IS enforced in `app/app/layout.tsx:40`.*
 *GAP-15 closed: landing CTAs now use `?intent=teacher` / `?intent=admin` with contextual banner in `app/sign-in/[[...sign-in]]/page.tsx`. Dead `/admin-info` link replaced with `/sign-in?intent=admin`.*
 *Test suite sprint complete: `verify:super-admin-contracts`, `verify:ledger-contracts` added to release gate (16 checks total). `verify:api-auth-guards` and `verify:super-admin-e2e` available as standalone scripts.*
+*Seventh pass complete (2026-02-27): 43 new gaps identified and resolved across security, error handling, auth architecture, data integrity, and UX layers.*
+*Security: federation route now requires auth (GET: any user, POST: admin/super_admin). Bearer token comparison is now constant-time. FederationTaskEnvelope validated before dispatch.*
+*Error handling: all external Clerk API fetch() calls wrapped in try-catch. DB ledger init errors return 503. Null dereference on databasePath guarded.*
+*Auth architecture: ORG_REQUIRED_ROLES extracted to roles.ts as single source of truth. layout.tsx uses set lookup. page.tsx has explicit exhaustive role dispatch. routeAccess.ts ALL_ROLES derived from APP_ROLES. Role groupings exported.*
+*Data integrity: shouldUseDbLedger() naming collision resolved — dbAdapter exports isDbLedgerAvailable() (server-side path check) and flags.ts exports isDbLedgerFlagEnabled() (client-safe env check). Both retain deprecated shouldUseDbLedger() aliases for backward compatibility.*
+*Observability: runtime/store.ts JSON.parse failure now logs warning. layout.tsx auth failures emit audit events.*
+*UX: super_admin nav now includes Core link. support/diagnostics restricted to admin/super_admin.*
+*Docs: trace header corrected from X-Trace-Id to x-rootwork-trace-id throughout. GAP analysis seventh pass document added.*
 *All known gaps closed. No remaining open items.*
 *Branch: `claude/gap-analysis-build-docs-96UGo`*

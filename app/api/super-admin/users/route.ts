@@ -57,10 +57,19 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  const clerkResponse = await fetch("https://api.clerk.com/v1/users?limit=100&order_by=-created_at", {
-    method: "GET",
-    headers: { Authorization: `Bearer ${clerkSecret}` },
-  });
+  let clerkResponse: globalThis.Response;
+  try {
+    clerkResponse = await fetch("https://api.clerk.com/v1/users?limit=100&order_by=-created_at", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${clerkSecret}` },
+    });
+  } catch (error) {
+    console.error("[super-admin/users] clerk_fetch_failed", error instanceof Error ? error.message : "unknown");
+    return NextResponse.json(
+      { error: "Failed to reach Clerk API." },
+      { status: 502, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
 
   if (!clerkResponse.ok) {
     return NextResponse.json(

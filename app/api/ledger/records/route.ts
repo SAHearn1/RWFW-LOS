@@ -70,6 +70,10 @@ export async function GET(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
+  // availability.enabled=true guarantees databasePath is set per getDbLedgerAvailability().
+  if (!availability.databasePath) {
+    return withTrace(503, traceId, { error: "DB ledger path is unavailable." });
+  }
   const adapter = createDbLedgerAdapter(availability.databasePath);
   const allRecords = adapter.readAll();
   const records = effectiveLearnerId ? allRecords.filter((record) => record.learnerId === effectiveLearnerId) : allRecords;
@@ -115,6 +119,9 @@ export async function POST(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
+  if (!availability.databasePath) {
+    return withTrace(503, traceId, { error: "DB ledger path is unavailable." });
+  }
   const stored = createDbLedgerAdapter(availability.databasePath).upsert(payload);
   return withTrace(200, traceId, { record: stored });
 }

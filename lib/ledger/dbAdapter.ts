@@ -164,8 +164,18 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
   };
 }
 
-export function shouldUseDbLedger(): boolean {
+/**
+ * Server-side availability check: returns true only when the DB ledger flag is set
+ * AND a valid database path is resolvable (i.e., not running on Vercel without DB_LEDGER_PATH).
+ * For a simple env-only flag check in client components, use `isDbLedgerFlagEnabled` from flags.ts.
+ */
+export function isDbLedgerAvailable(): boolean {
   return getDbLedgerAvailability().enabled;
+}
+
+/** @deprecated Use isDbLedgerAvailable() for server-side code that needs path validation. */
+export function shouldUseDbLedger(): boolean {
+  return isDbLedgerAvailable();
 }
 
 /**

@@ -31,6 +31,9 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     return withTrace(NextResponse.next(), traceId);
   }
 
+  // The `as unknown` intermediary is required because clerkMiddleware() returns
+  // NextMiddleware (which uses NextMiddlewareResult) and TypeScript won't directly
+  // accept it as (NextRequest, NextFetchEvent) => Response without the intermediate cast.
   const response = await (clerkProtectedMiddleware as unknown as (request: NextRequest, evt: NextFetchEvent) => Response | Promise<Response>)(
     req,
     event

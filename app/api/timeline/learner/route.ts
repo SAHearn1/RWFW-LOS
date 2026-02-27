@@ -23,9 +23,18 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  const records = shouldUseDbLedger()
-    ? createDbLedgerAdapter().readAll()
-    : localLedgerAdapter.readAll();
+  let records;
+  try {
+    records = shouldUseDbLedger()
+      ? createDbLedgerAdapter().readAll()
+      : localLedgerAdapter.readAll();
+  } catch (error) {
+    console.error("[timeline/learner] ledger_init_failed", error instanceof Error ? error.message : "unknown");
+    return NextResponse.json(
+      { error: "Ledger unavailable." },
+      { status: 503, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
 
   const timeline = buildLearnerTimeline(records, user?.id);
 

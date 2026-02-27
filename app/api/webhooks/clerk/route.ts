@@ -62,14 +62,20 @@ async function syncPublicMetadata(userId: string, role: string | null, orgId: st
     }
   };
 
-  const response = await fetch(`https://api.clerk.com/v1/users/${encodeURIComponent(userId)}/metadata`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${clerkSecret}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(patch)
-  });
+  let response: globalThis.Response;
+  try {
+    response = await fetch(`https://api.clerk.com/v1/users/${encodeURIComponent(userId)}/metadata`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${clerkSecret}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(patch)
+    });
+  } catch (error) {
+    console.error("[webhooks/clerk] clerk_patch_network_error", error instanceof Error ? error.message : "unknown");
+    return { synced: false, reason: "clerk_patch_network_error" };
+  }
 
   if (!response.ok) {
     return { synced: false, reason: `clerk_patch_failed:${response.status}` };

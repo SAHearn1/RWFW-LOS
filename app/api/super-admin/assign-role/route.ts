@@ -88,17 +88,26 @@ export async function POST(request: Request): Promise<Response> {
     },
   };
 
-  const clerkResponse = await fetch(
-    `https://api.clerk.com/v1/users/${encodeURIComponent(trimmedUserId)}/metadata`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${clerkSecret}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(patch),
-    }
-  );
+  let clerkResponse: globalThis.Response;
+  try {
+    clerkResponse = await fetch(
+      `https://api.clerk.com/v1/users/${encodeURIComponent(trimmedUserId)}/metadata`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${clerkSecret}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(patch),
+      }
+    );
+  } catch (error) {
+    console.error("[super-admin/assign-role] clerk_fetch_failed", error instanceof Error ? error.message : "unknown");
+    return NextResponse.json(
+      { error: "Failed to reach Clerk API." },
+      { status: 502, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
 
   if (!clerkResponse.ok) {
     return NextResponse.json(
