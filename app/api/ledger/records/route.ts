@@ -26,15 +26,34 @@ function isLedgerRecord(value: unknown): value is LedgerRecord {
   }
 
   const record = value as Partial<LedgerRecord>;
-  return Boolean(
-    typeof record.id === "string" &&
-      (record.type === "mission" || record.type === "artifact" || record.type === "verification") &&
-      typeof record.missionId === "string" &&
-      typeof record.learnerId === "string" &&
-      typeof record.createdAtIso === "string" &&
-      typeof record.updatedAtIso === "string" &&
-      record.payload
-  );
+  if (
+    typeof record.id !== "string" ||
+    typeof record.missionId !== "string" ||
+    typeof record.learnerId !== "string" ||
+    typeof record.createdAtIso !== "string" ||
+    typeof record.updatedAtIso !== "string" ||
+    !record.payload || typeof record.payload !== "object"
+  ) {
+    return false;
+  }
+
+  // Validate type field and that payload shape is at least partially consistent.
+  if (record.type === "mission") {
+    const p = record.payload as Record<string, unknown>;
+    return typeof p.id === "string" && typeof p.learnerId === "string";
+  }
+
+  if (record.type === "artifact") {
+    const p = record.payload as Record<string, unknown>;
+    return typeof p.id === "string" && typeof p.missionId === "string";
+  }
+
+  if (record.type === "verification") {
+    const p = record.payload as Record<string, unknown>;
+    return typeof p.id === "string" && typeof p.missionId === "string" && Array.isArray(p.standards);
+  }
+
+  return false;
 }
 
 export async function GET(request: Request): Promise<Response> {

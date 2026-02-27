@@ -54,6 +54,7 @@ export default function AppShell({ role, navItems, userLabel, children }: AppShe
             className="rounded border border-slate-300 px-3 py-2 text-sm md:hidden"
             onClick={() => setMobileOpen((value) => !value)}
             aria-expanded={mobileOpen}
+            aria-label="Toggle navigation menu"
           >
             Menu
           </button>
@@ -74,7 +75,7 @@ export default function AppShell({ role, navItems, userLabel, children }: AppShe
             </button>
           </SignOutButton>
           <details className="relative" data-tour="notification-menu">
-            <summary className="cursor-pointer list-none rounded border border-slate-300 px-3 py-2 text-sm">
+            <summary className="cursor-pointer list-none rounded border border-slate-300 px-3 py-2 text-sm" aria-label="Notifications">
               Notifications ({notifications.length})
             </summary>
             <div className="absolute right-0 mt-2 w-72 rounded border border-slate-200 bg-white p-2 shadow">
@@ -91,7 +92,7 @@ export default function AppShell({ role, navItems, userLabel, children }: AppShe
             </div>
           </details>
           <details className="relative" data-tour="help-menu">
-            <summary className="cursor-pointer list-none rounded border border-slate-300 px-3 py-2 text-sm">Help</summary>
+            <summary className="cursor-pointer list-none rounded border border-slate-300 px-3 py-2 text-sm" aria-label="Help menu">Help</summary>
             <div className="absolute right-0 mt-2 w-52 rounded border border-slate-200 bg-white p-2 shadow">
               <button
                 type="button"

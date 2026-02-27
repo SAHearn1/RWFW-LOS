@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 import { parseAppRole } from "@/lib/auth/userRole";
-import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
+import { createDbLedgerAdapter, isDbLedgerAvailable } from "@/lib/ledger/dbAdapter";
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 import { buildLearnerTimeline } from "@/lib/timeline/learnerTimeline";
@@ -25,7 +25,7 @@ export async function GET(request: Request): Promise<Response> {
 
   let records;
   try {
-    records = shouldUseDbLedger()
+    records = isDbLedgerAvailable()
       ? createDbLedgerAdapter().readAll()
       : localLedgerAdapter.readAll();
   } catch (error) {

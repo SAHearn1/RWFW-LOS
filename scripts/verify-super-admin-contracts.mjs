@@ -98,9 +98,10 @@ for (const role of expectedRoles) {
   }
 }
 
-// ── org check in app layout must cover student_enrolled (sync with assign-role) ──
-// layout.tsx:40 must include student_enrolled alongside teacher/admin
-if (!layoutSrc.includes('"student_enrolled"') || !layoutSrc.includes("orgId")) {
+// ── org check in app layout must use ORG_REQUIRED_ROLES (sync with assign-role) ──
+// layout.tsx must import and apply ORG_REQUIRED_ROLES for the org gate — stronger
+// than checking for a literal role string since the Set is the single source of truth.
+if (!layoutSrc.includes("ORG_REQUIRED_ROLES") || !layoutSrc.includes("orgId")) {
   failures.push(
     "app/app/layout.tsx: student_enrolled org check missing — " +
     "must mirror ORG_REQUIRED_ROLES in assign-role/route.ts"

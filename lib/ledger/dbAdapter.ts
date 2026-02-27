@@ -45,12 +45,20 @@ function toRecord(row: {
   created_at_iso: string;
   updated_at_iso: string;
 }): LedgerRecord {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(row.payload_json);
+  } catch {
+    console.warn(`[ledger/dbAdapter] toRecord: failed to parse payload_json for record id=${row.id} type=${row.type} — using empty object`);
+    payload = {};
+  }
+
   return {
     id: row.id,
     type: row.type,
     missionId: row.mission_id,
     learnerId: row.learner_id,
-    payload: JSON.parse(row.payload_json),
+    payload: payload as LedgerRecord["payload"],
     createdAtIso: row.created_at_iso,
     updatedAtIso: row.updated_at_iso
   };

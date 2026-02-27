@@ -1,6 +1,34 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+function useTotalUserCount(): { count: number | null; loading: boolean } {
+  const [count, setCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/super-admin/users", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data: { total?: number }) => {
+        if (!cancelled) setCount(data.total ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCount(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return { count, loading };
+}
 
 export default function SuperAdminHome() {
+  const { count, loading } = useTotalUserCount();
+
   return (
     <div className="space-y-8">
       <div>
@@ -12,8 +40,12 @@ export default function SuperAdminHome() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Total Users</p>
-          <p className="mt-2 text-3xl font-bold text-slate-800">—</p>
-          <p className="mt-1 text-xs text-slate-400">Connect user roster to live data</p>
+          <p className="mt-2 text-3xl font-bold text-slate-800">
+            {loading ? <span className="text-slate-400 text-xl">…</span> : (count ?? "—")}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {loading ? "Loading from Clerk…" : count === null ? "Unavailable" : "Live from Clerk"}
+          </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Active Licenses</p>
