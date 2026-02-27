@@ -48,9 +48,12 @@ const roleConfigs = [
     denyRoutes: ["/app/studio", "/app/command-center", "/app/cohorts"]
   },
   {
+    // REQUIRED for production readiness: provision a super_admin account in the Clerk production instance.
+    // Set E2E_SUPER_ADMIN_EMAIL + E2E_SUPER_ADMIN_PASSWORD in GitHub Secrets after completing issue #161.
+    // Until those credentials are set, the test emits a visible error-level warning and skips gracefully.
     role: "super_admin",
     emailEnv: "E2E_SUPER_ADMIN_EMAIL",
-    optional: true,
+    warnIfMissing: true,
     allowRoutes: ["/app", "/app/super-admin", "/app/evidence", "/app/exports", "/app/standards", "/app/settings"],
     denyRoutes: ["/app/missions", "/app/studio", "/app/command-center", "/app/cohorts", "/app/reviews"]
   }
@@ -163,6 +166,13 @@ async function run() {
     if (!process.env[config.emailEnv]) {
       if (config.optional) {
         console.warn(`[SKIP] ${config.role}: ${config.emailEnv} not set — skipping optional role test.`);
+      } else if (config.warnIfMissing) {
+        console.error(
+          `[REQUIRED - MISSING] ${config.role}: ${config.emailEnv} is not set.\n` +
+          `  This role MUST be tested before production launch.\n` +
+          `  Provision a Clerk production account and set ${config.emailEnv} to enable this test.\n` +
+          `  See issue #161 (Clerk production key rotation) and issue #169.`
+        );
       } else {
         missing.push(config.emailEnv);
       }
@@ -182,7 +192,7 @@ async function run() {
   try {
     for (const config of roleConfigs) {
       const email = process.env[config.emailEnv];
-      if (!email && config.optional) {
+      if (!email && (config.optional || config.warnIfMissing)) {
         continue;
       }
       const user = await getUserByEmail(email);

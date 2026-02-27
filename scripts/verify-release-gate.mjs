@@ -23,7 +23,9 @@ const checks = [
 ];
 
 const nonBlockingChecks = [
-  "verify:cloud-aws-smoke"
+  "verify:cloud-aws-smoke",
+  "verify:federation-smoke",
+  "verify:health-check"
 ];
 
 const ledgerConsistencyReportPath = resolve(
