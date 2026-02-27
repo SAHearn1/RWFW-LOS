@@ -96,3 +96,52 @@
 - Open `.github/ISSUE_TEMPLATE/INCIDENT_ANNOTATION.md` for every failed deploy incident.
 - Follow `docs/status/INCIDENT_ANNOTATION_WORKFLOW.md` and attach release-gate + deployment evidence.
 - Do not close incident tickets until latest deployment is `Ready` and corrective action is tracked.
+
+## AWS Credential Strategy
+
+### Recommended: IAM Role via OIDC (Vercel + GitHub Actions)
+Prefer OIDC-federated IAM roles over static long-lived access keys wherever possible.
+
+**Vercel production:**
+- Use Vercel's native AWS integration with OIDC to assume an IAM role.
+- Required IAM permissions: `bedrock:InvokeModel`, `sqs:SendMessage`, `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:Query`, `events:PutEvents`.
+- Configure `AWS_REGION` in Vercel env vars; credentials are auto-injected by the OIDC provider.
+- Do NOT store `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` as static Vercel env vars when OIDC is available.
+
+**GitHub Actions CI:**
+- Use `aws-actions/configure-aws-credentials` with OIDC role assumption (no static keys in secrets).
+- If static keys are required as fallback: rotate every 90 days, alert on expiry via AWS IAM credential report.
+- `AWS_SESSION_TOKEN` is ONLY for temporary/local assumed-role sessions — never set it in Vercel production or long-lived CI secrets.
+
+### Static Key Fallback (Current State — Transition Target)
+The repo currently uses static `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` stored in Vercel env vars and GitHub secrets. These are acceptable until OIDC is set up.
+
+**Rotation SOP (every 90 days or on suspected compromise):**
+1. Create new IAM access key for the service account in AWS Console.
+2. Update Vercel env vars: `vercel env add AWS_ACCESS_KEY_ID production` and `AWS_SECRET_ACCESS_KEY`.
+3. Update GitHub secrets: `gh secret set AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
+4. Run `npm run verify:env-parity` locally to confirm parity.
+5. Trigger a Vercel redeployment and run `npm run verify:cloud-aws-smoke` against the new deploy.
+6. Deactivate the old IAM key in AWS Console (wait 24h before deleting to allow in-flight requests to complete).
+7. Update `docs/status/aws-credential-rotation-log.md` with rotation date and operator.
+
+**Expiry monitoring:**
+- Set a calendar reminder for the next rotation date.
+- Enable AWS IAM credential report alerts for keys older than 80 days.
+- If `AWS_SESSION_TOKEN` is set and expired: immediately clear it from Vercel and GitHub secrets — session tokens are temporary and must never persist.
+
+### Incident: AWS Credentials Expired or Invalid
+**Symptoms:**
+- `/api/inference` returns `usedFallback: true` with `cloud_inference_failed` message
+- `/api/orchestration/worker-run` returns backend: `{ queue: "in_memory", stateStore: "none" }`
+- `npm run verify:cloud-aws-smoke` fails with AWS auth error
+
+**Immediate mitigation:**
+1. Set `MODEL_ROUTING_POLICY=local_only` in Vercel env vars → disables cloud inference, forces local Ollama fallback.
+2. Set `ALLOW_AWS_WORKER_FALLBACK=true` → worker-run falls back to in-memory queue.
+3. Redeploy. Application remains functional in local-only mode.
+
+**Recovery:**
+1. Rotate credentials per Rotation SOP above.
+2. Remove `MODEL_ROUTING_POLICY=local_only` and `ALLOW_AWS_WORKER_FALLBACK=true` after new credentials verified.
+3. Document incident in `docs/status/aws-credential-rotation-log.md`.
