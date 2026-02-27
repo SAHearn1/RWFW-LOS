@@ -3,11 +3,12 @@
 import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { AppRole } from "@/lib/auth/roles";
 import type { NavItem } from "@/lib/nav/items";
 import RootworkMark from "@/components/brand/RootworkMark";
+import { getNotificationsForRole } from "@/lib/nav/notifications";
 
 type AppShellProps = {
   role: AppRole;
@@ -43,6 +44,7 @@ function NavLinks({ navItems, pathname, onNavigate }: { navItems: readonly NavIt
 export default function AppShell({ role, navItems, userLabel, children }: AppShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const notifications = useMemo(() => getNotificationsForRole(role), [role]);
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
@@ -66,6 +68,32 @@ export default function AppShell({ role, navItems, userLabel, children }: AppShe
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden text-xs text-slate-600 sm:inline">{userLabel}</span>
+          <SignOutButton>
+            <button
+              type="button"
+              className="rounded border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+              aria-label="Sign out"
+            >
+              Sign out
+            </button>
+          </SignOutButton>
+          <details className="relative" data-tour="notification-menu">
+            <summary className="cursor-pointer list-none rounded border border-slate-300 px-3 py-2 text-sm">
+              Notifications ({notifications.length})
+            </summary>
+            <div className="absolute right-0 mt-2 w-72 rounded border border-slate-200 bg-white p-2 shadow">
+              <ul className="space-y-2 text-sm">
+                {notifications.map((notification) => (
+                  <li key={notification.id} className="rounded border border-slate-100 p-2">
+                    <p className={notification.level === "warning" ? "font-medium text-amber-700" : "font-medium text-slate-900"}>
+                      {notification.level.toUpperCase()}
+                    </p>
+                    <p className="text-slate-700">{notification.message}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
           <details className="relative" data-tour="help-menu">
             <summary className="cursor-pointer list-none rounded border border-slate-300 px-3 py-2 text-sm">Help</summary>
             <div className="absolute right-0 mt-2 w-52 rounded border border-slate-200 bg-white p-2 shadow">

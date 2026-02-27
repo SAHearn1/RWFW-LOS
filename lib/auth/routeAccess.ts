@@ -13,7 +13,8 @@ const ALL_ROLES: readonly AppRole[] = [
   "adult_learner",
   "teacher",
   "professional_development",
-  "admin"
+  "admin",
+  "super_admin"
 ] as const;
 
 const LEARNER_ROLES: readonly AppRole[] = [
@@ -28,6 +29,8 @@ const FACILITATOR_ROLES: readonly AppRole[] = [
 ] as const;
 
 const ADMIN_ROLE: readonly AppRole[] = ["admin"] as const;
+
+const SUPER_ADMIN_ROLE: readonly AppRole[] = ["super_admin"] as const;
 
 export const LEGACY_APP_ROUTE_REDIRECTS: Readonly<Record<string, `/app${string}`>> = {
   "/app/home": "/app",
@@ -52,7 +55,11 @@ export const APP_ROUTE_DEFINITIONS: readonly AppRouteDefinition[] = [
   { path: "/app/standards", title: "Standards", description: "Admin standards placeholder.", allowedRoles: ADMIN_ROLE },
   { path: "/app/evidence", title: "Evidence", description: "Admin evidence read view.", allowedRoles: ADMIN_ROLE },
   { path: "/app/exports", title: "Exports", description: "Admin export tools placeholder.", allowedRoles: ADMIN_ROLE },
-  { path: "/app/forbidden", title: "Access Restricted", description: "In-app 403 view.", allowedRoles: ALL_ROLES }
+  { path: "/app/forbidden", title: "Access Restricted", description: "In-app 403 view.", allowedRoles: ALL_ROLES },
+  { path: "/app/super-admin/users", title: "User Roster", description: "SuperAdmin user account management.", allowedRoles: SUPER_ADMIN_ROLE },
+  { path: "/app/super-admin/teachers", title: "Teacher Assignment", description: "SuperAdmin teacher role assignment.", allowedRoles: SUPER_ADMIN_ROLE },
+  { path: "/app/super-admin/licenses", title: "License Manager", description: "SuperAdmin license and trial management.", allowedRoles: SUPER_ADMIN_ROLE },
+  { path: "/app/super-admin/institutions", title: "Institutions", description: "SuperAdmin institution account management.", allowedRoles: SUPER_ADMIN_ROLE }
 ] as const;
 
 export function normalizeAppPath(pathname: string): `/app${string}` | null {

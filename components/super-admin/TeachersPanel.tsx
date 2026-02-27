@@ -21,7 +21,7 @@ const STATUS_STYLES: Record<TeacherRow["status"], string> = {
 
 export default function TeachersPanel() {
   return (
-    <div className="space-y-6" data-tour="teachers-panel">
+    <div className="space-y-6" data-tour="teacher-assignment-entry">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold" data-tour="page-title">

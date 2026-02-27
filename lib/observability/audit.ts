@@ -1,4 +1,5 @@
-import { appendFileSync } from "node:fs";
+import { appendFile, mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
 
 export type AuditSeverity = "info" | "warning" | "error";
 
@@ -13,21 +14,66 @@ export type AuditEvent = {
   createdAtIso: string;
 };
 
-export function recordAuditEvent(event: AuditEvent): void {
-  if (process.env.NODE_ENV === "production") {
-    // In production (Vercel serverless), write to stdout as structured JSON
-    // so Vercel Log Drains can capture the audit trail.
-    console.log(JSON.stringify(event));
+const AUDIT_LOG_PATH = resolve("docs", "status", "audit-log.ndjson");
+const AUDIT_HTTP_TIMEOUT_MS = 1500;
+
+function isServerlessRuntime(): boolean {
+  return process.env.VERCEL === "1";
+}
+
+async function appendAuditEventToFile(event: AuditEvent): Promise<void> {
+  const directory = resolve("docs", "status");
+  await mkdir(directory, { recursive: true });
+  await appendFile(AUDIT_LOG_PATH, `${JSON.stringify(event)}\n`, "utf8");
+}
+
+async function sendAuditEventToHttp(event: AuditEvent): Promise<void> {
+  const endpoint = process.env.AUDIT_HTTP_ENDPOINT?.trim();
+  if (!endpoint) {
     return;
   }
 
-  // In local development, append to /tmp to avoid project-directory write
-  // failures and to keep audit entries across restarts of the dev server.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), AUDIT_HTTP_TIMEOUT_MS);
+
   try {
-    appendFileSync("/tmp/rootwork-audit.ndjson", `${JSON.stringify(event)}\n`, "utf8");
-  } catch {
-    // Last-resort fallback: if /tmp write fails, echo to console so the event
-    // is never silently dropped.
-    console.log(JSON.stringify(event));
+    const token = process.env.AUDIT_HTTP_BEARER_TOKEN?.trim();
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(event),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      console.warn(`[audit] http_sink_failed status=${response.status}`);
+    }
+  } catch (error) {
+    console.warn(`[audit] http_sink_failed ${error instanceof Error ? error.message : "unknown_error"}`);
+  } finally {
+    clearTimeout(timeout);
   }
+}
+
+export function recordAuditEvent(event: AuditEvent): void {
+  // Default serverless-safe sink: stdout/collector.
+  console.log(`[audit] ${JSON.stringify(event)}`);
+
+  void sendAuditEventToHttp(event);
+
+  if (process.env.AUDIT_LOG_TO_FILE !== "true") {
+    return;
+  }
+
+  if (isServerlessRuntime()) {
+    console.warn("[audit] file_sink_skipped serverless_runtime");
+    return;
+  }
+
+  void appendAuditEventToFile(event).catch((error) => {
+    console.warn(`[audit] file_sink_failed ${error instanceof Error ? error.message : "unknown_error"}`);
+  });
 }

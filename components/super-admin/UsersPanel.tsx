@@ -25,7 +25,7 @@ const ROLE_STYLES: Record<string, string> = {
 
 export default function UsersPanel() {
   return (
-    <div className="space-y-6" data-tour="users-panel">
+    <div className="space-y-6" data-tour="user-roster-entry">
       <div>
         <h1 className="text-2xl font-semibold" data-tour="page-title">
           Users

@@ -196,3 +196,14 @@ export function createDbLedgerAdapter(databasePath = "rootwork-ledger.db"): Ledg
 export function shouldUseDbLedger(): boolean {
   return process.env.NEXT_PUBLIC_ENABLE_DB_LEDGER === "true";
 }
+
+export type DbLedgerAvailability =
+  | { enabled: true; databasePath: string }
+  | { enabled: false; reason: string; databasePath?: never };
+
+export function getDbLedgerAvailability(databasePath = "rootwork-ledger.db"): DbLedgerAvailability {
+  if (!shouldUseDbLedger()) {
+    return { enabled: false, reason: "NEXT_PUBLIC_ENABLE_DB_LEDGER is not set to true." };
+  }
+  return { enabled: true, databasePath };
+}

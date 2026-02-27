@@ -15,6 +15,9 @@ const appText = [
   readFileSync("components/pickups/PickupsPanel.tsx", "utf8"),
   readFileSync("components/standards/StandardsRegistry.tsx", "utf8"),
   readFileSync("components/super-admin/InstitutionsPanel.tsx", "utf8"),
+  readFileSync("components/super-admin/UsersPanel.tsx", "utf8"),
+  readFileSync("components/super-admin/TeachersPanel.tsx", "utf8"),
+  readFileSync("components/super-admin/LicensesPanel.tsx", "utf8"),
   readFileSync("app/app/[[...slug]]/page.tsx", "utf8")
 ].join("\n");
 

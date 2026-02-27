@@ -59,7 +59,15 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
     { id: "standards-registry", selector: "[data-tour='standards-registry']", title: "Standards Registry", body: "View and test the standards your organization uses to verify learner artifacts." },
     { id: "evidence", selector: "[data-tour='page-title']", title: "Evidence View", body: "Browse all learner evidence records across missions and artifacts." },
     { id: "exports", selector: "[data-tour='page-title']", title: "Export Readiness", body: "Review export readiness and download data packages for compliance reporting." },
-    { id: "institutions", selector: "[data-tour='institutions-panel']", title: "Institution Management", body: "Manage institutions, licenses, teachers, and users from the super-admin panel." },
+    { id: "data-retention", selector: "[data-tour='page-title']", title: "Data Retention", body: "Manage data lifecycle and GDPR-style learner deletion from the admin panel." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour from Help when needed." }
+  ],
+  super_admin: [
+    { id: "nav", selector: "[data-tour='primary-nav']", title: "Super Admin Navigation", body: "User Roster, Teacher Assignment, Licenses, and Institutions are your primary controls." },
+    { id: "home", selector: "[data-tour='page-title']", title: "Super Admin Dashboard", body: "This overview surfaces platform health, active licenses, and pending teacher requests." },
+    { id: "users", selector: "[data-tour='user-roster-entry']", title: "User Roster", body: "View and manage all platform accounts from User Roster." },
+    { id: "teachers", selector: "[data-tour='teacher-assignment-entry']", title: "Teacher Assignment", body: "Only Super Admins can grant the Teacher role. Use Teacher Assignment to authorize educators." },
+    { id: "licenses", selector: "[data-tour='license-manager-entry']", title: "Licenses", body: "Create trial accounts, issue institutional licenses, and configure enterprise seats from here." },
+    { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart this tour any time from Help." }
   ]
 } as const;

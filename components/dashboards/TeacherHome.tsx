@@ -6,19 +6,19 @@ export default function TeacherHome() {
         Manage your cohorts, review learner artifacts, and coordinate next actions from one operational view.
       </p>
       <div className="grid gap-3 md:grid-cols-3">
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="teacher-intervention-card">
           <h2 className="font-semibold text-slate-900">Command Center</h2>
           <p className="mt-1 text-slate-600">
             Active cohorts, pickup queue, and review backlog — your real-time operational snapshot.
           </p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="teacher-cohort-card">
           <h2 className="font-semibold text-slate-900">Review Queue</h2>
           <p className="mt-1 text-slate-600">
             Triage submitted artifacts. Approve, return, or flag work from learners across your cohorts.
           </p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <article className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm" data-tour="teacher-reviews-card">
           <h2 className="font-semibold text-slate-900">Active Cohorts</h2>
           <p className="mt-1 text-slate-600">
             Track learner progress, pickup assignments, and cohort health indicators at a glance.

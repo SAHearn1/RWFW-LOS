@@ -35,7 +35,7 @@ const STATUS_STYLES: Record<LicenseRow["status"], string> = {
 
 export default function LicensesPanel() {
   return (
-    <div className="space-y-6" data-tour="licenses-panel">
+    <div className="space-y-6" data-tour="license-manager-entry">
       <div>
         <h1 className="text-2xl font-semibold" data-tour="page-title">
           Licenses
