@@ -6,6 +6,12 @@ on:
   push:
     branches: ["main"]
 
+# Grant the id-token write permission needed for AWS OIDC role assumption.
+# See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -22,6 +28,22 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      # AWS OIDC — assumes the IAM role whose ARN is stored in the
+      # AWS_OIDC_ROLE_ARN secret. Falls back gracefully when the secret is
+      # not yet configured (e.g. during Clerk-key-only CI runs).
+      # Manual prerequisite: create an AWS IAM OIDC provider for
+      # token.actions.githubusercontent.com and an IAM role with a trust
+      # policy allowing this repo's GitHub Actions workflows.
+      # See docs/runbooks/aws-oidc-setup.md for step-by-step instructions.
+      - name: Configure AWS credentials (OIDC)
+        if: ${{ secrets.AWS_OIDC_ROLE_ARN != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          # Short-lived credentials — default session duration is 1 hour
+          role-session-name: rwfw-los-ci-${{ github.run_id }}
 
       - name: Release Gate Aggregate
         run: npm run verify:release-gate
@@ -44,8 +66,6 @@ jobs:
           E2E_PROFESSIONAL_DEVELOPMENT_PASSWORD: ${{ secrets.E2E_PROFESSIONAL_DEVELOPMENT_PASSWORD }}
           E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SQS_QUEUE_URL: ${{ secrets.AWS_SQS_QUEUE_URL }}
           AWS_SQS_DLQ_URL: ${{ secrets.AWS_SQS_DLQ_URL }}
           AWS_DYNAMODB_ORCHESTRATION_TABLE: ${{ secrets.AWS_DYNAMODB_ORCHESTRATION_TABLE }}
