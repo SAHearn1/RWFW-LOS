@@ -1,6 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 import { parseAppRole } from "@/lib/auth/userRole";
 import { readAwsRegion, readDynamoTable, readSqsQueueUrl } from "@/lib/cloud/awsEnv";
 import type { OrchestrationJobEnvelope, QueueLeaseResult } from "@/lib/orchestration/contracts";

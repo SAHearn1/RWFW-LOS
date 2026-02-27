@@ -96,12 +96,12 @@ export default function UserRoster() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Email</th>
-                <th className="px-4 py-3 text-left">Role</th>
-                <th className="px-4 py-3 text-left">Org</th>
-                <th className="px-4 py-3 text-left">Tenant</th>
-                <th className="px-4 py-3 text-left">Joined</th>
+                <th scope="col" className="px-4 py-3 text-left">Name</th>
+                <th scope="col" className="px-4 py-3 text-left">Email</th>
+                <th scope="col" className="px-4 py-3 text-left">Role</th>
+                <th scope="col" className="px-4 py-3 text-left">Org</th>
+                <th scope="col" className="px-4 py-3 text-left">Tenant</th>
+                <th scope="col" className="px-4 py-3 text-left">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

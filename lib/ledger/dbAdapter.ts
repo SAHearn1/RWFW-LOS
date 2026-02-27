@@ -16,15 +16,25 @@ const CREATE_TABLE_SQL = `
 
 const DEFAULT_DATABASE_PATH = "rootwork-ledger.db";
 
+// Singleton connections keyed by resolved database path.
+// better-sqlite3 is synchronous; reusing one connection per path avoids
+// opening a new connection on every API request within the same process.
+const DB_INSTANCES = new Map<string, InstanceType<typeof Database>>();
+
+function getOrCreateDatabase(resolvedPath: string): InstanceType<typeof Database> {
+  const existing = DB_INSTANCES.get(resolvedPath);
+  if (existing) return existing;
+  const db = new Database(resolvedPath);
+  db.exec(CREATE_TABLE_SQL);
+  DB_INSTANCES.set(resolvedPath, db);
+  return db;
+}
+
 type LedgerAvailability = {
   enabled: boolean;
   databasePath?: string;
   reason?: string;
 };
-
-function ensureTable(database: InstanceType<typeof Database>): void {
-  database.exec(CREATE_TABLE_SQL);
-}
 
 function toRecord(row: {
   id: string;
@@ -88,8 +98,7 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
     throw new Error("DB ledger path is unavailable for current runtime.");
   }
 
-  const database = new Database(resolvedPath);
-  ensureTable(database);
+  const database = getOrCreateDatabase(resolvedPath);
 
   const readAllStatement = database.prepare(`
     SELECT id, type, mission_id, learner_id, payload_json, created_at_iso, updated_at_iso
@@ -169,9 +178,7 @@ export function purgeDbLedgerRecordsBefore(cutoffIso: string, databasePath?: str
     throw new Error("DB ledger path is unavailable for current runtime.");
   }
 
-  const database = new Database(resolvedPath);
-  ensureTable(database);
-
+  const database = getOrCreateDatabase(resolvedPath);
   const stmt = database.prepare(`DELETE FROM ledger_records WHERE updated_at_iso < ?`);
   const result = stmt.run(cutoffIso);
   return result.changes;
@@ -187,9 +194,7 @@ export function deleteDbLedgerRecordsByLearner(learnerId: string, databasePath?:
     throw new Error("DB ledger path is unavailable for current runtime.");
   }
 
-  const database = new Database(resolvedPath);
-  ensureTable(database);
-
+  const database = getOrCreateDatabase(resolvedPath);
   const stmt = database.prepare(`DELETE FROM ledger_records WHERE learner_id = ?`);
   const result = stmt.run(learnerId);
   return result.changes;

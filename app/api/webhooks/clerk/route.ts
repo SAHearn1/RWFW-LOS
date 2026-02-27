@@ -2,6 +2,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 import { parseAppRole } from "@/lib/auth/userRole";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";

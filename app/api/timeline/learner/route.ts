@@ -1,6 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 import { parseAppRole } from "@/lib/auth/userRole";
 import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
 import { localLedgerAdapter } from "@/lib/ledger/adapter";

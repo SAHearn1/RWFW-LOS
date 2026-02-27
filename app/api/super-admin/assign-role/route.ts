@@ -8,6 +8,18 @@ import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
 export const runtime = "nodejs";
 
+// Roles that require an orgId to be set — mirrors the check in app/app/layout.tsx:40
+const ORG_REQUIRED_ROLES = new Set<string>([
+  "student_enrolled",
+  "teacher",
+  "professional_development",
+  "admin",
+  "super_admin",
+]);
+
+// Clerk user IDs must match this format
+const CLERK_USER_ID_RE = /^usr_[a-zA-Z0-9]+$/;
+
 type AssignRoleBody = {
   userId?: string;
   role?: string;
@@ -38,9 +50,10 @@ export async function POST(request: Request): Promise<Response> {
 
   const { userId, role, orgId } = body;
 
-  if (!userId || typeof userId !== "string" || userId.trim().length === 0) {
+  const trimmedUserId = typeof userId === "string" ? userId.trim() : "";
+  if (!trimmedUserId || !CLERK_USER_ID_RE.test(trimmedUserId)) {
     return NextResponse.json(
-      { error: "userId is required." },
+      { error: "userId must be a valid Clerk user ID (usr_...)." },
       { status: 400, headers: { [TRACE_HEADER]: traceId } }
     );
   }
@@ -48,6 +61,14 @@ export async function POST(request: Request): Promise<Response> {
   if (!role || !(APP_ROLES as readonly string[]).includes(role)) {
     return NextResponse.json(
       { error: `role must be one of: ${APP_ROLES.join(", ")}` },
+      { status: 400, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
+
+  // Roles that require an org must have a non-null orgId supplied
+  if (ORG_REQUIRED_ROLES.has(role) && !orgId) {
+    return NextResponse.json(
+      { error: `orgId is required when assigning role '${role}'.` },
       { status: 400, headers: { [TRACE_HEADER]: traceId } }
     );
   }
@@ -68,7 +89,7 @@ export async function POST(request: Request): Promise<Response> {
   };
 
   const clerkResponse = await fetch(
-    `https://api.clerk.com/v1/users/${encodeURIComponent(userId.trim())}/metadata`,
+    `https://api.clerk.com/v1/users/${encodeURIComponent(trimmedUserId)}/metadata`,
     {
       method: "PATCH",
       headers: {
@@ -95,11 +116,11 @@ export async function POST(request: Request): Promise<Response> {
     actorId: user?.id,
     severity: "info",
     createdAtIso: doneAtIso,
-    metadata: { userId: userId.trim(), role, orgId: orgId ?? null },
+    metadata: { userId: trimmedUserId, role, orgId: orgId ?? null },
   });
 
   return NextResponse.json(
-    { userId: userId.trim(), role, orgId: orgId ?? null, doneAtIso },
+    { userId: trimmedUserId, role, orgId: orgId ?? null, doneAtIso },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
   );
 }

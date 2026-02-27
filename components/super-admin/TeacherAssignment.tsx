@@ -162,11 +162,11 @@ export default function TeacherAssignment() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Email</th>
-                  <th className="px-4 py-3 text-left">Org</th>
-                  <th className="px-4 py-3 text-left">Assigned</th>
-                  <th className="px-4 py-3 text-left">Action</th>
+                  <th scope="col" className="px-4 py-3 text-left">Name</th>
+                  <th scope="col" className="px-4 py-3 text-left">Email</th>
+                  <th scope="col" className="px-4 py-3 text-left">Org</th>
+                  <th scope="col" className="px-4 py-3 text-left">Assigned</th>
+                  <th scope="col" className="px-4 py-3 text-left">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -179,6 +179,7 @@ export default function TeacherAssignment() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleRevoke(a.userId)}
+                        aria-label={`Revoke teacher role for ${a.email}`}
                         className="rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
                       >
                         Revoke

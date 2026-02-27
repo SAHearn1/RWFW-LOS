@@ -69,7 +69,14 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  const clerkUsers: ClerkUser[] = (await clerkResponse.json()) as ClerkUser[];
+  const parsed: unknown = await clerkResponse.json();
+  if (!Array.isArray(parsed)) {
+    return NextResponse.json(
+      { error: "Unexpected response structure from Clerk API." },
+      { status: 502, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
+  const clerkUsers = parsed as ClerkUser[];
   const users: UserRecord[] = clerkUsers.map(mapClerkUserToRecord);
 
   return NextResponse.json(
