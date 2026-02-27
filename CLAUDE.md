@@ -959,4 +959,57 @@ Origin/main had advanced significantly since our feature branch diverged, introd
 
 ### Release gate post-merge: 14/14 ✅
 
+---
+
+## 20. Sprint 8 — Super-Admin Role Wiring & Gap Closure
+
+> **Status:** 🟡 In progress — 2026-02-27
+> **Branch:** `claude/gap-analysis-user-roles-RHg64`
+> **Commit:** `28c44ee`
+
+### Gap Analysis Results (Post-Merge Audit — 2026-02-27)
+
+Post-integration audit by Explore agent found 14 new gaps (GAP-36 through GAP-49) relating to the `super_admin` role introduced by origin/main. Most are categorized as "bootstrapping" or "data wiring" issues.
+
+### Resolved in Sprint 8 (commit `28c44ee`)
+
+| Gap | Fix | Files |
+|-----|-----|-------|
+| GAP-36 | Block super_admin self-assignment; requires invite/admin action | `app/api/user/set-role/route.ts` |
+| GAP-38 (partial) | Add super_admin to org-required check in layout | `app/app/layout.tsx` |
+| GAP-42 | Allow super_admin to generate invite codes | `app/api/invite-codes/route.ts` |
+| GAP-43 | Add super_admin expected/forbidden nav assertions to verifier | `scripts/verify-role-routes.mjs` |
+
+### Open Gaps (Sprint 8 deferred — require product decisions or larger scope)
+
+| Gap | Title | Severity | Notes |
+|-----|-------|----------|-------|
+| GAP-37 | Invite codes cannot grant super_admin role | HIGH | Product decision: is super_admin bootstrapped or delegatable? |
+| GAP-39 | All super-admin panels use mock data only | HIGH | Requires Clerk Management API integration + license store |
+| GAP-40 | Licensing store does not exist (`lib/licensing/`) | HIGH | New persistence layer; separate ticket required |
+| GAP-41 | SuperAdminHome shows no live metrics | MEDIUM | Blocked by GAP-39/GAP-40 |
+| GAP-44 | No E2E super-admin test credentials | MEDIUM | `.env.example` missing E2E_SUPER_ADMIN_* vars |
+| GAP-45 | Super-admin org contract not documented | MEDIUM | CLAUDE.md Section 6 role-requirements table incomplete |
+| GAP-46 | Onboarding RoleSelectWizard copy unclear for super-admin | LOW | UX improvement only |
+| GAP-47 | No admin/super-admin role assignment API | HIGH | No in-app path to assign super_admin role to existing user |
+| GAP-48 | Super-admin access to admin routes (standards/evidence/exports) | MEDIUM | Product decision: does super_admin inherit admin route access? |
+| GAP-49 | MCP/Offline health stubs return HTTP 200 | MEDIUM | Should return 503 for unimplemented stubs |
+
+### Role Requirements Update (CLAUDE.md Section 6)
+
+| Role | Clerk org required? | Notes |
+|------|---------------------|-------|
+| super_admin | **Pending product decision** | Layout now enforces org check; may revert if super_admin is global |
+
+### Sprint 8 Acceptance Criteria
+
+- [x] `npm run verify:release-gate` passes ✅ (14/14)
+- [x] super_admin blocked from self-assignment via `/api/user/set-role` ✅
+- [x] super_admin can generate invite codes via `/api/invite-codes` ✅
+- [x] super_admin org check added to `app/app/layout.tsx` ✅
+- [x] `verify-role-routes.mjs` asserts super_admin nav contract ✅
+- [ ] GAP-39: Live data APIs for super-admin panels — deferred (Sprint 9)
+- [ ] GAP-40: `lib/licensing/` persistence layer — deferred (Sprint 9)
+- [ ] GAP-47: `/api/admin/assign-role` endpoint — deferred (Sprint 9)
+
 *Last updated: 2026-02-27*
