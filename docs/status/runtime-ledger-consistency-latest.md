@@ -1,4 +1,4 @@
 # Runtime-Ledger Consistency Report
 
 - Status: skipped
-- Reason: rootwork-ledger.db not found
+- Reason: LEDGER_CONSISTENCY_ALLOW_SKIP=true
