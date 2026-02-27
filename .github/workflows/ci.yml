@@ -56,3 +56,54 @@ jobs:
           name: release-gate-report
           path: docs/status/release-gate-latest.json
           if-no-files-found: warn
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: verify
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.E2E_ADMIN_EMAIL != '' }}
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Role E2E
+        run: npm run verify:role-e2e
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_TEACHER_EMAIL: ${{ secrets.E2E_TEACHER_EMAIL }}
+          E2E_TEACHER_PASSWORD: ${{ secrets.E2E_TEACHER_PASSWORD }}
+          E2E_STUDENT_INDEPENDENT_EMAIL: ${{ secrets.E2E_STUDENT_INDEPENDENT_EMAIL }}
+          E2E_STUDENT_INDEPENDENT_PASSWORD: ${{ secrets.E2E_STUDENT_INDEPENDENT_PASSWORD }}
+          E2E_STUDENT_ENROLLED_EMAIL: ${{ secrets.E2E_STUDENT_ENROLLED_EMAIL }}
+          E2E_STUDENT_ENROLLED_PASSWORD: ${{ secrets.E2E_STUDENT_ENROLLED_PASSWORD }}
+          E2E_ADULT_LEARNER_EMAIL: ${{ secrets.E2E_ADULT_LEARNER_EMAIL }}
+          E2E_ADULT_LEARNER_PASSWORD: ${{ secrets.E2E_ADULT_LEARNER_PASSWORD }}
+          E2E_PROFESSIONAL_DEVELOPMENT_EMAIL: ${{ secrets.E2E_PROFESSIONAL_DEVELOPMENT_EMAIL }}
+          E2E_PROFESSIONAL_DEVELOPMENT_PASSWORD: ${{ secrets.E2E_PROFESSIONAL_DEVELOPMENT_PASSWORD }}
+          E2E_SUPER_ADMIN_EMAIL: ${{ secrets.E2E_SUPER_ADMIN_EMAIL }}
+          E2E_SUPER_ADMIN_PASSWORD: ${{ secrets.E2E_SUPER_ADMIN_PASSWORD }}
+
+      - name: Upload E2E Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: role-e2e-screenshots
+          path: docs/qa/artifacts/role-e2e/**
+          if-no-files-found: warn

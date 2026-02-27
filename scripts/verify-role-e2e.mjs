@@ -46,6 +46,13 @@ const roleConfigs = [
     emailEnv: "E2E_ADMIN_EMAIL",
     allowRoutes: ["/app", "/app/evidence", "/app/exports", "/app/standards"],
     denyRoutes: ["/app/studio", "/app/command-center", "/app/cohorts"]
+  },
+  {
+    role: "super_admin",
+    emailEnv: "E2E_SUPER_ADMIN_EMAIL",
+    optional: true,
+    allowRoutes: ["/app", "/app/super-admin", "/app/evidence", "/app/exports", "/app/standards", "/app/settings"],
+    denyRoutes: ["/app/missions", "/app/studio", "/app/command-center", "/app/cohorts", "/app/reviews"]
   }
 ];
 
@@ -154,7 +161,11 @@ async function run() {
   const missing = [];
   for (const config of roleConfigs) {
     if (!process.env[config.emailEnv]) {
-      missing.push(config.emailEnv);
+      if (config.optional) {
+        console.warn(`[SKIP] ${config.role}: ${config.emailEnv} not set — skipping optional role test.`);
+      } else {
+        missing.push(config.emailEnv);
+      }
     }
   }
 
@@ -171,6 +182,9 @@ async function run() {
   try {
     for (const config of roleConfigs) {
       const email = process.env[config.emailEnv];
+      if (!email && config.optional) {
+        continue;
+      }
       const user = await getUserByEmail(email);
       const ticket = await createSignInTicket(user.id);
 
@@ -183,7 +197,7 @@ async function run() {
 
         for (const route of config.allowRoutes) {
           const check = await verifyRoute(page, config.role, route, true, {
-            allowOrgBlocked: (config.role === "teacher" || config.role === "professional_development" || config.role === "admin") && !organizationsEnabled
+            allowOrgBlocked: (config.role === "teacher" || config.role === "professional_development" || config.role === "admin" || config.role === "super_admin") && !organizationsEnabled
           });
           if (check.orgBlocked) {
             outcome.notes.push(`org-blocked:${route}`);
