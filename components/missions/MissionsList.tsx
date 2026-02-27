@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import type { RuntimeMission, RuntimeMissionStage, VerificationEvent } from "@/lib/runtime/contracts/types";
-import { readRuntimeState } from "@/lib/runtime/engine/store";
+import { dispatchRuntimeEvent, readRuntimeState } from "@/lib/runtime/engine/store";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,9 +52,14 @@ function StageBadge({ stage }: { stage: RuntimeMissionStage }) {
   );
 }
 
-function MissionCard({ mission, artifactCount, verifications }: MissionRow) {
+function MissionCard({
+  mission,
+  artifactCount,
+  verifications,
+  onAdvance,
+}: MissionRow & { onAdvance: (missionId: string, stage: RuntimeMissionStage) => void }) {
   return (
-    <article className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm" data-tour="mission-actions">
       <div className="flex items-start justify-between gap-2">
         <h2 className="text-base font-semibold text-slate-900 leading-snug">{mission.title}</h2>
         <StageBadge stage={mission.stage} />
@@ -77,13 +82,42 @@ function MissionCard({ mission, artifactCount, verifications }: MissionRow) {
         </div>
       </dl>
 
-      <div className="mt-auto pt-1">
-        <Link
-          href="/app/studio"
-          className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 transition-colors"
-        >
-          Open Studio &rarr;
-        </Link>
+      <div className="mt-auto flex flex-wrap gap-2 pt-1">
+        {mission.stage === "not_started" && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
+            onClick={() => onAdvance(mission.id, "in_progress")}
+          >
+            Start Mission
+          </button>
+        )}
+
+        {mission.stage === "in_progress" && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-500 transition-colors"
+            onClick={() => onAdvance(mission.id, "submitted")}
+          >
+            Submit for Review
+          </button>
+        )}
+
+        {mission.stage !== "verified" && (
+          <Link
+            href="/app/studio"
+            className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 transition-colors"
+            data-tour="studio-entry"
+          >
+            Open Studio &rarr;
+          </Link>
+        )}
+
+        {mission.stage === "verified" && (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+            ✓ Verified
+          </span>
+        )}
       </div>
     </article>
   );
@@ -92,7 +126,6 @@ function MissionCard({ mission, artifactCount, verifications }: MissionRow) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-8 py-14 text-center">
-      {/* Illustrated placeholder */}
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-3xl" aria-hidden="true">
         🗺️
       </div>
@@ -135,11 +168,8 @@ function RuntimeDisabledBanner() {
 export default function MissionsList() {
   const runtimeEnabled = Boolean(process.env.NEXT_PUBLIC_ENABLE_RUNTIME);
 
-  // Read runtime state once on mount (localStorage is client-only, so we use
-  // a lazy initialiser inside useState rather than useMemo to avoid SSR issues)
-  const [rows] = useState<MissionRow[]>(() => {
+  const [rows, setRows] = useState<MissionRow[]>(() => {
     const state = readRuntimeState();
-
     return Object.values(state.missions).map((mission) => ({
       mission,
       artifactCount: Object.values(state.artifacts).filter((a) => a.missionId === mission.id).length,
@@ -148,6 +178,18 @@ export default function MissionsList() {
   });
 
   const hasMissions = rows.length > 0;
+
+  function handleAdvance(missionId: string, stage: RuntimeMissionStage) {
+    const updatedAtIso = new Date().toISOString();
+    dispatchRuntimeEvent({ type: "MISSION_ADVANCED", missionId, stage, updatedAtIso });
+    setRows((prev) =>
+      prev.map((row) =>
+        row.mission.id === missionId
+          ? { ...row, mission: { ...row.mission, stage, updatedAtIso } }
+          : row
+      )
+    );
+  }
 
   return (
     <section className="space-y-6">
@@ -166,6 +208,7 @@ export default function MissionsList() {
           <Link
             href="/app"
             className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            data-tour="mission-draft"
           >
             + Start New Mission
           </Link>
@@ -184,6 +227,7 @@ export default function MissionsList() {
               mission={mission}
               artifactCount={artifactCount}
               verifications={verifications}
+              onAdvance={handleAdvance}
             />
           ))}
         </div>

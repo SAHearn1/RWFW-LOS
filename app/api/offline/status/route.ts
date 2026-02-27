@@ -14,7 +14,7 @@ export function GET(request: Request): Response {
   }
 
   return NextResponse.json(
-    { status: "ready", mode: "cache-planned" },
+    { status: "ready", mode: "service-worker", swPath: "/sw.js" },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
   );
 }
