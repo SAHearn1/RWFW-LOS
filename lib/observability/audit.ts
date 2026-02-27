@@ -14,7 +14,13 @@ export type AuditEvent = {
   createdAtIso: string;
 };
 
-const AUDIT_LOG_PATH = resolve("docs", "status", "audit-log.ndjson");
+// AUDIT_LOG_PATH env var overrides the default path. Use an absolute path in
+// production (e.g. /tmp/audit-log.ndjson on Lambda). Falls back to a path
+// relative to CWD for local development.
+const AUDIT_LOG_PATH =
+  process.env.AUDIT_LOG_PATH?.trim() ||
+  resolve("docs", "status", "audit-log.ndjson");
+
 const AUDIT_HTTP_TIMEOUT_MS = 1500;
 
 function isServerlessRuntime(): boolean {
@@ -22,7 +28,7 @@ function isServerlessRuntime(): boolean {
 }
 
 async function appendAuditEventToFile(event: AuditEvent): Promise<void> {
-  const directory = resolve("docs", "status");
+  const directory = resolve(AUDIT_LOG_PATH, "..");
   await mkdir(directory, { recursive: true });
   await appendFile(AUDIT_LOG_PATH, `${JSON.stringify(event)}\n`, "utf8");
 }

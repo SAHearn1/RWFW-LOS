@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { phase1FeatureFlags } from "@/lib/config/featureFlags";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
+export const runtime = "nodejs";
+
 export function GET(request: Request): Response {
   const traceId = getTraceIdFromRequest(request);
 

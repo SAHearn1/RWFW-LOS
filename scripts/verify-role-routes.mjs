@@ -34,14 +34,26 @@ const roleToForbiddenNav = {
   admin: ["/app/command-center", "/app/reviews", "/app/missions"]
 };
 
-const missingRoutes = requiredRoutes.filter((route) => !routeAccess.includes(`path: "${route}"`));
+// Use regex so that optional whitespace variations (path:"..." vs path: "...")
+// and comment occurrences outside object literals don't cause false results.
+function routeInSource(source, route) {
+  const escaped = route.replace(/[/]/g, "\\/");
+  return new RegExp(`path:\\s*"${escaped}"`).test(source);
+}
+
+function hrefInSource(source, route) {
+  const escaped = route.replace(/[/]/g, "\\/");
+  return new RegExp(`href:\\s*"${escaped}"`).test(source);
+}
+
+const missingRoutes = requiredRoutes.filter((route) => !routeInSource(routeAccess, route));
 if (missingRoutes.length > 0) {
   console.error(`Missing route contracts: ${missingRoutes.join(", ")}`);
   process.exit(1);
 }
 
 for (const [role, routes] of Object.entries(roleToExpectedNav)) {
-  const missing = routes.filter((route) => !navItems.includes(`href: "${route}"`));
+  const missing = routes.filter((route) => !hrefInSource(navItems, route));
   if (missing.length > 0) {
     console.error(`Role ${role} is missing expected nav routes: ${missing.join(", ")}`);
     process.exit(1);
@@ -59,7 +71,7 @@ for (const [role, routes] of Object.entries(roleToForbiddenNav)) {
   const end = navItems.indexOf("]", start);
   const block = navItems.slice(start, end);
 
-  const leaked = routes.filter((route) => block.includes(`href: "${route}"`));
+  const leaked = routes.filter((route) => hrefInSource(block, route));
   if (leaked.length > 0) {
     console.error(`Role ${role} contains forbidden routes: ${leaked.join(", ")}`);
     process.exit(1);

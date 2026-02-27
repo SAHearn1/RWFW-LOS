@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { TRACE_HEADER, createTraceId } from "@/lib/observability/trace";
 
+export const runtime = "nodejs";
+
 export function GET(): Response {
   const traceId = createTraceId();
 

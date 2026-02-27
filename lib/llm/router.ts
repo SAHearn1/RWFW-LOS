@@ -12,8 +12,14 @@ export class ModelRouter {
     const decision = resolveModelRoutingDecision(request, this.context);
 
     if (decision.primaryProvider === "local_ollama") {
-      const local = await this.localProvider.infer(request);
-      if (!local.usedFallback) {
+      let local: ModelInferenceResponse | null = null;
+      try {
+        local = await this.localProvider.infer(request);
+      } catch {
+        // Provider threw — treat as fallback-needed
+      }
+
+      if (local && !local.usedFallback) {
         return local;
       }
 
@@ -21,11 +27,18 @@ export class ModelRouter {
         return this.cloudProvider.infer(request);
       }
 
-      return local;
+      if (local) return local;
+      throw new Error("local_ollama provider failed and no fallback is configured");
     }
 
-    const cloud = await this.cloudProvider.infer(request);
-    if (!cloud.usedFallback) {
+    let cloud: ModelInferenceResponse | null = null;
+    try {
+      cloud = await this.cloudProvider.infer(request);
+    } catch {
+      // Provider threw — treat as fallback-needed
+    }
+
+    if (cloud && !cloud.usedFallback) {
       return cloud;
     }
 
@@ -33,6 +46,7 @@ export class ModelRouter {
       return this.localProvider.infer(request);
     }
 
-    return cloud;
+    if (cloud) return cloud;
+    throw new Error("cloud_managed provider failed and no fallback is configured");
   }
 }

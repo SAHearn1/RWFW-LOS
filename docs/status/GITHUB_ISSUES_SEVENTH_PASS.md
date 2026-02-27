@@ -174,39 +174,40 @@
 
 ## Status Summary
 
-| Issue | Gap | Priority | Status |
-|-------|-----|----------|--------|
-| #130 | GAP-30 Federation auth | Critical | Open |
-| #131 | GAP-31 shouldUseDbLedger dupe | Critical | Open |
-| #132 | GAP-32 Purge semantics | Critical | Open |
-| #133 | GAP-40 isLedgerRecord payload | High | Open |
-| #134 | GAP-41 toRecord() any cast | High | Open |
-| #135 | GAP-42 upsert atomicity | High | Open |
-| #136 | GAP-35 timeline try-catch | High | Open |
-| #137 | GAP-36 users fetch try-catch | High | Open |
-| #138 | GAP-37 assign-role fetch try-catch | High | Open |
-| #139 | GAP-38 webhook fetch try-catch | High | Open |
-| #140 | GAP-39 ledger null dereference | High | Open |
-| #141 | GAP-44 timing attack | High | Open |
-| #142 | GAP-49 telemetry runtime | Medium | Open |
-| #143 | GAP-33 layout org list | Critical | Open |
-| #144 | GAP-34 page exhaustiveness | Critical | Open |
-| #145 | GAP-45 middleware cast | High | Open |
-| #146 | GAP-46 ALL_ROLES derived | High | Open |
-| #147 | GAP-58 export role groupings | Medium | Open |
-| #148 | GAP-59 layout audit log | Medium | Open |
-| #149 | GAP-43 audit fire-and-forget | High | Open |
-| #150 | GAP-54 audit log path | Medium | Open |
-| #151 | GAP-55 trace header casing | Medium | Open |
-| #152 | GAP-61 LLM router null | Medium | Open |
-| #153 | GAP-68 trace ID UUID | Low | Open |
-| #154 | GAP-47 smoke test | High | Open |
-| #155 | GAP-56 role-routes brittle | Medium | Open |
-| #156 | GAP-57 onboarding regex | Medium | Open |
-| #157 | GAP-50 diagnostics auth | Medium | Open |
-| #158 | GAP-51 health runtime | Medium | Open |
-| #159 | GAP-52 mcp/offline runtime | Medium | Open |
-| #160 | GAP-53 store.ts silent discard | Medium | Open |
-| #161 | GAP-60 super_admin nav | Medium | Open |
-| #162 | GAP-63–72 P3 polish | Low | Open |
-EOF
+> Last updated: 2026-02-27 (ninth pass). All issues now closed.
+
+| Issue | Gap | Priority | Status | Closed in |
+|-------|-----|----------|--------|-----------|
+| #130 | GAP-30 Federation auth | Critical | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #131 | GAP-31 shouldUseDbLedger dupe | Critical | ✅ CLOSED | seventh-pass + eighth-pass |
+| #132 | GAP-32 Purge semantics | Critical | ✅ CLOSED | confirmed correct — no fix needed |
+| #133 | GAP-40 isLedgerRecord payload | High | ✅ CLOSED | eighth-pass (`711b332`) |
+| #134 | GAP-41 toRecord() any cast | High | ✅ CLOSED | eighth-pass (`711b332`) |
+| #135 | GAP-42 upsert atomicity | High | ✅ CLOSED | confirmed correct — SQLite ON CONFLICT |
+| #136 | GAP-35 timeline try-catch | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #137 | GAP-36 users fetch try-catch | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #138 | GAP-37 assign-role fetch try-catch | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #139 | GAP-38 webhook fetch try-catch | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #140 | GAP-39 ledger null dereference | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #141 | GAP-44 timing attack | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #142 | GAP-49 telemetry runtime | Medium | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #143 | GAP-33 layout org list | Critical | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #144 | GAP-34 page exhaustiveness | Critical | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #145 | GAP-45 middleware cast | High | ✅ CLOSED | seventh-pass — comment added |
+| #146 | GAP-46 ALL_ROLES derived | High | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #147 | GAP-58 export role groupings | Medium | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #148 | GAP-59 layout audit log | Medium | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #149 | GAP-43 audit fire-and-forget | High | ✅ CLOSED | confirmed correct — `.catch()` logs to stdout |
+| #150 | GAP-54 audit log path | Medium | ✅ CLOSED | ninth-pass — `AUDIT_LOG_PATH` env var |
+| #151 | GAP-55 trace header casing | Medium | ✅ CLOSED | confirmed correct — `x-rootwork-trace-id` |
+| #152 | GAP-61 LLM router null | Medium | ✅ CLOSED | ninth-pass — try-catch + null guard |
+| #153 | GAP-68 trace ID UUID | Low | ✅ CLOSED | eighth-pass (`711b332`) |
+| #154 | GAP-47 smoke test | High | ✅ CLOSED | confirmed correct — routes already covered |
+| #155 | GAP-56 role-routes brittle | Medium | ✅ CLOSED | ninth-pass — regex helpers |
+| #156 | GAP-57 onboarding regex | Medium | ✅ CLOSED | confirmed correct — handles both quote styles |
+| #157 | GAP-50 diagnostics auth | Medium | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #158 | GAP-51 health runtime | Medium | ✅ CLOSED | ninth-pass — `runtime = "nodejs"` |
+| #159 | GAP-52 mcp/offline runtime | Medium | ✅ CLOSED | ninth-pass — `runtime = "nodejs"` |
+| #160 | GAP-53 store.ts silent discard | Medium | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #161 | GAP-60 super_admin nav | Medium | ✅ CLOSED | seventh-pass (`10ca84a`) |
+| #162 | GAP-63–72 P3 polish | Low | ✅ CLOSED | eighth-pass (`711b332`) |
