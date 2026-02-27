@@ -923,3 +923,40 @@ Zero shared files. `app/app/layout.tsx` untouched by all agents.
 - [x] StandardsRegistry auto-seeds DEFAULT_STANDARDS into DB on first empty load ✅
 - [x] Landing teacher CTA links to `/sign-in?role=teacher`; admin to `/sign-in?role=admin` ✅
 - [x] Federation task log survives process restart (SQLite-backed) ✅
+
+---
+
+## 19. Origin/Main Merge — 2026-02-27
+
+> **Status:** ✅ Complete
+> **Commit:** `73f1e96`
+> **Branch:** `claude/gap-analysis-user-roles-RHg64`
+
+### What was merged
+
+Origin/main had advanced significantly since our feature branch diverged, introducing:
+
+| Feature | Files |
+|---------|-------|
+| `super_admin` role | `lib/auth/roles.ts`, `lib/auth/routeAccess.ts`, `lib/nav/items.ts`, `lib/onboarding/tourSteps.ts`, `lib/nav/notifications.ts` |
+| SuperAdminHome dashboard | `components/dashboards/SuperAdminHome.tsx` |
+| Super-admin panel pages | `components/super-admin/{UsersPanel,TeachersPanel,LicensesPanel,InstitutionsPanel}.tsx` |
+| AWS cloud layer | `lib/cloud/awsEnv.ts`, `lib/orchestration/dynamoStateStore.ts`, `lib/orchestration/sqsQueueAdapter.ts` |
+| Learner timeline | `lib/timeline/learnerTimeline.ts`, `app/api/timeline/learner/route.ts` |
+| Nav notifications | `lib/nav/notifications.ts` |
+| Ledger flags | `lib/ledger/flags.ts` |
+| AppShell enhancements | `components/app-shell/AppShell.tsx` |
+| API hardening | `app/api/{ledger/records,orchestration/worker-run,telemetry/pilot,webhooks/clerk}/route.ts` |
+
+### Conflicts resolved
+
+- 40 conflict files resolved (strategic `--theirs`/`--ours` + manual resolution)
+- `lib/auth/roles.ts`: Added `super_admin` to `APP_ROLES`
+- `scripts/verify-env.mjs`: Kept `allowPlaceholders: true` for local dev
+- Super-admin tour selectors: Added `data-tour` attributes to super-admin panels
+- `scripts/verify-onboarding.mjs`: Added 3 super-admin panel files to verifier corpus
+- `docs/qa/role-matrix.md`: Added `super_admin` column to all tables
+
+### Release gate post-merge: 14/14 ✅
+
+*Last updated: 2026-02-27*
