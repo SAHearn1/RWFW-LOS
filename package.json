@@ -28,7 +28,8 @@
     "verify:super-admin-contracts": "node scripts/verify-super-admin-contracts.mjs",
     "verify:ledger-contracts": "node scripts/verify-ledger-contracts.mjs",
     "verify:api-auth-guards": "node scripts/verify-api-auth-guards.mjs",
-    "verify:super-admin-e2e": "node scripts/verify-super-admin-e2e.mjs"
+    "verify:super-admin-e2e": "node scripts/verify-super-admin-e2e.mjs",
+    "verify:role-ux-full": "node scripts/verify-role-ux-full.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.997.0",
