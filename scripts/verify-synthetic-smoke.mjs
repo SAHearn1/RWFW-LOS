@@ -16,22 +16,39 @@ function resolveBaseUrl() {
 }
 
 const BASE_URL = resolveBaseUrl();
-const ROUTES = ["/", "/sign-in", "/app", "/app/studio", "/app/settings"];
+
+// Routes config: public routes must return 2xx/3xx; authProtected routes accept
+// 302 (Clerk prod → redirect to /sign-in), 401/403 (explicit rejection), or
+// 404 (Clerk dev-mode "protect-rewrite" when dev-browser cookie absent).
+// Anything ≥ 500 or a network error is always a failure.
+const ROUTES = [
+  { path: "/", authProtected: false },
+  { path: "/sign-in", authProtected: false },
+  { path: "/app", authProtected: true },
+  { path: "/app/studio", authProtected: true },
+  { path: "/app/settings", authProtected: true },
+];
 
 async function run() {
   const startedAtIso = new Date().toISOString();
   const checks = [];
 
-  for (const route of ROUTES) {
+  for (const { path: route, authProtected } of ROUTES) {
     const url = `${BASE_URL}${route}`;
     const began = Date.now();
 
     try {
       const response = await fetch(url, { redirect: "manual" });
       const durationMs = Date.now() - began;
-      const passed = (response.status >= 200 && response.status < 400) || response.status === 401 || response.status === 403;
 
-      checks.push({ route, url, status: response.status, durationMs, passed });
+      // Auth-protected: any non-5xx, non-network response is acceptable
+      // (302 = Clerk prod redirect, 404 = Clerk dev protect-rewrite, 401/403 = explicit rejection)
+      // Public: expect 2xx/3xx
+      const passed = authProtected
+        ? response.status > 0 && response.status < 500
+        : (response.status >= 200 && response.status < 400) || response.status === 401 || response.status === 403;
+
+      checks.push({ route, url, status: response.status, durationMs, authProtected, passed });
     } catch (error) {
       checks.push({
         route,
