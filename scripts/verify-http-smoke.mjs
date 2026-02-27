@@ -32,12 +32,13 @@ function wait(ms) {
 async function waitForServer(maxAttempts = 30) {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      const response = await fetch(`${baseUrl}/`, { redirect: "manual" });
+      const signal = AbortSignal.timeout(2000);
+      const response = await fetch(`${baseUrl}/`, { redirect: "manual", signal });
       if (response.status < 600) {
         return;
       }
     } catch {
-      // keep polling
+      // keep polling — timeout or connection refused
     }
 
     await wait(500);
@@ -63,11 +64,13 @@ async function run() {
 
     const failures = [];
 
+    const REQUEST_TIMEOUT_MS = 8000;
     for (const route of routes) {
       let response;
       const started = performance.now();
       try {
-        response = await fetch(`${baseUrl}${route}`, { redirect: "manual" });
+        const signal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+        response = await fetch(`${baseUrl}${route}`, { redirect: "manual", signal });
       } catch (error) {
         failures.push(`${route}: request failed (${error.message})`);
         continue;
