@@ -26,7 +26,7 @@ export async function POST(request: Request): Promise<Response> {
   // Only admins may generate invite codes.
   const user = await currentUser();
   const callerRole = parseAppRole(user?.publicMetadata?.role);
-  if (callerRole !== "admin") {
+  if (callerRole !== "admin" && callerRole !== "super_admin") {
     return NextResponse.json({ error: "Only administrators can generate invite codes." }, { status: 403, headers: { [TRACE_HEADER]: traceId } });
   }
 

@@ -26,7 +26,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Org-required roles cannot be self-assigned — they require an invite code or admin action.
-  if (role === "teacher" || role === "professional_development" || role === "admin") {
+  if (role === "teacher" || role === "professional_development" || role === "admin" || role === "super_admin") {
     return NextResponse.json(
       { error: "This role requires an invite code or administrator assignment." },
       { status: 403, headers: { [TRACE_HEADER]: traceId } }

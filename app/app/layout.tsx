@@ -34,7 +34,7 @@ export default async function ProtectedAppLayout({
     redirect("/onboarding");
   }
 
-  if ((role === "teacher" || role === "professional_development" || role === "admin") && !orgId) {
+  if ((role === "teacher" || role === "professional_development" || role === "admin" || role === "super_admin") && !orgId) {
     return (
       <main className="mx-auto w-full max-w-4xl px-6 py-8">
         <ForbiddenPanel message="An organization assignment is required for this role. Contact an administrator." />

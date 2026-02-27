@@ -13,7 +13,11 @@ const requiredRoutes = [
   "/app/evidence",
   "/app/exports",
   "/app/profile",
-  "/app/core"
+  "/app/core",
+  "/app/super-admin/users",
+  "/app/super-admin/teachers",
+  "/app/super-admin/licenses",
+  "/app/super-admin/institutions"
 ];
 
 const roleToExpectedNav = {
@@ -22,7 +26,8 @@ const roleToExpectedNav = {
   adult_learner: ["/app/studio", "/app/credentials", "/app/settings"],
   teacher: ["/app/command-center", "/app/cohorts", "/app/reviews"],
   professional_development: ["/app/command-center", "/app/cohorts", "/app/reviews"],
-  admin: ["/app/evidence", "/app/exports", "/app/standards"]
+  admin: ["/app/evidence", "/app/exports", "/app/standards"],
+  super_admin: ["/app/super-admin/users", "/app/super-admin/teachers", "/app/super-admin/licenses"]
 };
 
 const roleToForbiddenNav = {
@@ -31,7 +36,8 @@ const roleToForbiddenNav = {
   adult_learner: ["/app/evidence", "/app/exports", "/app/command-center"],
   teacher: ["/app/evidence", "/app/exports", "/app/standards", "/app/missions"],
   professional_development: ["/app/evidence", "/app/exports", "/app/standards", "/app/missions"],
-  admin: ["/app/command-center", "/app/reviews", "/app/missions"]
+  admin: ["/app/command-center", "/app/reviews", "/app/missions"],
+  super_admin: ["/app/studio", "/app/missions", "/app/command-center", "/app/evidence"]
 };
 
 const missingRoutes = requiredRoutes.filter((route) => !routeAccess.includes(`path: "${route}"`));
