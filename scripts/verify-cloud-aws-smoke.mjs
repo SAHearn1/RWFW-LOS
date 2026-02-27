@@ -8,7 +8,9 @@ const baseUrl = (process.env.E2E_BASE_URL || "https://rwfw-los.vercel.app").repl
 const clerkSecret = process.env.CLERK_SECRET_KEY;
 const adminEmail = process.env.E2E_ADMIN_EMAIL;
 
-if (!clerkSecret || !adminEmail) {
+const isDryRun = process.argv.includes("--dry-run") || !adminEmail;
+
+if (!isDryRun && !clerkSecret) {
   throw new Error("CLERK_SECRET_KEY and E2E_ADMIN_EMAIL are required for cloud AWS smoke.");
 }
 
@@ -81,6 +83,16 @@ async function run() {
   }
   const federationPostBody = await federationPost.json();
 
+  if (isDryRun) {
+    console.log("[dry-run] Skipping authenticated checks. Set E2E_ADMIN_EMAIL to run full suite.");
+    console.log("Cloud smoke (unauthenticated) passed", {
+      baseUrl,
+      federationDiscovery: federationGetBody?.discovery?.registrations?.length ?? null,
+      federationAssignedAgent: federationPostBody?.result?.output?.assignedAgentId ?? null
+    });
+    return;
+  }
+
   const user = await getUserByEmail(adminEmail);
   const ticket = await createSignInTicket(user.id);
 
@@ -107,6 +119,22 @@ async function run() {
     }
     const inferenceBody = await inference.json();
 
+    const outputText = inferenceBody?.result?.outputText ?? "";
+
+    if (outputText.includes("Cloud inference request accepted")) {
+      throw new Error(
+        "Inference returned fire-and-forget stub. Provider is not executing actual inference. See INF-01."
+      );
+    }
+
+    if (inferenceBody?.result?.usedFallback === true) {
+      throw new Error("Inference used fallback provider. Primary cloud inference path is broken.");
+    }
+
+    if (outputText.length < 10) {
+      throw new Error(`Inference output is too short to be a real response (length: ${outputText.length}).`);
+    }
+
     const workerRun = await page.request.post(`${baseUrl}/api/orchestration/worker-run`, {
       data: {
         idempotencyKey: `smoke.${Date.now()}`,
@@ -120,6 +148,13 @@ async function run() {
       throw new Error(`/api/orchestration/worker-run failed (${workerRun.status()}): ${workerBodyText.slice(0, 220)}`);
     }
     const workerBody = await workerRun.json();
+
+    if (
+      (workerBody?.backend?.queue == null) &&
+      (workerBody?.backend?.stateStore == null)
+    ) {
+      throw new Error("Worker run did not report backend selection.");
+    }
 
     console.log("Cloud smoke passed", {
       baseUrl,
@@ -141,4 +176,3 @@ run().catch((error) => {
   console.error(error.message || error);
   process.exit(1);
 });
-
