@@ -35,25 +35,7 @@ function loadRuntimeSnapshot() {
   }
 }
 
-function main() {
-  ensureReportDirectory();
-
-  if (!existsSync(dbPath)) {
-    const payload = {
-      generatedAtIso: new Date().toISOString(),
-      passed: true,
-      skipped: true,
-      reason: "rootwork-ledger.db not found",
-      failures: [],
-      warnings: ["Consistency checks skipped because database ledger is absent."]
-    };
-    writeFileSync(jsonReportPath, JSON.stringify(payload, null, 2));
-    writeFileSync(mdReportPath, "# Runtime-Ledger Consistency Report\n\n- Status: skipped\n- Reason: rootwork-ledger.db not found\n");
-    console.log(`Consistency check skipped. Report: ${jsonReportPath}`);
-    return;
-  }
-
-  const database = new Database(dbPath, { readonly: true });
+function runConsistencyChecks(database) {
   const rows = database
     .prepare("SELECT id, type, mission_id, learner_id, payload_json, created_at_iso, updated_at_iso FROM ledger_records")
     .all();
@@ -106,6 +88,111 @@ function main() {
       warnings.push(`No mission record found for ${row.id} mission ${row.mission_id}.`);
     }
   }
+
+  return { rows, failures, warnings, byType };
+}
+
+function runRoundTripTest() {
+  const db = new Database(":memory:");
+
+  db.exec(`
+    CREATE TABLE ledger_records (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      mission_id TEXT NOT NULL,
+      learner_id TEXT,
+      payload_json TEXT NOT NULL,
+      created_at_iso TEXT NOT NULL,
+      updated_at_iso TEXT NOT NULL
+    )
+  `);
+
+  const now = new Date().toISOString();
+  const missionId = "mission-test-001";
+  const artifactId = "artifact-test-001";
+  const verificationId = "verification-test-001";
+
+  db.prepare("INSERT INTO ledger_records VALUES (?, ?, ?, ?, ?, ?, ?)").run(
+    missionId,
+    "mission",
+    missionId,
+    "learner-001",
+    JSON.stringify({ title: "Test Mission" }),
+    now,
+    now
+  );
+
+  db.prepare("INSERT INTO ledger_records VALUES (?, ?, ?, ?, ?, ?, ?)").run(
+    artifactId,
+    "artifact",
+    missionId,
+    "learner-001",
+    JSON.stringify({ content: "Test artifact content" }),
+    now,
+    now
+  );
+
+  db.prepare("INSERT INTO ledger_records VALUES (?, ?, ?, ?, ?, ?, ?)").run(
+    verificationId,
+    "verification",
+    missionId,
+    "learner-001",
+    JSON.stringify({ missionId, artifactId }),
+    now,
+    now
+  );
+
+  const { failures } = runConsistencyChecks(db);
+  db.close();
+
+  if (failures.length !== 0) {
+    console.error("[round-trip test] FAILED — unexpected failures:", failures);
+    process.exit(1);
+  }
+
+  console.log("[round-trip test] PASSED — zero failures on seeded in-memory DB.");
+}
+
+function main() {
+  // Run round-trip integration test first (always, regardless of DB presence)
+  runRoundTripTest();
+
+  ensureReportDirectory();
+
+  // Intentional skip: operator has explicitly opted out of the consistency check
+  if (process.env.LEDGER_CONSISTENCY_ALLOW_SKIP === "true") {
+    const payload = {
+      generatedAtIso: new Date().toISOString(),
+      passed: true,
+      skipped: true,
+      reason: "LEDGER_CONSISTENCY_ALLOW_SKIP=true",
+      failures: [],
+      warnings: ["Consistency checks intentionally skipped via LEDGER_CONSISTENCY_ALLOW_SKIP."]
+    };
+    writeFileSync(jsonReportPath, JSON.stringify(payload, null, 2));
+    writeFileSync(mdReportPath, "# Runtime-Ledger Consistency Report\n\n- Status: skipped\n- Reason: LEDGER_CONSISTENCY_ALLOW_SKIP=true\n");
+    console.log(`Consistency check intentionally skipped. Report: ${jsonReportPath}`);
+    return;
+  }
+
+  // Missing DB is a hard failure — the ledger must exist for production to be healthy
+  if (!existsSync(dbPath)) {
+    const payload = {
+      generatedAtIso: new Date().toISOString(),
+      passed: false,
+      skipped: false,
+      reason: "rootwork-ledger.db not found",
+      failures: ["rootwork-ledger.db does not exist"],
+      warnings: []
+    };
+    writeFileSync(jsonReportPath, JSON.stringify(payload, null, 2));
+    writeFileSync(mdReportPath, "# Runtime-Ledger Consistency Report\n\n- Status: FAILED\n- Reason: rootwork-ledger.db not found\n");
+    console.error(`Consistency check failed: rootwork-ledger.db not found. Report: ${jsonReportPath}`);
+    process.exit(1);
+  }
+
+  const database = new Database(dbPath, { readonly: true });
+  const { rows, failures, warnings, byType } = runConsistencyChecks(database);
 
   const runtimeSnapshot = loadRuntimeSnapshot();
   if (!runtimeSnapshot.found) {
