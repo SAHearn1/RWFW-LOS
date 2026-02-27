@@ -31,6 +31,7 @@
     "verify:super-admin-e2e": "node scripts/verify-super-admin-e2e.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.999.0",
     "@aws-sdk/client-dynamodb": "^3.997.0",
     "@aws-sdk/client-eventbridge": "^3.997.0",
     "@aws-sdk/client-sqs": "^3.997.0",
