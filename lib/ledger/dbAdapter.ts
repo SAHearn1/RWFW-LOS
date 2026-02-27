@@ -158,3 +158,39 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
 export function shouldUseDbLedger(): boolean {
   return getDbLedgerAvailability().enabled;
 }
+
+/**
+ * Purge ledger records whose updatedAtIso is strictly before cutoffIso.
+ * Returns the count of deleted rows.
+ */
+export function purgeDbLedgerRecordsBefore(cutoffIso: string, databasePath?: string): number {
+  const resolvedPath = databasePath ?? resolveDatabasePath();
+  if (!resolvedPath) {
+    throw new Error("DB ledger path is unavailable for current runtime.");
+  }
+
+  const database = new Database(resolvedPath);
+  ensureTable(database);
+
+  const stmt = database.prepare(`DELETE FROM ledger_records WHERE updated_at_iso < ?`);
+  const result = stmt.run(cutoffIso);
+  return result.changes;
+}
+
+/**
+ * Delete all ledger records belonging to a specific learner.
+ * Returns the count of deleted rows.
+ */
+export function deleteDbLedgerRecordsByLearner(learnerId: string, databasePath?: string): number {
+  const resolvedPath = databasePath ?? resolveDatabasePath();
+  if (!resolvedPath) {
+    throw new Error("DB ledger path is unavailable for current runtime.");
+  }
+
+  const database = new Database(resolvedPath);
+  ensureTable(database);
+
+  const stmt = database.prepare(`DELETE FROM ledger_records WHERE learner_id = ?`);
+  const result = stmt.run(learnerId);
+  return result.changes;
+}
