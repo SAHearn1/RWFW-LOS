@@ -44,6 +44,8 @@ export const ROLE_TOUR_STEPS: Readonly<Record<AppRole, readonly TourStep[]>> = {
   professional_development: [
     { id: "nav", selector: "[data-tour='primary-nav']", title: "PD Navigation", body: "Professional development tools are grouped for facilitation work." },
     { id: "home", selector: "[data-tour='page-title']", title: "PD Workspace", body: "Coordinate cohorts, reviews, and session flow from this home view." },
+    { id: "context", selector: "[data-tour='page-description']", title: "Facilitation Context", body: "Use this summary to prioritize session pipeline, review triage, and cohort health signals." },
+    { id: "notifications", selector: "[data-tour='notification-menu']", title: "Notifications", body: "Watch for operational alerts — review backlogs and cohort blockers surface here first." },
     { id: "help", selector: "[data-tour='help-menu']", title: "Help Menu", body: "Restart tour any time from Help." }
   ],
   admin: [

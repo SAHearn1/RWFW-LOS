@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { ingestPilotKpiEvent, isTelemetryTokenAuthorized } from "@/lib/observability/pilotTelemetry";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
+export const runtime = "nodejs";
+
 function getBearerToken(request: Request): string | null {
   const raw = request.headers.get("authorization");
   if (!raw?.startsWith("Bearer ")) {
@@ -22,7 +24,16 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const body = (await request.json()) as { event?: unknown };
+  let body: { event?: unknown };
+  try {
+    body = (await request.json()) as { event?: unknown };
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body." },
+      { status: 400, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
+
   if (!body?.event) {
     return NextResponse.json(
       { error: "event payload is required" },

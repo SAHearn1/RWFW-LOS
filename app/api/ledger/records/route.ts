@@ -26,15 +26,34 @@ function isLedgerRecord(value: unknown): value is LedgerRecord {
   }
 
   const record = value as Partial<LedgerRecord>;
-  return Boolean(
-    typeof record.id === "string" &&
-      (record.type === "mission" || record.type === "artifact" || record.type === "verification") &&
-      typeof record.missionId === "string" &&
-      typeof record.learnerId === "string" &&
-      typeof record.createdAtIso === "string" &&
-      typeof record.updatedAtIso === "string" &&
-      record.payload
-  );
+  if (
+    typeof record.id !== "string" ||
+    typeof record.missionId !== "string" ||
+    typeof record.learnerId !== "string" ||
+    typeof record.createdAtIso !== "string" ||
+    typeof record.updatedAtIso !== "string" ||
+    !record.payload || typeof record.payload !== "object"
+  ) {
+    return false;
+  }
+
+  // Validate type field and that payload shape is at least partially consistent.
+  if (record.type === "mission") {
+    const p = record.payload as Record<string, unknown>;
+    return typeof p.id === "string" && typeof p.learnerId === "string";
+  }
+
+  if (record.type === "artifact") {
+    const p = record.payload as Record<string, unknown>;
+    return typeof p.id === "string" && typeof p.missionId === "string";
+  }
+
+  if (record.type === "verification") {
+    const p = record.payload as Record<string, unknown>;
+    return typeof p.id === "string" && typeof p.missionId === "string" && Array.isArray(p.standards);
+  }
+
+  return false;
 }
 
 export async function GET(request: Request): Promise<Response> {
@@ -70,6 +89,10 @@ export async function GET(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
+  // availability.enabled=true guarantees databasePath is set per getDbLedgerAvailability().
+  if (!availability.databasePath) {
+    return withTrace(503, traceId, { error: "DB ledger path is unavailable." });
+  }
   const adapter = createDbLedgerAdapter(availability.databasePath);
   const allRecords = adapter.readAll();
   const records = effectiveLearnerId ? allRecords.filter((record) => record.learnerId === effectiveLearnerId) : allRecords;
@@ -115,6 +138,9 @@ export async function POST(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
+  if (!availability.databasePath) {
+    return withTrace(503, traceId, { error: "DB ledger path is unavailable." });
+  }
   const stored = createDbLedgerAdapter(availability.databasePath).upsert(payload);
   return withTrace(200, traceId, { record: stored });
 }

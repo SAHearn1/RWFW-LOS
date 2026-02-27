@@ -1,8 +1,10 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 import { parseAppRole } from "@/lib/auth/userRole";
-import { createDbLedgerAdapter, shouldUseDbLedger } from "@/lib/ledger/dbAdapter";
+import { createDbLedgerAdapter, isDbLedgerAvailable } from "@/lib/ledger/dbAdapter";
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 import { buildLearnerTimeline } from "@/lib/timeline/learnerTimeline";
@@ -21,9 +23,18 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  const records = shouldUseDbLedger()
-    ? createDbLedgerAdapter().readAll()
-    : localLedgerAdapter.readAll();
+  let records;
+  try {
+    records = isDbLedgerAvailable()
+      ? createDbLedgerAdapter().readAll()
+      : localLedgerAdapter.readAll();
+  } catch (error) {
+    console.error("[timeline/learner] ledger_init_failed", error instanceof Error ? error.message : "unknown");
+    return NextResponse.json(
+      { error: "Ledger unavailable." },
+      { status: 503, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
 
   const timeline = buildLearnerTimeline(records, user?.id);
 

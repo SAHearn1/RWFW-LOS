@@ -19,6 +19,11 @@ export default async function AppHomePage() {
     return <ForbiddenPanel message="Your current role does not have access to this route." />;
   }
 
+  // Explicit dispatch for every role — add a branch here when a new role is added to APP_ROLES.
+  if (role === "student_independent" || role === "student_enrolled") {
+    return <PLEHome />;
+  }
+
   if (role === "adult_learner") {
     return <AdultLearnerHome />;
   }
@@ -39,5 +44,6 @@ export default async function AppHomePage() {
     return <SuperAdminHome />;
   }
 
-  return <PLEHome />;
+  // Safety net: renders if a new role is added to APP_ROLES without a branch above.
+  return <ForbiddenPanel message="No dashboard is configured for your role. Please contact an administrator." />;
 }

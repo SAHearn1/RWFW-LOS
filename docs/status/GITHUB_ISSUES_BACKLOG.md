@@ -1,11 +1,11 @@
 # GitHub Issues Backlog — RootWork LOS
 
-Generated: 2026-02-27 (Updated after second inspection pass)
-Status: Accurate as of full codebase re-inspection
+Generated: 2026-02-27 (Updated after sixth inspection pass)
+Status: Accurate as of full codebase re-inspection (third pass)
 
 ---
 
-## Closure Corrections After Re-Inspection
+## Closure Corrections After Re-Inspection (Pass 2)
 
 The following issues were listed as open in the initial backlog but were found to already be resolved:
 
@@ -24,35 +24,61 @@ The following issues were listed as open in the initial backlog but were found t
 ### Issue #110 — [GAP-27] Wire data retention admin API endpoints
 **Priority:** Medium — Production safety (GDPR/retention compliance)
 **Lane:** Lane B (Data/Observability)
-**Status:** Open — Needs implementation
-**Files:** `lib/ledger/dbAdapter.ts` (new purge fns), `app/api/admin/retention/route.ts` (new)
+**Status:** ✅ **CLOSED** — Implemented in commit `7f9a3f3`
 
-**Problem:**
-Four data lifecycle functions exist but nothing invokes them server-side.
-Production DB ledger (`better-sqlite3`) needs server-side purge API.
-
-**Acceptance Criteria:**
-- [ ] `lib/ledger/dbAdapter.ts` gains `purgeDbLedgerRecordsBefore()` and `deleteDbLedgerRecordsByLearner()` 
-- [ ] `POST /api/admin/retention` accepts `{ action: "purge_before"|"delete_learner", cutoffIso?: string, learnerId?: string }`
-- [ ] Requires `admin` or `super_admin` role
-- [ ] Audit event logged for each operation
-- [ ] Returns `{ purged: number, action, doneAtIso }`
-- [ ] `npm run verify:release-gate` passes
+**Resolution:**
+- `lib/ledger/dbAdapter.ts` gains `purgeDbLedgerRecordsBefore()` and `deleteDbLedgerRecordsByLearner()`
+- `POST /api/admin/retention` wired with `admin` / `super_admin` role gate + audit logging
 
 ---
 
-## Phase 5: UX Polish
+## Phase 6: Super-Admin Clerk Integration
+
+### Issue #117 — [GAP-NEW-2] User Roster shows scaffold demo data only
+**Priority:** High
+**Lane:** Lane A (Auth/Security)
+**Status:** ✅ **CLOSED** — Implemented in current pass
+
+**Resolution:**
+- `GET /api/super-admin/users` created — fetches live user list from Clerk Management API
+- `UserRoster` component updated to use `useEffect` fetch with loading/error states
+
+### Issue #118 — [GAP-NEW-1] Teacher role assignments not synced to Clerk
+**Priority:** High
+**Lane:** Lane A (Auth/Security)
+**Status:** ✅ **CLOSED** — Implemented in current pass
+
+**Resolution:**
+- `POST /api/super-admin/assign-role` created — PATCH Clerk publicMetadata with new role + audit log
+- `TeacherAssignment` component updated: after local store write, calls assign-role API, shows sync result
+
+### Issue #119 — [GAP-NEW-12] BuilderWorkspace buttons have no handlers
+**Priority:** Medium
+**Lane:** Lane E (UX backlog)
+**Status:** ✅ **CLOSED** — Implemented in current pass
+
+**Resolution:**
+- `BuilderWorkspace` now has full controlled state for mission title/objective and cohort name/learners
+- Validation with error messages; success confirmation on valid submit; form resets after success
+
+### Issue #120 — [GAP-17 Doc Error] student_enrolled org check documented as not enforced
+**Priority:** Documentation fix
+**Status:** ✅ **CLOSED** — `app/app/layout.tsx:40` already includes `student_enrolled` in org check;
+CLAUDE.md and PROGRAM_STATUS.md corrected to reflect actual code
+
+---
+
+## Phase 6: UX Polish
 
 ### Issue #114 — [GAP-15] Landing page role-specific CTA routing
 **Priority:** Low
 **Lane:** Lane E (UX backlog)
-**Status:** Open — needs product decision
+**Status:** ✅ **CLOSED** — Implemented in sixth pass
 
-**Problem:** "Teacher Login" and "Admin Info" both route to `/sign-in` with no role hint.
-
-**Acceptance Criteria:**
-- [ ] CTAs provide differentiated messaging or routing for teacher/admin personas
-- [ ] `npm run verify:release-gate` passes
+**Resolution:**
+- `app/page.tsx`: "Teacher Login" → `/sign-in?intent=teacher`; "Admin Info" → `/sign-in?intent=admin` (dead `/admin-info` link removed)
+- `app/sign-in/[[...sign-in]]/page.tsx`: reads `searchParams.intent`, renders a role-contextual banner above the Clerk `<SignIn>` component for `teacher` and `admin` intents; unknown or missing intents degrade gracefully to the default sign-in UI
+- No cookie, no new route, no framework additions — URL params only; role assignment remains in Clerk `publicMetadata`
 
 ---
 
@@ -60,12 +86,16 @@ Production DB ledger (`better-sqlite3`) needs server-side purge API.
 
 | Issue | Gap | Status | Priority |
 |-------|-----|--------|----------|
-| #110 | GAP-27 Data retention admin API | Open — needs implementation | Medium |
-| #111 | GAP-28 Standards admin UI | CLOSED — StandardsRegistry exists | — |
-| #112 | GAP-13 MCP integration | CLOSED — /api/mcp/health exists | — |
-| #113 | GAP-14 Offline mode | CLOSED — /api/offline/status exists | — |
-| #114 | GAP-15 Landing CTA routing | Open — low priority UX | Low |
-| #115 | GAP-16 Tour steps | CLOSED — teacher/admin have 5 steps | — |
-| #116 | GAP-18 Hook warnings | CLOSED — lint clean, 0 warnings | — |
+| #110 | GAP-27 Data retention admin API | ✅ CLOSED | — |
+| #111 | GAP-28 Standards admin UI | ✅ CLOSED | — |
+| #112 | GAP-13 MCP integration | ✅ CLOSED | — |
+| #113 | GAP-14 Offline mode | ✅ CLOSED | — |
+| #114 | GAP-15 Landing CTA routing | ✅ CLOSED | — |
+| #115 | GAP-16 Tour steps | ✅ CLOSED | — |
+| #116 | GAP-18 Hook warnings | ✅ CLOSED | — |
+| #117 | GAP-NEW-2 User roster live data | ✅ CLOSED | — |
+| #118 | GAP-NEW-1 Teacher role Clerk sync | ✅ CLOSED | — |
+| #119 | GAP-NEW-12 Builder form handlers | ✅ CLOSED | — |
+| #120 | GAP-17 doc error correction | ✅ CLOSED | — |
 
-**Remaining actionable work: Issue #110 (GAP-27) only.**
+**All issues closed. No remaining actionable work.**

@@ -16,15 +16,25 @@ const CREATE_TABLE_SQL = `
 
 const DEFAULT_DATABASE_PATH = "rootwork-ledger.db";
 
+// Singleton connections keyed by resolved database path.
+// better-sqlite3 is synchronous; reusing one connection per path avoids
+// opening a new connection on every API request within the same process.
+const DB_INSTANCES = new Map<string, InstanceType<typeof Database>>();
+
+function getOrCreateDatabase(resolvedPath: string): InstanceType<typeof Database> {
+  const existing = DB_INSTANCES.get(resolvedPath);
+  if (existing) return existing;
+  const db = new Database(resolvedPath);
+  db.exec(CREATE_TABLE_SQL);
+  DB_INSTANCES.set(resolvedPath, db);
+  return db;
+}
+
 type LedgerAvailability = {
   enabled: boolean;
   databasePath?: string;
   reason?: string;
 };
-
-function ensureTable(database: InstanceType<typeof Database>): void {
-  database.exec(CREATE_TABLE_SQL);
-}
 
 function toRecord(row: {
   id: string;
@@ -35,12 +45,20 @@ function toRecord(row: {
   created_at_iso: string;
   updated_at_iso: string;
 }): LedgerRecord {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(row.payload_json);
+  } catch {
+    console.warn(`[ledger/dbAdapter] toRecord: failed to parse payload_json for record id=${row.id} type=${row.type} — using empty object`);
+    payload = {};
+  }
+
   return {
     id: row.id,
     type: row.type,
     missionId: row.mission_id,
     learnerId: row.learner_id,
-    payload: JSON.parse(row.payload_json),
+    payload: payload as LedgerRecord["payload"],
     createdAtIso: row.created_at_iso,
     updatedAtIso: row.updated_at_iso
   };
@@ -88,8 +106,7 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
     throw new Error("DB ledger path is unavailable for current runtime.");
   }
 
-  const database = new Database(resolvedPath);
-  ensureTable(database);
+  const database = getOrCreateDatabase(resolvedPath);
 
   const readAllStatement = database.prepare(`
     SELECT id, type, mission_id, learner_id, payload_json, created_at_iso, updated_at_iso
@@ -155,8 +172,18 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
   };
 }
 
-export function shouldUseDbLedger(): boolean {
+/**
+ * Server-side availability check: returns true only when the DB ledger flag is set
+ * AND a valid database path is resolvable (i.e., not running on Vercel without DB_LEDGER_PATH).
+ * For a simple env-only flag check in client components, use `isDbLedgerFlagEnabled` from flags.ts.
+ */
+export function isDbLedgerAvailable(): boolean {
   return getDbLedgerAvailability().enabled;
+}
+
+/** @deprecated Use isDbLedgerAvailable() for server-side code that needs path validation. */
+export function shouldUseDbLedger(): boolean {
+  return isDbLedgerAvailable();
 }
 
 /**
@@ -169,9 +196,7 @@ export function purgeDbLedgerRecordsBefore(cutoffIso: string, databasePath?: str
     throw new Error("DB ledger path is unavailable for current runtime.");
   }
 
-  const database = new Database(resolvedPath);
-  ensureTable(database);
-
+  const database = getOrCreateDatabase(resolvedPath);
   const stmt = database.prepare(`DELETE FROM ledger_records WHERE updated_at_iso < ?`);
   const result = stmt.run(cutoffIso);
   return result.changes;
@@ -187,9 +212,7 @@ export function deleteDbLedgerRecordsByLearner(learnerId: string, databasePath?:
     throw new Error("DB ledger path is unavailable for current runtime.");
   }
 
-  const database = new Database(resolvedPath);
-  ensureTable(database);
-
+  const database = getOrCreateDatabase(resolvedPath);
   const stmt = database.prepare(`DELETE FROM ledger_records WHERE learner_id = ?`);
   const result = stmt.run(learnerId);
   return result.changes;

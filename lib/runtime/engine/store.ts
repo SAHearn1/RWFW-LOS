@@ -23,6 +23,7 @@ export function readRuntimeState(): RuntimeState {
   try {
     return JSON.parse(raw) as RuntimeState;
   } catch {
+    console.warn("[runtime/store] Failed to parse stored state — returning empty state. Local mission data may have been lost.");
     return createInitialRuntimeState();
   }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { localLedgerAdapter, type LedgerRecord } from "@/lib/ledger/adapter";
-import { shouldUseDbLedger } from "@/lib/ledger/flags";
+import { isDbLedgerFlagEnabled } from "@/lib/ledger/flags";
 import { phase3FeatureFlags } from "@/lib/config/featureFlags";
 import type { LearnerTimelineItem } from "@/lib/timeline/learnerTimeline";
 
@@ -35,7 +35,7 @@ export default function CredentialsSummary() {
           return;
         }
 
-        if (!shouldUseDbLedger()) {
+        if (!isDbLedgerFlagEnabled()) {
           if (active) {
             setRecords(localLedgerAdapter.readAll());
           }

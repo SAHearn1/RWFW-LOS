@@ -1,4 +1,4 @@
-import type { AppRole } from "./roles";
+import { APP_ROLES, type AppRole } from "./roles";
 
 export type AppRouteDefinition = {
   path: `/app${string}`;
@@ -7,30 +7,23 @@ export type AppRouteDefinition = {
   allowedRoles: readonly AppRole[];
 };
 
-const ALL_ROLES: readonly AppRole[] = [
-  "student_independent",
-  "student_enrolled",
-  "adult_learner",
-  "teacher",
-  "professional_development",
-  "admin",
-  "super_admin"
-] as const;
+// Derived from APP_ROLES — automatically includes any new role added to roles.ts.
+const ALL_ROLES: readonly AppRole[] = APP_ROLES as readonly AppRole[];
 
-const LEARNER_ROLES: readonly AppRole[] = [
+export const LEARNER_ROLES: readonly AppRole[] = [
   "student_independent",
   "student_enrolled",
   "adult_learner"
 ] as const;
 
-const FACILITATOR_ROLES: readonly AppRole[] = [
+export const FACILITATOR_ROLES: readonly AppRole[] = [
   "teacher",
   "professional_development"
 ] as const;
 
-const ADMIN_ROLE: readonly AppRole[] = ["admin"] as const;
+export const ADMIN_ROLE: readonly AppRole[] = ["admin"] as const;
 
-const SUPER_ADMIN_ROLE: readonly AppRole[] = ["super_admin"] as const;
+export const SUPER_ADMIN_ROLE: readonly AppRole[] = ["super_admin"] as const;
 
 export const LEGACY_APP_ROUTE_REDIRECTS: Readonly<Record<string, `/app${string}`>> = {
   "/app/home": "/app",

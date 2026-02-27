@@ -3,6 +3,11 @@ import type { NextRequest } from "next/server";
 export const TRACE_HEADER = "x-rootwork-trace-id";
 
 export function createTraceId(): string {
+  // crypto.randomUUID() is available in Node ≥14.17, all modern browsers, and edge runtimes.
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback for environments without Web Crypto (should not occur in production).
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
