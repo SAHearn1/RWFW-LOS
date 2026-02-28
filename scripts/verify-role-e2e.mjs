@@ -54,8 +54,8 @@ const roleConfigs = [
     role: "super_admin",
     emailEnv: "E2E_SUPER_ADMIN_EMAIL",
     warnIfMissing: true,
-    allowRoutes: ["/app", "/app/super-admin", "/app/evidence", "/app/exports", "/app/standards", "/app/settings"],
-    denyRoutes: ["/app/missions", "/app/studio", "/app/command-center", "/app/cohorts", "/app/reviews"]
+    allowRoutes: ["/app", "/app/super-admin", "/app/evidence", "/app/exports", "/app/standards"],
+    denyRoutes: ["/app/missions", "/app/studio", "/app/command-center", "/app/cohorts", "/app/reviews", "/app/settings"]
   }
 ];
 

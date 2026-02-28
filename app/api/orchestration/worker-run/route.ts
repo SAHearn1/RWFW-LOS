@@ -142,7 +142,7 @@ export async function POST(request: Request): Promise<Response> {
   const user = await currentUser();
   const role = parseAppRole(user?.publicMetadata?.role);
 
-  if (!role || (role !== "admin" && role !== "teacher" && role !== "professional_development")) {
+  if (!role || (role !== "admin" && role !== "super_admin" && role !== "teacher" && role !== "professional_development")) {
     return NextResponse.json(
       { error: "Facilitator/admin role required." },
       { status: 403, headers: { [TRACE_HEADER]: traceId } }
