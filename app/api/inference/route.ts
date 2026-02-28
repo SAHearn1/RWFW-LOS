@@ -2,6 +2,10 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
+import {
+  buildInferenceAuditEvent,
+  recordInferenceAuditEvent
+} from "@/lib/llm/inferenceAudit";
 import { CloudManagedProvider } from "@/lib/llm/providers/cloudManaged";
 import { LocalOllamaProvider } from "@/lib/llm/providers/localOllama";
 import type { ModelInferenceRequest, PrivacyMode } from "@/lib/llm/providerContracts";
@@ -94,7 +98,28 @@ export async function POST(request: Request): Promise<Response> {
     cloudProviderEnabled: await cloudProvider.isAvailable()
   });
 
+  const startMs = Date.now();
   const result = await router.infer(inferenceRequest);
+  const latencyMs = Date.now() - startMs;
+
+  // AI Governance: record prompt lineage and model metadata for audit trail.
+  if (process.env.NEXT_PUBLIC_ENABLE_INFERENCE_AUDIT === "true") {
+    const auditEvent = buildInferenceAuditEvent({
+      requestId: traceId,
+      prompt: inferenceRequest.prompt,
+      model: inferenceRequest.model,
+      provider: result.provider,
+      role,
+      userId: user!.id,
+      privacyMode: inferenceRequest.privacyMode,
+      temperature: inferenceRequest.temperature,
+      maxTokens: inferenceRequest.maxTokens,
+      usedFallback: result.usedFallback,
+      outputText: result.outputText,
+      latencyMs
+    });
+    recordInferenceAuditEvent(auditEvent);
+  }
 
   return NextResponse.json(
     { result },
