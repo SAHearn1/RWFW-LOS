@@ -2,7 +2,10 @@ import { DynamoDBClient, DescribeTableCommand } from "@aws-sdk/client-dynamodb";
 import { SQSClient, GetQueueAttributesCommand } from "@aws-sdk/client-sqs";
 import { NextResponse } from "next/server";
 
+import { currentUser } from "@clerk/nextjs/server";
+
 import { readAwsCredentials, readAwsRegion, readSqsQueueUrl, readDynamoTable } from "@/lib/cloud/awsEnv";
+import { parseAppRole } from "@/lib/auth/userRole";
 import { TRACE_HEADER, createTraceId } from "@/lib/observability/trace";
 
 export const runtime = "nodejs";
@@ -103,6 +106,10 @@ async function checkDynamo(): Promise<CheckResult> {
   }
 }
 
+function redactCheck(check: CheckResult): CheckResult {
+  return { status: check.status };
+}
+
 export async function GET(): Promise<Response> {
   const traceId = createTraceId();
 
@@ -118,12 +125,26 @@ export async function GET(): Promise<Response> {
   const hasError = Object.values(checks).some((c) => c.status === "error");
   const overallStatus = hasError ? "degraded" : "ok";
 
+  // Redact service details for unauthenticated or non-admin callers
+  const user = await currentUser().catch(() => null);
+  const role = parseAppRole(user?.publicMetadata?.role);
+  const isPrivileged = role === "admin" || role === "super_admin";
+
+  const responseChecks = isPrivileged
+    ? checks
+    : {
+        clerk: redactCheck(clerk),
+        bedrock: redactCheck(bedrock),
+        sqs: redactCheck(sqs),
+        dynamo: redactCheck(dynamo)
+      };
+
   return NextResponse.json(
     {
       status: overallStatus,
       service: "rwfw-los",
       timestampIso: new Date().toISOString(),
-      checks
+      checks: responseChecks
     },
     {
       status: hasError ? 503 : 200,
