@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 import { parseAppRole } from "@/lib/auth/userRole";
+import { FACILITATOR_ROLES, ADMIN_ROLE, SUPER_ADMIN_ROLE } from "@/lib/auth/routeAccess";
 import { readAwsRegion, readDynamoTable, readSqsQueueUrl } from "@/lib/cloud/awsEnv";
 import type { OrchestrationJobEnvelope, QueueLeaseResult } from "@/lib/orchestration/contracts";
 import { DynamoOrchestrationStateStore } from "@/lib/orchestration/dynamoStateStore";
@@ -143,7 +144,14 @@ export async function POST(request: Request): Promise<Response> {
   const user = await currentUser();
   const role = parseAppRole(user?.publicMetadata?.role);
 
-  if (!role || (role !== "admin" && role !== "super_admin" && role !== "teacher" && role !== "professional_development")) {
+  // Roles authorized to dispatch orchestration workers: facilitators + admin + super_admin.
+  const ORCHESTRATION_ALLOWED_ROLES = new Set<string>([
+    ...FACILITATOR_ROLES,
+    ...ADMIN_ROLE,
+    ...SUPER_ADMIN_ROLE,
+  ]);
+
+  if (!role || !ORCHESTRATION_ALLOWED_ROLES.has(role)) {
     return NextResponse.json(
       { error: "Facilitator/admin role required." },
       { status: 403, headers: { [TRACE_HEADER]: traceId } }

@@ -2,19 +2,12 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
+import { LEARNER_ROLES, FACILITATOR_ROLES } from "@/lib/auth/routeAccess";
 import type { LedgerRecord } from "@/lib/ledger/adapter";
 import { getServerLedgerAdapter } from "@/lib/ledger/server-adapter";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
 export const runtime = "nodejs";
-
-function isLearnerRole(role: string): boolean {
-  return role === "student_independent" || role === "student_enrolled" || role === "adult_learner";
-}
-
-function isFacilitatorRole(role: string): boolean {
-  return role === "teacher" || role === "professional_development";
-}
 
 function withTrace(status: number, traceId: string, body: unknown): Response {
   return NextResponse.json(body, { status, headers: { [TRACE_HEADER]: traceId } });
@@ -73,12 +66,12 @@ export async function GET(request: Request): Promise<Response> {
   const requestedLearnerId = new URL(request.url).searchParams.get("learnerId")?.trim();
   let effectiveLearnerId: string | null = null;
 
-  if (isLearnerRole(role)) {
+  if ((LEARNER_ROLES as readonly string[]).includes(role)) {
     if (requestedLearnerId && requestedLearnerId !== user.id) {
       return withTrace(403, traceId, { error: "Learners can only access their own records." });
     }
     effectiveLearnerId = user.id;
-  } else if (isFacilitatorRole(role)) {
+  } else if ((FACILITATOR_ROLES as readonly string[]).includes(role)) {
     if (!requestedLearnerId) {
       return withTrace(400, traceId, { error: "learnerId is required for facilitator ledger reads." });
     }
@@ -126,11 +119,11 @@ export async function POST(request: Request): Promise<Response> {
     return withTrace(400, traceId, { error: "Invalid ledger record payload." });
   }
 
-  if (isLearnerRole(role) && payload.learnerId !== user.id) {
+  if ((LEARNER_ROLES as readonly string[]).includes(role) && payload.learnerId !== user.id) {
     return withTrace(403, traceId, { error: "Learners can only write their own records." });
   }
 
-  const allowedWriter = isLearnerRole(role) || isFacilitatorRole(role) || role === "admin";
+  const allowedWriter = (LEARNER_ROLES as readonly string[]).includes(role) || (FACILITATOR_ROLES as readonly string[]).includes(role) || role === "admin";
   if (!allowedWriter) {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }

@@ -18,15 +18,22 @@ Governance: See `docs/SPEC_LOCK.md` and `docs/AUTONOMOUS_ORG.md`
 | VERIFIER | 🟢 Active | 16/16 release gate checks passing |
 | OPERATIONS | 🟢 Active | Program status, runbooks, control board updated |
 
-## Current Sprint (2026-02-28)
+## Sprint History
 
+### Eighth Pass Sprint (2026-02-28, Cycle 1)
 | Issue | Priority | Lane | Status |
 |-------|----------|------|--------|
 | #200 GAP-73 Verifier fix | P1 | D — CI/Release | ✅ Complete |
 | #204 Autonomous Org Init | P0 | E — Governance | ✅ Complete |
-| #201 GAP-74 Inline role helpers | P2 | A — Auth/Security | 🔲 Next sprint |
-| #202 GAP-75 Worker-run auth | P2 | A — Auth/Security | 🔲 Next sprint |
-| #203 GAP-77 API docs audit | P2 | E — CI/Release | 🔲 Next sprint |
+
+### Ninth Pass Sprint (2026-02-28, Cycle 2)
+| Issue | Priority | Lane | Status |
+|-------|----------|------|--------|
+| #201 GAP-74 Inline role helpers | P2 | A — Auth/Security | ✅ Complete |
+| #202 GAP-75 Worker-run auth | P2 | A — Auth/Security | ✅ Complete |
+| #203 GAP-77 API docs audit | P2 | E — Governance | ✅ Complete |
+| #205 GAP-81 assign-role VALID_ROLES | P2 | A — Auth/Security | 🔲 Next sprint |
+| #206 GAP-82 verify-ledger-contracts robustness | P2 | D — CI/Release | 🔲 Next sprint |
 
 ## Lane Assignments (Hard Boundaries)
 

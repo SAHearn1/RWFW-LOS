@@ -2,14 +2,16 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
+import { LEARNER_ROLES, FACILITATOR_ROLES } from "@/lib/auth/routeAccess";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 import { getRuntimeStateAdapter } from "@/lib/runtime/dynamoAdapter";
 import type { RuntimeState } from "@/lib/runtime/engine/reducer";
 
 export const runtime = "nodejs";
 
-const LEARNER_ROLES = new Set(["student_independent", "student_enrolled", "adult_learner"]);
-const FACILITATOR_ROLES = new Set(["teacher", "professional_development"]);
+// Derived from canonical routeAccess constants for O(1) membership checks.
+const LEARNER_ROLE_SET = new Set<string>(LEARNER_ROLES);
+const FACILITATOR_ROLE_SET = new Set<string>(FACILITATOR_ROLES);
 
 function withTrace(status: number, traceId: string, body: unknown): Response {
   return NextResponse.json(body, { status, headers: { [TRACE_HEADER]: traceId } });
@@ -32,12 +34,12 @@ export async function GET(request: Request): Promise<Response> {
   const requestedLearnerId = new URL(request.url).searchParams.get("learnerId")?.trim();
   let learnerId: string;
 
-  if (LEARNER_ROLES.has(role)) {
+  if (LEARNER_ROLE_SET.has(role)) {
     if (requestedLearnerId && requestedLearnerId !== user.id) {
       return withTrace(403, traceId, { error: "Learners can only access their own state." });
     }
     learnerId = user.id;
-  } else if (FACILITATOR_ROLES.has(role) || role === "admin" || role === "super_admin") {
+  } else if (FACILITATOR_ROLE_SET.has(role) || role === "admin" || role === "super_admin") {
     if (!requestedLearnerId) {
       return withTrace(400, traceId, { error: "learnerId is required." });
     }
@@ -85,13 +87,13 @@ export async function PUT(request: Request): Promise<Response> {
     return withTrace(400, traceId, { error: "state is required." });
   }
 
-  if (LEARNER_ROLES.has(role) && learnerId !== user.id) {
+  if (LEARNER_ROLE_SET.has(role) && learnerId !== user.id) {
     return withTrace(403, traceId, { error: "Learners can only write their own state." });
   }
 
   const allowed =
-    LEARNER_ROLES.has(role) ||
-    FACILITATOR_ROLES.has(role) ||
+    LEARNER_ROLE_SET.has(role) ||
+    FACILITATOR_ROLE_SET.has(role) ||
     role === "admin" ||
     role === "super_admin";
 

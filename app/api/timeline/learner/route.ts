@@ -4,19 +4,21 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 import { parseAppRole } from "@/lib/auth/userRole";
+import { LEARNER_ROLES } from "@/lib/auth/routeAccess";
 import { createDbLedgerAdapter, isDbLedgerAvailable } from "@/lib/ledger/dbAdapter";
 import { localLedgerAdapter } from "@/lib/ledger/adapter";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 import { buildLearnerTimeline } from "@/lib/timeline/learnerTimeline";
 
-const LEARNER_ROLES = new Set(["student_independent", "student_enrolled", "adult_learner"]);
+// Derived from canonical routeAccess constants for O(1) membership checks.
+const LEARNER_ROLE_SET = new Set<string>(LEARNER_ROLES);
 
 export async function GET(request: Request): Promise<Response> {
   const traceId = getTraceIdFromRequest(request);
   const user = await currentUser();
   const role = parseAppRole(user?.publicMetadata?.role);
 
-  if (!role || !LEARNER_ROLES.has(role)) {
+  if (!role || !LEARNER_ROLE_SET.has(role)) {
     return NextResponse.json(
       { error: "Learner role required." },
       { status: 403, headers: { [TRACE_HEADER]: traceId } }

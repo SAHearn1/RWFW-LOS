@@ -91,16 +91,22 @@ Governance: `docs/SPEC_LOCK.md` + `docs/AUTONOMOUS_ORG.md`
 - **Autonomous Org init**: `docs/SPEC_LOCK.md` and `docs/AUTONOMOUS_ORG.md` created ✅
 - **Eighth-pass gap analysis**: `docs/status/GAP_ANALYSIS_2026-02-28_EIGHTH_PASS.md` ✅
 
+## Ninth Pass Closures (2026-02-28)
+
+- **GAP-74**: Inline `isLearnerRole`/`isFacilitatorRole` helpers removed from `ledger/records`, `runtime/state`, `timeline/learner` — all now import from `lib/auth/routeAccess` ✅
+- **GAP-75**: Worker-run route now uses `ORCHESTRATION_ALLOWED_ROLES` Set derived from exported routeAccess constants ✅
+- **GAP-77**: `docs/qa/role-matrix.md` now includes full API Route Auth Matrix (30 endpoints, 8 contract rules) ✅
+- **verify-ledger-contracts.mjs**: Updated to accept routeAccess import pattern as valid LEARNER_ROLES enforcement ✅
+
 ## Open Gaps (P2–P3 Backlog)
 
 | Gap | Priority | Description |
 |-----|----------|-------------|
-| GAP-74 | P2 | Inline `isLearnerRole`/`isFacilitatorRole` helpers in API routes — should import from routeAccess |
-| GAP-75 | P2 | Orchestration worker-run hardcodes role list — should use exported constants |
-| GAP-77 | P2 | API route auth not fully documented in `docs/qa/role-matrix.md` |
 | GAP-78 | P3 | Release gate check count should be validated dynamically |
-| GAP-79 | P3 | CLAUDE.md section 12 needs eighth-pass update |
-| GAP-80 | P3 | — (resolved by this update) |
+| GAP-79 | P3 | CLAUDE.md section 12 needs eighth/ninth pass update |
+| GAP-81 | P2 | `assign-role/route.ts` VALID_ROLES array should derive from `APP_ROLES` |
+| GAP-82 | P2 | `verify-ledger-contracts.mjs` string-match approach could be more robust |
+| GAP-83 | P3 | CLAUDE.md gap analysis section references seventh pass only |
 
 ## Program Epics
 

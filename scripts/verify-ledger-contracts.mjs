@@ -105,9 +105,17 @@ if (!timelineSrc.includes('export const runtime = "nodejs"')) {
 if (!timelineSrc.includes("LEARNER_ROLES")) {
   failures.push("app/api/timeline/learner/route.ts: missing LEARNER_ROLES restriction");
 }
-// Spot-check that at least one learner role is in the restriction
-if (!timelineSrc.includes("student_independent")) {
-  failures.push("app/api/timeline/learner/route.ts: LEARNER_ROLES must include student_independent");
+// Spot-check that learner roles are enforced: either the literal role string is present
+// (inline definition) OR the file imports LEARNER_ROLES from lib/auth/routeAccess
+// (which contains student_independent transitively).
+const timelineHasLearnerRoleGuard =
+  timelineSrc.includes("student_independent") ||
+  timelineSrc.includes('from "@/lib/auth/routeAccess"');
+if (!timelineHasLearnerRoleGuard) {
+  failures.push(
+    "app/api/timeline/learner/route.ts: LEARNER_ROLES must include student_independent " +
+    "(either inline or via routeAccess import)"
+  );
 }
 
 // ── Webhook route — uses node:crypto, must declare nodejs runtime ─────────────
