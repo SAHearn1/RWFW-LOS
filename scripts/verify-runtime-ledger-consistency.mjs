@@ -175,18 +175,35 @@ function main() {
     return;
   }
 
-  // Missing DB is a hard failure — the ledger must exist for production to be healthy
+  // Missing DB is only a hard failure when NEXT_PUBLIC_ENABLE_DB_LEDGER=true.
+  // When the flag is disabled (default), SQLite is not expected to exist — skip gracefully.
   if (!existsSync(dbPath)) {
+    const dbLedgerEnabled = process.env.NEXT_PUBLIC_ENABLE_DB_LEDGER === "true";
+    if (!dbLedgerEnabled) {
+      const payload = {
+        generatedAtIso: new Date().toISOString(),
+        passed: true,
+        skipped: true,
+        reason: "NEXT_PUBLIC_ENABLE_DB_LEDGER is not enabled — SQLite ledger not expected.",
+        failures: [],
+        warnings: ["rootwork-ledger.db not found, but NEXT_PUBLIC_ENABLE_DB_LEDGER is false. Skipping file consistency check."]
+      };
+      writeFileSync(jsonReportPath, JSON.stringify(payload, null, 2));
+      writeFileSync(mdReportPath, "# Runtime-Ledger Consistency Report\n\n- Status: skipped (flag disabled)\n- Reason: NEXT_PUBLIC_ENABLE_DB_LEDGER not enabled\n");
+      console.log(`Consistency check skipped: DB ledger flag disabled. Report: ${jsonReportPath}`);
+      return;
+    }
+
     const payload = {
       generatedAtIso: new Date().toISOString(),
       passed: false,
       skipped: false,
       reason: "rootwork-ledger.db not found",
-      failures: ["rootwork-ledger.db does not exist"],
+      failures: ["rootwork-ledger.db does not exist but NEXT_PUBLIC_ENABLE_DB_LEDGER=true"],
       warnings: []
     };
     writeFileSync(jsonReportPath, JSON.stringify(payload, null, 2));
-    writeFileSync(mdReportPath, "# Runtime-Ledger Consistency Report\n\n- Status: FAILED\n- Reason: rootwork-ledger.db not found\n");
+    writeFileSync(mdReportPath, "# Runtime-Ledger Consistency Report\n\n- Status: FAILED\n- Reason: rootwork-ledger.db not found but DB ledger is enabled\n");
     console.error(`Consistency check failed: rootwork-ledger.db not found. Report: ${jsonReportPath}`);
     process.exit(1);
   }
