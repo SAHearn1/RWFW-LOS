@@ -1,6 +1,6 @@
 # Role QA Matrix
 
-**Last Updated:** 2026-02-27
+**Last Updated:** 2026-02-28
 
 | Route | student_independent | student_enrolled | adult_learner | teacher | professional_development | admin | super_admin | Implementation Status | Notes |
 |---|---|---|---|---|---|---|---|---|---|
@@ -9,10 +9,10 @@
 | `/app/core` | allow | allow | allow | allow | allow | allow | allow | functional | Flag-gated bridge runtime; ALL_ROLES per routeAccess.ts |
 | `/app/missions` | allow | allow | allow | deny | deny | deny | deny | placeholder | Learner mission flow; renders MissionsList component |
 | `/app/studio` | allow | allow | allow | deny | deny | deny | deny | placeholder | Artifact creation workspace; renders StudioWorkspace component |
-| `/app/portfolio` | allow | allow | allow | deny | deny | deny | deny | placeholder | Learner portfolio view |
+| `/app/portfolio` | allow | allow | allow | deny | deny | deny | deny | functional | Learner portfolio view; ledger-bound artifact gallery with verification verdicts |
 | `/app/credentials` | allow | allow | allow | deny | deny | deny | deny | wired | Renders CredentialsSummary; ledger-read wired |
 | `/app/settings` | allow | allow | allow | deny | deny | deny | deny | wired | Learner settings health; AI/MCP/flag status checks wired |
-| `/app/command-center` | deny | deny | deny | allow | allow | deny | deny | functional | Live stats from ledger (activeCohorts, reviewBacklog); fully wired |
+| `/app/command-center` | deny | deny | deny | allow | allow | deny | deny | functional | Live stats from ledger (activeCohorts, pickupQueue, reviewBacklog); fully wired |
 | `/app/cohorts` | deny | deny | deny | allow | allow | deny | deny | functional | Ledger-derived cohort list with learner counts; empty state shown until missions exist |
 | `/app/reviews` | deny | deny | deny | allow | allow | deny | deny | functional | Ledger-read ReviewQueue; Approve/Return/Flag actions wired |
 | `/app/pickups` | deny | deny | deny | allow | allow | deny | deny | wired | Feature-flag gated (NEXT_PUBLIC_ENABLE_PICKUP); ledger-read queues when enabled |
@@ -25,6 +25,8 @@
 | `/app/super-admin/teachers` | deny | deny | deny | deny | deny | deny | allow | functional | Super Admin teacher role assignment |
 | `/app/super-admin/licenses` | deny | deny | deny | deny | deny | deny | allow | functional | Super Admin license and trial management |
 | `/app/super-admin/institutions` | deny | deny | deny | deny | deny | deny | allow | functional | Super Admin institution account management |
+| `/app/retention` | deny | deny | deny | deny | deny | allow | allow | functional | Admin data lifecycle and GDPR retention management; requires DB ledger |
+| `/app/super-admin/audit-log` | deny | deny | deny | deny | deny | deny | allow | functional | Super Admin audit event browser; reads docs/status/audit-log.ndjson |
 | `/app/forbidden` | allow | allow | allow | allow | allow | allow | allow | functional | In-app 403 route |
 
 ## Implementation Status Key

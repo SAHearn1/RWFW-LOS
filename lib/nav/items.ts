@@ -61,6 +61,7 @@ export const NAV_ITEMS_BY_ROLE: Readonly<Record<AppRole, readonly NavItem[]>> = 
     { href: "/app/standards", label: "Standards" },
     { href: "/app/evidence", label: "Evidence" },
     { href: "/app/exports", label: "Exports" },
+    { href: "/app/retention", label: "Retention" },
     { href: "/app/core", label: "Core" },
     { href: "/app/profile", label: "Profile" }
   ],
@@ -70,6 +71,7 @@ export const NAV_ITEMS_BY_ROLE: Readonly<Record<AppRole, readonly NavItem[]>> = 
     { href: "/app/super-admin/teachers", label: "Teacher Assignment" },
     { href: "/app/super-admin/licenses", label: "Licenses" },
     { href: "/app/super-admin/institutions", label: "Institutions" },
+    { href: "/app/super-admin/audit-log", label: "Audit Log" },
     { href: "/app/core", label: "Core" },
     { href: "/app/profile", label: "Profile" }
   ]

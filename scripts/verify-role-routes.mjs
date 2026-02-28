@@ -22,8 +22,8 @@ const roleToExpectedNav = {
   adult_learner: ["/app/studio", "/app/credentials", "/app/settings"],
   teacher: ["/app/command-center", "/app/cohorts", "/app/reviews", "/app/pickups", "/app/builder"],
   professional_development: ["/app/command-center", "/app/cohorts", "/app/reviews", "/app/pickups", "/app/builder"],
-  admin: ["/app/evidence", "/app/exports", "/app/standards"],
-  super_admin: ["/app/super-admin/users", "/app/super-admin/teachers", "/app/super-admin/licenses", "/app/super-admin/institutions"]
+  admin: ["/app/evidence", "/app/exports", "/app/standards", "/app/retention"],
+  super_admin: ["/app/super-admin/users", "/app/super-admin/teachers", "/app/super-admin/licenses", "/app/super-admin/institutions", "/app/super-admin/audit-log"]
 };
 
 const roleToForbiddenNav = {
