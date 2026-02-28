@@ -1,4 +1,4 @@
 # Runtime-Ledger Consistency Report
 
-- Status: skipped
-- Reason: LEDGER_CONSISTENCY_ALLOW_SKIP=true
+- Status: skipped (flag disabled)
+- Reason: NEXT_PUBLIC_ENABLE_DB_LEDGER not enabled

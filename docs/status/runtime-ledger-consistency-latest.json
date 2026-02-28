@@ -1,10 +1,10 @@
 {
-  "generatedAtIso": "2026-02-28T14:25:55.709Z",
+  "generatedAtIso": "2026-02-28T20:49:57.732Z",
   "passed": true,
   "skipped": true,
-  "reason": "LEDGER_CONSISTENCY_ALLOW_SKIP=true",
+  "reason": "NEXT_PUBLIC_ENABLE_DB_LEDGER is not enabled — SQLite ledger not expected.",
   "failures": [],
   "warnings": [
-    "Consistency checks intentionally skipped via LEDGER_CONSISTENCY_ALLOW_SKIP."
+    "rootwork-ledger.db not found, but NEXT_PUBLIC_ENABLE_DB_LEDGER is false. Skipping file consistency check."
   ]
 }

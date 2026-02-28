@@ -65,14 +65,18 @@ for (const script of checks) {
   let passed = run.status === 0;
 
   // After running verify:runtime-ledger-consistency, inspect the JSON report.
-  // If the report has skipped: true and LEDGER_CONSISTENCY_ALLOW_SKIP is not set,
-  // count it as a failure even though the script exited 0.
+  // If the report has skipped: true, only treat it as a failure when:
+  //   1. LEDGER_CONSISTENCY_ALLOW_SKIP is not set, AND
+  //   2. NEXT_PUBLIC_ENABLE_DB_LEDGER=true (meaning the DB is expected to exist)
+  // When the DB ledger flag is disabled, skipping the file consistency check is
+  // expected behavior (no SQLite file will be present in that configuration).
   if (script === "verify:runtime-ledger-consistency" && passed) {
     const report = readJsonReport(ledgerConsistencyReportPath);
-    if (report?.skipped === true && !process.env.LEDGER_CONSISTENCY_ALLOW_SKIP) {
+    const dbLedgerEnabled = process.env.NEXT_PUBLIC_ENABLE_DB_LEDGER === "true";
+    if (report?.skipped === true && !process.env.LEDGER_CONSISTENCY_ALLOW_SKIP && dbLedgerEnabled) {
       passed = false;
       console.error(
-        "Release gate: verify:runtime-ledger-consistency was skipped and LEDGER_CONSISTENCY_ALLOW_SKIP is not set. Treating as failure."
+        "Release gate: verify:runtime-ledger-consistency was skipped, LEDGER_CONSISTENCY_ALLOW_SKIP is not set, and NEXT_PUBLIC_ENABLE_DB_LEDGER=true. Treating as failure."
       );
     }
   }
