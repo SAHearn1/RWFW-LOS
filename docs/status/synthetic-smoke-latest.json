@@ -1,13 +1,13 @@
 {
-  "generatedAtIso": "2026-02-27T20:12:08.802Z",
-  "startedAtIso": "2026-02-27T20:12:07.971Z",
+  "generatedAtIso": "2026-02-27T23:28:21.400Z",
+  "startedAtIso": "2026-02-27T23:28:20.100Z",
   "baseUrl": "https://rwfw-los.vercel.app",
   "checks": [
     {
       "route": "/",
       "url": "https://rwfw-los.vercel.app/",
       "status": 200,
-      "durationMs": 240,
+      "durationMs": 415,
       "authProtected": false,
       "passed": true
     },
@@ -15,7 +15,7 @@
       "route": "/sign-in",
       "url": "https://rwfw-los.vercel.app/sign-in",
       "status": 200,
-      "durationMs": 249,
+      "durationMs": 490,
       "authProtected": false,
       "passed": true
     },
@@ -23,7 +23,7 @@
       "route": "/app",
       "url": "https://rwfw-los.vercel.app/app",
       "status": 404,
-      "durationMs": 141,
+      "durationMs": 190,
       "authProtected": true,
       "passed": true
     },
@@ -31,7 +31,7 @@
       "route": "/app/studio",
       "url": "https://rwfw-los.vercel.app/app/studio",
       "status": 404,
-      "durationMs": 95,
+      "durationMs": 121,
       "authProtected": true,
       "passed": true
     },
@@ -39,7 +39,7 @@
       "route": "/app/settings",
       "url": "https://rwfw-los.vercel.app/app/settings",
       "status": 404,
-      "durationMs": 105,
+      "durationMs": 84,
       "authProtected": true,
       "passed": true
     }
