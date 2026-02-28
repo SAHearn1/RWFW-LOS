@@ -102,7 +102,7 @@ async function executeWorker(
     startedAtIso: nowIso(),
     nowIso,
     execute: async () => {
-      if (body.simulateFailure) {
+      if (body.simulateFailure && process.env.NODE_ENV !== "production") {
         throw new Error("simulated_worker_failure");
       }
     }

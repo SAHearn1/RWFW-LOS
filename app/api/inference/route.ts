@@ -33,14 +33,21 @@ function toInferenceRequest(body: InferenceBody, role: string, requestId: string
     return null;
   }
 
+  const maxTokens = typeof body.maxTokens === "number"
+    ? Math.max(1, Math.min(4096, Math.round(body.maxTokens)))
+    : undefined;
+  const temperature = typeof body.temperature === "number"
+    ? Math.max(0, Math.min(1, body.temperature))
+    : undefined;
+
   return {
     requestId,
     model: body.model ?? process.env.OLLAMA_MODEL ?? "llama3.1:8b",
     prompt: body.prompt,
     role,
     privacyMode: body.privacyMode ?? "hybrid",
-    maxTokens: body.maxTokens,
-    temperature: body.temperature
+    maxTokens,
+    temperature
   };
 }
 
