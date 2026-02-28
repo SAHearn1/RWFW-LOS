@@ -1,151 +1,166 @@
 {
-  "generatedAtIso": "2026-02-28T14:26:01.921Z",
+  "generatedAtIso": "2026-02-28T16:36:41.301Z",
   "checks": [
     {
       "script": "lint",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:24:47.768Z",
-      "finishedAtIso": "2026-02-28T14:24:52.478Z"
+      "status": "failed",
+      "passed": false,
+      "exitCode": 2,
+      "startedAtIso": "2026-02-28T16:36:40.073Z",
+      "finishedAtIso": "2026-02-28T16:36:41.300Z"
     },
     {
       "script": "typecheck",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:24:52.478Z",
-      "finishedAtIso": "2026-02-28T14:24:55.863Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "build",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:24:55.863Z",
-      "finishedAtIso": "2026-02-28T14:25:36.186Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:env",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:36.186Z",
-      "finishedAtIso": "2026-02-28T14:25:37.994Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:env-parity",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:37.994Z",
-      "finishedAtIso": "2026-02-28T14:25:39.801Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:engine-smoke",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:39.801Z",
-      "finishedAtIso": "2026-02-28T14:25:41.562Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:webhook-contract",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:41.562Z",
-      "finishedAtIso": "2026-02-28T14:25:43.391Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:security-checklist",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:43.391Z",
-      "finishedAtIso": "2026-02-28T14:25:45.144Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:branch-policy",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:45.144Z",
-      "finishedAtIso": "2026-02-28T14:25:46.891Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:swarm-overlap",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:46.891Z",
-      "finishedAtIso": "2026-02-28T14:25:48.699Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:role-routes",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:48.699Z",
-      "finishedAtIso": "2026-02-28T14:25:50.448Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:runtime-routes",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:50.448Z",
-      "finishedAtIso": "2026-02-28T14:25:52.197Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:onboarding",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:52.197Z",
-      "finishedAtIso": "2026-02-28T14:25:53.953Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:runtime-ledger-consistency",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:53.953Z",
-      "finishedAtIso": "2026-02-28T14:25:55.735Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:http-smoke",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:55.736Z",
-      "finishedAtIso": "2026-02-28T14:25:58.336Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:super-admin-contracts",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:25:58.336Z",
-      "finishedAtIso": "2026-02-28T14:26:00.109Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:ledger-contracts",
-      "status": "passed",
-      "passed": true,
-      "exitCode": 0,
-      "startedAtIso": "2026-02-28T14:26:00.110Z",
-      "finishedAtIso": "2026-02-28T14:26:01.921Z"
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     },
     {
       "script": "verify:cloud-aws-smoke",
-      "status": "skipped",
-      "passed": null,
+      "status": "not_run",
+      "passed": false,
       "exitCode": null,
       "startedAtIso": null,
-      "finishedAtIso": null,
-      "note": "E2E_ADMIN_EMAIL not set"
+      "finishedAtIso": null
+    },
+    {
+      "script": "verify:federation-smoke",
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
+    },
+    {
+      "script": "verify:health-check",
+      "status": "not_run",
+      "passed": false,
+      "exitCode": null,
+      "startedAtIso": null,
+      "finishedAtIso": null
     }
   ],
-  "passed": true
+  "passed": false
 }

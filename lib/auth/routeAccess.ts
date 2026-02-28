@@ -48,10 +48,12 @@ export const APP_ROUTE_DEFINITIONS: readonly AppRouteDefinition[] = [
   { path: "/app/standards", title: "Standards", description: "Admin standards placeholder.", allowedRoles: [...ADMIN_ROLE, ...SUPER_ADMIN_ROLE] },
   { path: "/app/evidence", title: "Evidence", description: "Admin evidence read view.", allowedRoles: [...ADMIN_ROLE, ...SUPER_ADMIN_ROLE] },
   { path: "/app/exports", title: "Exports", description: "Admin export tools placeholder.", allowedRoles: [...ADMIN_ROLE, ...SUPER_ADMIN_ROLE] },
+  { path: "/app/retention", title: "Data Retention", description: "Admin data lifecycle and retention management.", allowedRoles: [...ADMIN_ROLE, ...SUPER_ADMIN_ROLE] },
   { path: "/app/super-admin/users", title: "User Roster", description: "SuperAdmin user account management.", allowedRoles: SUPER_ADMIN_ROLE },
   { path: "/app/super-admin/teachers", title: "Teacher Assignment", description: "SuperAdmin teacher role assignment.", allowedRoles: SUPER_ADMIN_ROLE },
   { path: "/app/super-admin/licenses", title: "License Manager", description: "SuperAdmin license and trial management.", allowedRoles: SUPER_ADMIN_ROLE },
   { path: "/app/super-admin/institutions", title: "Institutions", description: "SuperAdmin institution account management.", allowedRoles: SUPER_ADMIN_ROLE },
+  { path: "/app/super-admin/audit-log", title: "Audit Log", description: "SuperAdmin platform audit event browser.", allowedRoles: SUPER_ADMIN_ROLE },
   { path: "/app/forbidden", title: "Access Restricted", description: "In-app 403 view.", allowedRoles: ALL_ROLES }
 ] as const;
 
