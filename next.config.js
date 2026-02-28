@@ -17,11 +17,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.accounts.dev https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.rwfw-los.com https://*.clerk.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.clerk.com https://img.clerk.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://*.clerk.accounts.dev https://api.clerk.com https://clerk.com wss:",
+      "connect-src 'self' https://clerk.rwfw-los.com https://accounts.rwfw-los.com https://api.clerk.com wss:",
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'"
