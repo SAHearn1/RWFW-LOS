@@ -8,6 +8,7 @@ import type { ModelInferenceRequest, PrivacyMode } from "@/lib/llm/providerContr
 import { ModelRouter } from "@/lib/llm/router";
 import type { ModelRoutingPolicy } from "@/lib/llm/routerContracts";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -62,6 +63,9 @@ export async function POST(request: Request): Promise<Response> {
       { status: 403, headers: { [TRACE_HEADER]: traceId } }
     );
   }
+
+  const rateLimitResponse = enforceRateLimit(user!.id, "/api/inference", RATE_LIMITS.inference, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   let body: InferenceBody;
   try {

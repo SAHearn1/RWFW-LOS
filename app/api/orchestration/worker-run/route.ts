@@ -11,6 +11,7 @@ import { InMemoryQueueAdapter } from "@/lib/orchestration/queueAdapter";
 import { SqsQueueAdapter } from "@/lib/orchestration/sqsQueueAdapter";
 import { runWorkerLifecycle } from "@/lib/orchestration/workerRunner";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 type WorkerRunBody = {
   idempotencyKey?: string;
@@ -148,6 +149,9 @@ export async function POST(request: Request): Promise<Response> {
       { status: 403, headers: { [TRACE_HEADER]: traceId } }
     );
   }
+
+  const rateLimitResponse = enforceRateLimit(user!.id, "/api/orchestration/worker-run", RATE_LIMITS.mutation, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   const body = (await request.json().catch(() => ({}))) as WorkerRunBody;
   const enqueuedJob = buildJob(body, traceId);

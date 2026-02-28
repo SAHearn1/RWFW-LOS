@@ -8,6 +8,7 @@ import { getFederationDiscovery, resolveFederationAssignment } from "@/lib/feder
 import type { FederationTaskEnvelope } from "@/lib/federation/types";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -76,6 +77,9 @@ export async function POST(request: Request): Promise<Response> {
 
   const user = await currentUser();
   const role = parseAppRole(user?.publicMetadata?.role);
+
+  const rateLimitResponse = enforceRateLimit(user?.id ?? "anonymous", "/api/federation", RATE_LIMITS.mutation, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   if (!role || !FEDERATION_DISPATCH_ROLES.has(role)) {
     recordAuditEvent({
