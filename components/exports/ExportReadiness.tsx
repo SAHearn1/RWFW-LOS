@@ -71,7 +71,7 @@ export default function ExportReadiness() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold" data-tour="page-title">Exports Readiness</h1>
         <p className="text-sm text-slate-700" data-tour="page-description">
-          Operational placeholder for export readiness prior to full pipeline rollout.
+          Download a full snapshot of runtime missions, ledger artifacts, and verification records for reporting and compliance.
         </p>
       </div>
 
