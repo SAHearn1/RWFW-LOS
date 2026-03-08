@@ -1,0 +1,58 @@
+repository_name: RWFW-LOS
+purpose: "RWFW Official Learning System — Next.js 15 full-stack LMS with AWS infrastructure and AI"
+user_facing_surfaces:
+  - "Learning platform web app (Next.js 15)"
+entrypoints:
+  - "app/ (Next.js App Router)"
+  - "scripts/ (verification and ops scripts)"
+ui_layer: "React 19 + Next.js 15 App Router + Tailwind CSS + Lucide icons"
+api_layer: "Next.js API routes (app/api/)"
+auth_layer: "Clerk (@clerk/nextjs)"
+service_layer: "TODO — requires Phase C deep read of app/ and scripts/"
+data_layer: "AWS DynamoDB (@aws-sdk/client-dynamodb + lib-dynamodb)"
+infrastructure_layer: "AWS (DynamoDB + SQS + EventBridge + Bedrock)"
+external_integrations:
+  - "Clerk (authentication)"
+  - "AWS DynamoDB (primary data store)"
+  - "AWS SQS (message queue)"
+  - "AWS EventBridge (event routing)"
+  - "AWS Bedrock (AI inference)"
+  - "Google Gemini (@google/genai)"
+environment_variables_referenced:
+  - "CLERK_SECRET_KEY"
+  - "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+  - "AWS_ACCESS_KEY_ID"
+  - "AWS_SECRET_ACCESS_KEY"
+  - "AWS_REGION"
+  - "GOOGLE_API_KEY"
+  - "TODO — full list in scripts/verify-env.mjs"
+key_routes:
+  - "TODO — requires Phase C deep read of app/"
+key_services:
+  - "TODO — requires Phase C deep read"
+key_jobs_or_workers:
+  - "TODO — SQS consumers (requires Phase C deep read)"
+critical_dependencies:
+  - "next ^15.2.4"
+  - "@clerk/nextjs ^6.31.6"
+  - "@aws-sdk/client-dynamodb ^3.997.0"
+  - "@aws-sdk/client-sqs ^3.997.0"
+  - "@aws-sdk/client-eventbridge ^3.997.0"
+  - "@aws-sdk/client-bedrock-runtime ^3.999.0"
+  - "@google/genai ^1.29.0"
+likely_failure_hotspots:
+  - "AWS credential env vars missing or expired"
+  - "Clerk key mismatch between environments"
+  - "DynamoDB table name or region mismatch"
+  - "Build lock stale (scripts/with-build-lock.mjs)"
+  - "Verify script failures blocking release"
+local_dev_commands:
+  - "npm run dev"
+build_commands:
+  - "npm run build"
+  - "npm run typecheck"
+  - "npm run lint"
+test_commands:
+  - "npm run verify:env"
+  - "npm run verify:health-check"
+  - "npm run verify:release-gate"
