@@ -16,6 +16,7 @@ export type LedgerAdapter = {
   readAll: () => LedgerRecord[];
   upsert: (record: LedgerRecord) => LedgerRecord;
   findByMission: (missionId: string) => LedgerRecord[];
+  findByLearner: (learnerId: string) => LedgerRecord[];
 };
 
 const LEDGER_STORAGE_KEY = "rootwork.ledger.records";
@@ -38,6 +39,7 @@ function readRecords(): LedgerRecord[] {
   try {
     return JSON.parse(raw) as LedgerRecord[];
   } catch {
+    console.warn("[ledger/adapter] readRecords: failed to parse stored ledger — returning empty. Data may be corrupted.");
     return [];
   }
 }
@@ -48,7 +50,11 @@ function writeRecords(records: LedgerRecord[]): LedgerRecord[] {
     return records;
   }
 
-  window.localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(records));
+  try {
+    window.localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(records));
+  } catch {
+    console.warn("[ledger/adapter] writeRecords: localStorage quota exceeded — ledger write skipped.");
+  }
   return records;
 }
 
@@ -79,5 +85,8 @@ export const localLedgerAdapter: LedgerAdapter = {
   },
   findByMission(missionId) {
     return readRecords().filter((record) => record.missionId === missionId);
+  },
+  findByLearner(learnerId) {
+    return readRecords().filter((record) => record.learnerId === learnerId);
   }
 };

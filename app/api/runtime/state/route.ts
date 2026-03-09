@@ -46,7 +46,13 @@ export async function GET(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  const state = await adapterResult.adapter.read(learnerId);
+  let state: unknown;
+  try {
+    state = await adapterResult.adapter.read(learnerId);
+  } catch (err) {
+    console.error("[runtime/state] read_failed", err instanceof Error ? err.message : "unknown");
+    return withTrace(503, traceId, { error: "State store read failed." });
+  }
   return withTrace(200, traceId, { learnerId, state });
 }
 
@@ -99,6 +105,11 @@ export async function PUT(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  await adapterResult.adapter.write(learnerId, state as RuntimeState);
+  try {
+    await adapterResult.adapter.write(learnerId, state as RuntimeState);
+  } catch (err) {
+    console.error("[runtime/state] write_failed", err instanceof Error ? err.message : "unknown");
+    return withTrace(503, traceId, { error: "State store write failed." });
+  }
   return withTrace(200, traceId, { learnerId, saved: true });
 }
