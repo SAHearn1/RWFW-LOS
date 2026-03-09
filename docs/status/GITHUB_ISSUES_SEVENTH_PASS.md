@@ -174,39 +174,48 @@
 
 ## Status Summary
 
+> **All issues resolved as of 2026-02-27 seventh-pass PRs.**
+
 | Issue | Gap | Priority | Status |
 |-------|-----|----------|--------|
-| #130 | GAP-30 Federation auth | Critical | Open |
-| #131 | GAP-31 shouldUseDbLedger dupe | Critical | Open |
-| #132 | GAP-32 Purge semantics | Critical | Open |
-| #133 | GAP-40 isLedgerRecord payload | High | Open |
-| #134 | GAP-41 toRecord() any cast | High | Open |
-| #135 | GAP-42 upsert atomicity | High | Open |
-| #136 | GAP-35 timeline try-catch | High | Open |
-| #137 | GAP-36 users fetch try-catch | High | Open |
-| #138 | GAP-37 assign-role fetch try-catch | High | Open |
-| #139 | GAP-38 webhook fetch try-catch | High | Open |
-| #140 | GAP-39 ledger null dereference | High | Open |
-| #141 | GAP-44 timing attack | High | Open |
-| #142 | GAP-49 telemetry runtime | Medium | Open |
-| #143 | GAP-33 layout org list | Critical | Open |
-| #144 | GAP-34 page exhaustiveness | Critical | Open |
-| #145 | GAP-45 middleware cast | High | Open |
-| #146 | GAP-46 ALL_ROLES derived | High | Open |
-| #147 | GAP-58 export role groupings | Medium | Open |
-| #148 | GAP-59 layout audit log | Medium | Open |
-| #149 | GAP-43 audit fire-and-forget | High | Open |
-| #150 | GAP-54 audit log path | Medium | Open |
-| #151 | GAP-55 trace header casing | Medium | Open |
-| #152 | GAP-61 LLM router null | Medium | Open |
-| #153 | GAP-68 trace ID UUID | Low | Open |
-| #154 | GAP-47 smoke test | High | Open |
-| #155 | GAP-56 role-routes brittle | Medium | Open |
-| #156 | GAP-57 onboarding regex | Medium | Open |
-| #157 | GAP-50 diagnostics auth | Medium | Open |
-| #158 | GAP-51 health runtime | Medium | Open |
-| #159 | GAP-52 mcp/offline runtime | Medium | Open |
-| #160 | GAP-53 store.ts silent discard | Medium | Open |
-| #161 | GAP-60 super_admin nav | Medium | Open |
-| #162 | GAP-63–72 P3 polish | Low | Open |
-EOF
+| #130 | GAP-30 Federation auth | Critical | ✅ Resolved |
+| #131 | GAP-31 shouldUseDbLedger dupe | Critical | ✅ Resolved |
+| #132 | GAP-32 Purge semantics | Critical | ✅ Resolved |
+| #133 | GAP-40 isLedgerRecord payload | High | ✅ Resolved |
+| #134 | GAP-41 toRecord() any cast | High | ✅ Resolved |
+| #135 | GAP-42 upsert atomicity | High | ✅ Resolved |
+| #136 | GAP-35 timeline try-catch | High | ✅ Resolved |
+| #137 | GAP-36 users fetch try-catch | High | ✅ Resolved |
+| #138 | GAP-37 assign-role fetch try-catch | High | ✅ Resolved |
+| #139 | GAP-38 webhook fetch try-catch | High | ✅ Resolved |
+| #140 | GAP-39 ledger null dereference | High | ✅ Resolved |
+| #141 | GAP-44 timing attack | High | ✅ Resolved |
+| #142 | GAP-49 telemetry runtime | Medium | ✅ Resolved |
+| #143 | GAP-33 layout org list | Critical | ✅ Resolved |
+| #144 | GAP-34 page exhaustiveness | Critical | ✅ Resolved |
+| #145 | GAP-45 middleware cast | High | ✅ Resolved |
+| #146 | GAP-46 ALL_ROLES derived | High | ✅ Resolved |
+| #147 | GAP-58 export role groupings | Medium | ✅ Resolved |
+| #148 | GAP-59 layout audit log | Medium | ✅ Resolved |
+| #149 | GAP-43 audit fire-and-forget | High | ✅ Resolved |
+| #150 | GAP-54 audit log path | Medium | ✅ Resolved |
+| #151 | GAP-55 trace header casing | Medium | ✅ Resolved |
+| #152 | GAP-61 LLM router null | Medium | ✅ Resolved |
+| #153 | GAP-68 trace ID UUID | Low | ✅ Resolved |
+| #154 | GAP-47 smoke test | High | ✅ Resolved |
+| #155 | GAP-56 role-routes brittle | Medium | ✅ Resolved |
+| #156 | GAP-57 onboarding regex | Medium | ✅ Resolved |
+| #157 | GAP-50 diagnostics auth | Medium | ✅ Resolved |
+| #158 | GAP-51 health runtime | Medium | ✅ Resolved |
+| #159 | GAP-52 mcp/offline runtime | Medium | ✅ Resolved |
+| #160 | GAP-53 store.ts silent discard | Medium | ✅ Resolved |
+| #161 | GAP-60 super_admin nav | Medium | ✅ Resolved |
+| #162 | GAP-63–72 P3 polish | Low | ✅ Resolved |
+
+## Eighth Pass — New Gaps Identified (2026-03-08)
+
+See issues #202–#229. A new gap analysis pass identified 29 additional items across P0–P3:
+- **P0** (#202–#204): super_admin ledger exclusion, timeline readAll memory load, in-memory rate limiter Vercel ineffectiveness
+- **P1** (#205–#212): local ORG_REQUIRED_ROLES dupe, user!.id assertions, silent JSON swallow, DynamoDB try-catch, audit log source, ai/health unauthenticated, facilitator write scope, missing rate limits
+- **P2** (#213–#223): release gate non-blocking gap, ledger parse silence, localStorage quota, DynamoDB adapter errors, .env docs, Clerk pagination, onboarding verifier, student_enrolled tour, audit path, verify brittleness
+- **P3** (#224–#229): LedgerAdapter interface, CLAUDE.md docs, stale status docs, production-readiness archive, mcp/offline auth, featureFlags comment

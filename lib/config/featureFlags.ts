@@ -1,3 +1,8 @@
+/**
+ * Feature flags are read from process.env at module load time (Next.js build/startup).
+ * Changing a flag value requires a redeploy — flags are NOT re-evaluated per request.
+ * All flags default to false when unset; the app must degrade gracefully when any flag is false.
+ */
 export const PHASE1_FEATURE_FLAG_KEYS = [
   "NEXT_PUBLIC_ENABLE_LEDGER",
   "NEXT_PUBLIC_ENABLE_MCP",

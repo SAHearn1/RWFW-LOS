@@ -144,7 +144,7 @@ npm run verify:swarm-overlap    # File-overlap conflict detection for parallel P
 
 ## 6. User Roles — Complete Reference
 
-Six roles are defined in `lib/auth/roles.ts`:
+Seven roles are defined in `lib/auth/roles.ts`:
 
 ```typescript
 export const APP_ROLES = [
@@ -154,6 +154,7 @@ export const APP_ROLES = [
   "teacher",
   "professional_development",
   "admin",
+  "super_admin",
 ] as const;
 ```
 
@@ -164,7 +165,8 @@ Role groupings (used in route access contracts):
 | `LEARNER_ROLES` | student_independent, student_enrolled, adult_learner |
 | `FACILITATOR_ROLES` | teacher, professional_development |
 | `ADMIN_ROLE` | admin |
-| `ALL_ROLES` | all six |
+| `SUPER_ADMIN_ROLE` | super_admin |
+| `ALL_ROLES` | all seven |
 
 ### Role Requirements
 
@@ -185,11 +187,10 @@ Role groupings (used in route access contracts):
 | student_independent | `PLEHome` | ✅ Implemented |
 | student_enrolled | `PLEHome` | ✅ Implemented |
 | adult_learner | `AdultLearnerHome` | ✅ Implemented |
-| teacher | `PLEHome` | ⚠️ **GAP** — falls through to student UI |
+| teacher | `TeacherHome` | ✅ Implemented |
 | professional_development | `ProfessionalDevelopmentHome` | ✅ Implemented |
-| admin | `PLEHome` | ⚠️ **GAP** — falls through to student UI |
-
-> **Critical gap**: `teacher` and `admin` currently render `PLEHome` because `app/app/page.tsx` has no branch for these roles. Both need dedicated home dashboards.
+| admin | `AdminHome` | ✅ Implemented |
+| super_admin | `SuperAdminHome` | ✅ Implemented |
 
 ---
 
@@ -410,9 +411,40 @@ All of the following have been implemented and closed:
 
 | GAP-15 | Landing page CTA differentiation | ✅ `?intent=teacher` / `?intent=admin` params + contextual banner in sign-in page |
 
-### No remaining gaps
+### Eighth Pass — New Gaps Identified (2026-03-08)
 
-All known gaps are resolved as of the sixth pass (2026-02-27).
+**29 new gaps** found in a deep file-by-file analysis. GitHub issues #202–#229. Not all resolvable in a single PR.
+
+| Issue | Gap | Priority | Status |
+|-------|-----|----------|--------|
+| #202 | `super_admin` excluded from ledger API GET/POST | P0 | ✅ Fixed in this PR |
+| #203 | Timeline route loads ALL records before filtering (OOM) | P0 | ✅ Fixed in this PR |
+| #204 | In-memory rate limiter resets on Vercel cold start | P0 | Open |
+| #205 | Local `ORG_REQUIRED_ROLES` dupe in assign-role route | P1 | Open |
+| #206 | `user!.id` non-null assertion after role-only check | P1 | ✅ Fixed in this PR |
+| #207 | Silent JSON swallow in orchestration worker-run | P1 | ✅ Fixed in this PR |
+| #208 | No try-catch on DynamoDB calls in runtime/state route | P1 | Open |
+| #209 | Audit log API reads file only with no source indicator | P1 | Open |
+| #210 | `/api/ai/health` is completely unauthenticated | P1 | ✅ Fixed in this PR |
+| #211 | Facilitator can write ledger records for any learnerId | P1 | Open |
+| #212 | Missing rate limits on retention/profile/users/runtime | P1 | Open |
+| #213 | release-gate non-blocking checks never run | P2 | Open |
+| #214 | In-memory ledger silently swallows parse failures | P2 | ✅ Fixed in this PR |
+| #215 | No localStorage quota guard in ledger adapter | P2 | ✅ Fixed in this PR |
+| #216 | DynamoDB adapter calls have no try-catch | P2 | Open |
+| #217 | `LOG_LEVEL` undocumented in `.env.example` | P2 | ✅ Fixed in this PR |
+| #218 | `AWS_BEDROCK_MODEL_ID` alias undocumented | P2 | ✅ Fixed in this PR |
+| #219 | Clerk user list hard-coded limit=100, no pagination | P2 | Open |
+| #220 | Onboarding verifier lacks role-specific step count checks | P2 | Open |
+| #221 | `student_enrolled` tour missing workflow steps | P2 | ✅ Fixed in this PR |
+| #222 | Audit log file path cwd-relative, fails on serverless | P2 | Open |
+| #223 | Verify scripts use brittle string matching | P2 | Open |
+| #224 | `LedgerAdapter` interface missing `findByLearner()` | P3 | ✅ Fixed in this PR |
+| #225 | CLAUDE.md listed "Six roles" (should be seven) | P3 | ✅ Fixed in this PR |
+| #226 | `GITHUB_ISSUES_SEVENTH_PASS.md` showed all issues as Open | P3 | ✅ Fixed in this PR |
+| #227 | `production-readiness-gap-analysis.md` stale (45%) | P3 | ✅ Archived in this PR |
+| #228 | `/api/mcp/health` and `/api/offline/status` unauthenticated | P3 | Open |
+| #229 | `featureFlags.ts` missing module-load-time comment | P3 | ✅ Fixed in this PR |
 
 ---
 

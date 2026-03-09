@@ -143,17 +143,25 @@ export async function POST(request: Request): Promise<Response> {
   const user = await currentUser();
   const role = parseAppRole(user?.publicMetadata?.role);
 
-  if (!role || (role !== "admin" && role !== "super_admin" && role !== "teacher" && role !== "professional_development")) {
+  if (!role || !user?.id || (role !== "admin" && role !== "super_admin" && role !== "teacher" && role !== "professional_development")) {
     return NextResponse.json(
       { error: "Facilitator/admin role required." },
       { status: 403, headers: { [TRACE_HEADER]: traceId } }
     );
   }
 
-  const rateLimitResponse = enforceRateLimit(user!.id, "/api/orchestration/worker-run", RATE_LIMITS.mutation, traceId);
+  const rateLimitResponse = enforceRateLimit(user.id, "/api/orchestration/worker-run", RATE_LIMITS.mutation, traceId);
   if (rateLimitResponse) return rateLimitResponse;
 
-  const body = (await request.json().catch(() => ({}))) as WorkerRunBody;
+  let body: WorkerRunBody;
+  try {
+    body = (await request.json()) as WorkerRunBody;
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body." },
+      { status: 400, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
   const enqueuedJob = buildJob(body, traceId);
 
   const preferredStore = canUseDynamo()

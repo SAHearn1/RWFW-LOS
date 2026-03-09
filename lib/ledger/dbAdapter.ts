@@ -121,6 +121,13 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
     ORDER BY updated_at_iso DESC
   `);
 
+  const findByLearnerStatement = database.prepare(`
+    SELECT id, type, mission_id, learner_id, payload_json, created_at_iso, updated_at_iso
+    FROM ledger_records
+    WHERE learner_id = ?
+    ORDER BY updated_at_iso DESC
+  `);
+
   const upsertStatement = database.prepare(`
     INSERT INTO ledger_records (id, type, mission_id, learner_id, payload_json, created_at_iso, updated_at_iso)
     VALUES (@id, @type, @missionId, @learnerId, @payloadJson, @createdAtIso, @updatedAtIso)
@@ -159,6 +166,18 @@ export function createDbLedgerAdapter(databasePath?: string): LedgerAdapter {
     },
     findByMission(missionId) {
       const rows = findByMissionStatement.all(missionId) as Array<{
+        id: string;
+        type: LedgerRecord["type"];
+        mission_id: string;
+        learner_id: string;
+        payload_json: string;
+        created_at_iso: string;
+        updated_at_iso: string;
+      }>;
+      return rows.map(toRecord);
+    },
+    findByLearner(learnerId) {
+      const rows = findByLearnerStatement.all(learnerId) as Array<{
         id: string;
         type: LedgerRecord["type"];
         mission_id: string;

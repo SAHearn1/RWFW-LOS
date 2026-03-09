@@ -1,6 +1,6 @@
 # RWFW LOS Program Status
 
-Last Updated: 2026-02-27 (Sixth pass)
+Last Updated: 2026-03-08 (Eighth pass gap analysis)
 Owner: Release Captain (Codex)
 
 ## Executive Status
@@ -57,7 +57,19 @@ Owner: Release Captain (Codex)
 
 ## Remaining Open Gaps
 
-**None.** All known gaps are closed as of the sixth pass (2026-02-27).
+**29 new gaps** identified in eighth pass (2026-03-08). Issues #202–#229 filed on GitHub.
+
+| Priority | Count | Issues |
+|----------|-------|--------|
+| P0 — Critical | 3 | #202, #203, #204 |
+| P1 — High | 8 | #205–#212 |
+| P2 — Medium | 11 | #213–#223 |
+| P3 — Low/Docs | 6 | #224–#229 |
+
+Key P0 items requiring immediate resolution:
+- **#202** `super_admin` excluded from ledger API GET/POST
+- **#203** Timeline route loads ALL DB records into memory before filtering (OOM risk)
+- **#204** In-memory rate limiter resets on Vercel cold start / not shared across instances
 
 ## Program Epics
 - `#104` Phase 4 Runtime Realization — **COMPLETE**

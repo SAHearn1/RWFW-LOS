@@ -57,14 +57,14 @@ export async function POST(request: Request): Promise<Response> {
   const user = await currentUser();
   const role = parseAppRole(user?.publicMetadata?.role);
 
-  if (!role) {
+  if (!role || !user?.id) {
     return NextResponse.json(
       { error: "Authorized role required." },
       { status: 403, headers: { [TRACE_HEADER]: traceId } }
     );
   }
 
-  const rateLimitResponse = enforceRateLimit(user!.id, "/api/inference", RATE_LIMITS.inference, traceId);
+  const rateLimitResponse = enforceRateLimit(user.id, "/api/inference", RATE_LIMITS.inference, traceId);
   if (rateLimitResponse) return rateLimitResponse;
 
   let body: InferenceBody;

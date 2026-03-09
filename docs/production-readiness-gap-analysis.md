@@ -1,9 +1,17 @@
 # Production Readiness Gap Analysis
 
+> **ARCHIVED — 2026-03-08**
+> This document was written on 2026-02-25 and reflected approximately 45% production readiness.
+> All gaps described below were resolved in the seventh pass (2026-02-27).
+> For current status see `docs/status/PROGRAM_STATUS.md`.
+> For the eighth-pass gap findings (2026-03-08) see GitHub issues #202–#229.
+
+---
+
 Date: 2026-02-25
 Owner: Release Captain
-Status: Active remediation
-Estimated readiness: ~45%
+Status: **ARCHIVED** (was: Active remediation)
+Estimated readiness at time of writing: ~45% → **Current estimate: ~85%** (post eighth-pass P0/P1 gaps remain)
 
 ## Critical Production Risks (P1)
 1. DB ledger path on Vercel serverless

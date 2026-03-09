@@ -23,11 +23,18 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
+  if (!user?.id) {
+    return NextResponse.json(
+      { error: "Authenticated session required." },
+      { status: 401, headers: { [TRACE_HEADER]: traceId } }
+    );
+  }
+
   let records;
   try {
     records = isDbLedgerAvailable()
-      ? createDbLedgerAdapter().readAll()
-      : localLedgerAdapter.readAll();
+      ? createDbLedgerAdapter().findByLearner(user.id)
+      : localLedgerAdapter.findByLearner(user.id);
   } catch (error) {
     console.error("[timeline/learner] ledger_init_failed", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
@@ -36,7 +43,7 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  const timeline = buildLearnerTimeline(records, user?.id);
+  const timeline = buildLearnerTimeline(records, user.id);
 
   return NextResponse.json(
     {
