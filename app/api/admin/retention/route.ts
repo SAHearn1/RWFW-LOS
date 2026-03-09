@@ -5,6 +5,7 @@ import { parseAppRole } from "@/lib/auth/userRole";
 import { deleteDbLedgerRecordsByLearner, getDbLedgerAvailability, purgeDbLedgerRecordsBefore } from "@/lib/ledger/dbAdapter";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,9 @@ export async function POST(request: Request): Promise<Response> {
       { status: 403, headers: { [TRACE_HEADER]: traceId } }
     );
   }
+
+  const rateLimitResponse = enforceRateLimit(user?.id ?? "anonymous", "/api/admin/retention", RATE_LIMITS.mutation, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   const availability = getDbLedgerAvailability();
   if (!availability.enabled) {

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 import { getRuntimeStateAdapter } from "@/lib/runtime/dynamoAdapter";
 import type { RuntimeState } from "@/lib/runtime/engine/reducer";
 
@@ -46,7 +47,13 @@ export async function GET(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  const state = await adapterResult.adapter.read(learnerId);
+  let state;
+  try {
+    state = await adapterResult.adapter.read(learnerId);
+  } catch (err) {
+    console.error("[runtime/state] dynamo_read_failed", err instanceof Error ? err.message : "unknown");
+    return withTrace(503, traceId, { error: "State store read failed." });
+  }
   return withTrace(200, traceId, { learnerId, state });
 }
 
@@ -58,6 +65,9 @@ export async function PUT(request: Request): Promise<Response> {
   if (!role || !user?.id) {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
+
+  const rateLimitResponse = enforceRateLimit(user.id, "/api/runtime/state", RATE_LIMITS.mutation, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   const adapterResult = getRuntimeStateAdapter();
   if (!adapterResult.available) {
@@ -99,6 +109,11 @@ export async function PUT(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }
 
-  await adapterResult.adapter.write(learnerId, state as RuntimeState);
+  try {
+    await adapterResult.adapter.write(learnerId, state as RuntimeState);
+  } catch (err) {
+    console.error("[runtime/state] dynamo_write_failed", err instanceof Error ? err.message : "unknown");
+    return withTrace(503, traceId, { error: "State store write failed." });
+  }
   return withTrace(200, traceId, { learnerId, saved: true });
 }

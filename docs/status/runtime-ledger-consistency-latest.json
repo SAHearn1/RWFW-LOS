@@ -1,5 +1,5 @@
 {
-  "generatedAtIso": "2026-02-28T20:49:57.732Z",
+  "generatedAtIso": "2026-03-09T05:11:40.533Z",
   "passed": true,
   "skipped": true,
   "reason": "NEXT_PUBLIC_ENABLE_DB_LEDGER is not enabled — SQLite ledger not expected.",

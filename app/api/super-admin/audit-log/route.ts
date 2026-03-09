@@ -59,8 +59,13 @@ export async function GET(request: Request): Promise<Response> {
   const entries = await readAuditLog();
   const page = entries.slice(0, limit);
 
+  const fileLoggingEnabled = process.env.AUDIT_LOG_TO_FILE === "true";
+  const isServerless = process.env.VERCEL === "1";
+  const source: "file" | "stdout_only" =
+    fileLoggingEnabled && !isServerless ? "file" : "stdout_only";
+
   return NextResponse.json(
-    { entries: page, total: entries.length, limit },
+    { entries: page, total: entries.length, limit, source, fileLoggingEnabled },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
   );
 }

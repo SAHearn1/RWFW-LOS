@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { parseAppRole } from "@/lib/auth/userRole";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,9 @@ export async function POST(request: Request): Promise<Response> {
       { status: 401, headers: { [TRACE_HEADER]: traceId } }
     );
   }
+
+  const rateLimitResponse = enforceRateLimit(user.id, "/api/profile/update", RATE_LIMITS.mutation, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   let body: UpdateProfileBody;
   try {
