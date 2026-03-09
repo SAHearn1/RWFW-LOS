@@ -1,0 +1,21 @@
+{
+  "generatedAtIso": "2026-03-09T05:11:57.808Z",
+  "url": "http://localhost:3000/api/health",
+  "statusCode": 503,
+  "overallStatus": "degraded",
+  "checks": {
+    "clerk": {
+      "status": "ok"
+    },
+    "bedrock": {
+      "status": "unconfigured"
+    },
+    "sqs": {
+      "status": "error"
+    },
+    "dynamo": {
+      "status": "error"
+    }
+  },
+  "passed": true
+}
