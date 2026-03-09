@@ -116,43 +116,49 @@ if (gateFailedEarly) {
 // Run non-blocking checks only when the gate has not failed early.
 const nonBlockingResults = [];
 
-if (!gateFailedEarly) {
-  const cloudSmokeScript = "verify:cloud-aws-smoke";
-  if (!process.env.E2E_ADMIN_EMAIL) {
+/** Run a single non-blocking check, skipping it if the given envGuard is not set. */
+function runNonBlocking(script, envGuard) {
+  if (envGuard && !process.env[envGuard]) {
     console.log(
-      `[release-gate] Skipping non-blocking check ${cloudSmokeScript}: E2E_ADMIN_EMAIL is not set.`
+      `[release-gate] Skipping non-blocking check ${script}: ${envGuard} is not set.`
     );
-    nonBlockingResults.push({
-      script: cloudSmokeScript,
+    return {
+      script,
       status: "skipped",
       passed: null,
       exitCode: null,
       startedAtIso: null,
       finishedAtIso: null,
-      note: "E2E_ADMIN_EMAIL not set"
-    });
-  } else {
-    const startedAtIso = new Date().toISOString();
-    const run = runNpmScript(cloudSmokeScript);
-    const finishedAtIso = new Date().toISOString();
-    const passed = run.status === 0;
-
-    nonBlockingResults.push({
-      script: cloudSmokeScript,
-      status: passed ? "passed" : "failed",
-      passed,
-      exitCode: run.status ?? 1,
-      startedAtIso,
-      finishedAtIso,
-      blocking: false
-    });
-
-    if (!passed) {
-      console.warn(
-        `[release-gate] Non-blocking check ${cloudSmokeScript} failed (exit ${run.status ?? 1}). Gate is not blocked.`
-      );
-    }
+      note: `${envGuard} not set`
+    };
   }
+
+  const startedAtIso = new Date().toISOString();
+  const run = runNpmScript(script);
+  const finishedAtIso = new Date().toISOString();
+  const passed = run.status === 0;
+
+  if (!passed) {
+    console.warn(
+      `[release-gate] Non-blocking check ${script} failed (exit ${run.status ?? 1}). Gate is not blocked.`
+    );
+  }
+
+  return {
+    script,
+    status: passed ? "passed" : "failed",
+    passed,
+    exitCode: run.status ?? 1,
+    startedAtIso,
+    finishedAtIso,
+    blocking: false
+  };
+}
+
+if (!gateFailedEarly) {
+  nonBlockingResults.push(runNonBlocking("verify:cloud-aws-smoke", "E2E_ADMIN_EMAIL"));
+  nonBlockingResults.push(runNonBlocking("verify:federation-smoke", "NEXT_PUBLIC_ENABLE_FEDERATION"));
+  nonBlockingResults.push(runNonBlocking("verify:health-check", null));
 } else {
   // Gate failed before non-blocking checks could run.
   for (const script of nonBlockingChecks) {

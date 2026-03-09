@@ -1,21 +1,12 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { APP_ROLES } from "@/lib/auth/roles";
+import { APP_ROLES, ORG_REQUIRED_ROLES } from "@/lib/auth/roles";
 import { parseAppRole } from "@/lib/auth/userRole";
 import { recordAuditEvent } from "@/lib/observability/audit";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
 
 export const runtime = "nodejs";
-
-// Roles that require an orgId to be set — mirrors the check in app/app/layout.tsx:40
-const ORG_REQUIRED_ROLES = new Set<string>([
-  "student_enrolled",
-  "teacher",
-  "professional_development",
-  "admin",
-  "super_admin",
-]);
 
 // Clerk user IDs must match this format
 const CLERK_USER_ID_RE = /^usr_[a-zA-Z0-9]+$/;
@@ -66,7 +57,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Roles that require an org must have a non-null orgId supplied
-  if (ORG_REQUIRED_ROLES.has(role) && !orgId) {
+  // After the APP_ROLES.includes() check above, role is a valid AppRole string.
+  if (ORG_REQUIRED_ROLES.has(role as import("@/lib/auth/roles").AppRole) && !orgId) {
     return NextResponse.json(
       { error: `orgId is required when assigning role '${role}'.` },
       { status: 400, headers: { [TRACE_HEADER]: traceId } }
