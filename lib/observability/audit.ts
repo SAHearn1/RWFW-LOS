@@ -14,7 +14,11 @@ export type AuditEvent = {
   createdAtIso: string;
 };
 
-const AUDIT_LOG_PATH = resolve("docs", "status", "audit-log.ndjson");
+// Allow the audit log path to be configured via env var.
+// Defaults to docs/status/audit-log.ndjson (relative to CWD — only written in local dev).
+const AUDIT_LOG_PATH = process.env.AUDIT_LOG_PATH?.trim()
+  ? resolve(process.env.AUDIT_LOG_PATH.trim())
+  : resolve("docs", "status", "audit-log.ndjson");
 const AUDIT_HTTP_TIMEOUT_MS = 1500;
 
 function isServerlessRuntime(): boolean {

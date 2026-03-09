@@ -1,61 +1,35 @@
 ## Summary
-- 
 
-## Scope
-### In Scope
-- [ ]
-### Out of Scope
-- [ ]
+## Root Cause Addressed
 
-## Dependencies
-- [ ] None
-- [ ] #<issue>
+## Files Changed
 
-## Acceptance Criteria
-1. 
-2. 
+| File | Reason |
+|------|--------|
+| | |
 
-## Test Routes
-- [ ] `/`
-- [ ] `/app`
-- [ ] Additional routes tested:
+## Why These Files
 
-## Verification
-- [ ] `npm run verify:release-gate`
-- [ ] `npm run lint`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `npm run verify:env`
-- [ ] `npm run verify:env-parity`
-- [ ] `npm run verify:engine-smoke`
-- [ ] `npm run verify:webhook-contract`
-- [ ] `npm run verify:branch-policy`
-- [ ] `npm run verify:swarm-overlap`
-- [ ] `npm run verify:role-routes`
-- [ ] `npm run verify:runtime-routes`
-- [ ] `npm run verify:onboarding`
-- [ ] `npm run verify:http-smoke`
+## Verification Evidence
 
-## Manual Role Evidence
-- [ ] Student role route captures attached (`/app`, `/app/studio`, `/app/credentials`)
-- [ ] Teacher role route captures attached (`/app`, `/app/command-center`, `/app/cohorts`)
-- [ ] Admin role route captures attached (`/app`, `/app/evidence`, `/app/exports`)
+```
+# verification output
+```
 
-## UI Evidence
-- [ ] No UI changes
-- [ ] UI changed, screenshots/GIF attached for desktop and mobile
+## Regression Checks
+- [ ] `npm run lint` passes
+- [ ] `npm run typecheck` passes
+- [ ] Relevant `verify:*` script passes
+- [ ] Adjacent paths verified
 
-## Browser Quality Quick Pass (when UI changed)
-- [ ] Lighthouse run captured (desktop + mobile)
-- [ ] Console clean on key routes (no uncaught errors)
-- [ ] Quick accessibility check captured (keyboard nav + headings)
-
-## Env Changes
-- [ ] No env var changes
-- [ ] Updated `.env.example`
-
-## Guardrails Check
-- [ ] <= 15 files changed (or approved exception)
-- [ ] No unrelated refactor
-- [ ] Feature flags respected / disabled features safe
+## Collision / Safety Checklist
 - [ ] No parallel PR overlap on the same layout file
+- [ ] <= 15 files changed
+- [ ] Feature flags respected / disabled features safe
+
+## Non-Goals
+
+## Residual Risk
+
+---
+*RWFW Governance — [SAHearn1/rwfw-agent-governance](https://github.com/SAHearn1/rwfw-agent-governance)*

@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
@@ -83,7 +83,7 @@ export async function GET(request: Request): Promise<Response> {
       return withTrace(400, traceId, { error: "learnerId is required for facilitator ledger reads." });
     }
     effectiveLearnerId = requestedLearnerId;
-  } else if (role === "admin") {
+  } else if (role === "admin" || role === "super_admin") {
     effectiveLearnerId = requestedLearnerId ?? null;
   } else {
     return withTrace(403, traceId, { error: "Authorized role required." });
@@ -130,7 +130,15 @@ export async function POST(request: Request): Promise<Response> {
     return withTrace(403, traceId, { error: "Learners can only write their own records." });
   }
 
-  const allowedWriter = isLearnerRole(role) || isFacilitatorRole(role) || role === "admin";
+  if (isFacilitatorRole(role)) {
+    // Facilitators must belong to an org — orgId is derived from session, never from the request body.
+    const { orgId: sessionOrgId } = await auth();
+    if (!sessionOrgId) {
+      return withTrace(403, traceId, { error: "Facilitators must be associated with an org to write ledger records." });
+    }
+  }
+
+  const allowedWriter = isLearnerRole(role) || isFacilitatorRole(role) || role === "admin" || role === "super_admin";
   if (!allowedWriter) {
     return withTrace(403, traceId, { error: "Authorized role required." });
   }

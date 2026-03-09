@@ -35,11 +35,17 @@ const ledgerConsistencyReportPath = resolve(
 );
 
 function runNpmScript(script) {
-  if (process.platform === "win32") {
-    return spawnSync("cmd.exe", ["/d", "/s", "/c", `npm run ${script}`], { stdio: "inherit" });
+  const result = process.platform === "win32"
+    ? spawnSync("cmd.exe", ["/d", "/s", "/c", `npm run ${script}`], { stdio: "inherit" })
+    : spawnSync("npm", ["run", script], { stdio: "inherit" });
+
+  // Treat spawn errors (e.g. missing executable) as failures rather than letting null status pass.
+  if (result.error) {
+    console.error(`[release-gate] spawn_error for "${script}": ${result.error.message}`);
+    return { ...result, status: 1 };
   }
 
-  return spawnSync("npm", ["run", script], { stdio: "inherit" });
+  return result;
 }
 
 function readJsonReport(reportPath) {
@@ -113,32 +119,47 @@ if (gateFailedEarly) {
   }
 }
 
+// Per-check skip conditions for non-blocking checks.
+// A missing skip guard means the check always runs.
+const nonBlockingSkipConditions = {
+  "verify:cloud-aws-smoke": () => !process.env.E2E_ADMIN_EMAIL
+    ? "E2E_ADMIN_EMAIL not set"
+    : null,
+  "verify:federation-smoke": () => process.env.NEXT_PUBLIC_ENABLE_FEDERATION !== "true"
+    ? "NEXT_PUBLIC_ENABLE_FEDERATION is not true"
+    : null,
+  "verify:health-check": () => null, // always run when gate passes
+};
+
 // Run non-blocking checks only when the gate has not failed early.
 const nonBlockingResults = [];
 
 if (!gateFailedEarly) {
-  const cloudSmokeScript = "verify:cloud-aws-smoke";
-  if (!process.env.E2E_ADMIN_EMAIL) {
-    console.log(
-      `[release-gate] Skipping non-blocking check ${cloudSmokeScript}: E2E_ADMIN_EMAIL is not set.`
-    );
-    nonBlockingResults.push({
-      script: cloudSmokeScript,
-      status: "skipped",
-      passed: null,
-      exitCode: null,
-      startedAtIso: null,
-      finishedAtIso: null,
-      note: "E2E_ADMIN_EMAIL not set"
-    });
-  } else {
+  for (const script of nonBlockingChecks) {
+    const skipReason = nonBlockingSkipConditions[script]?.() ?? null;
+
+    if (skipReason) {
+      console.log(`[release-gate] Skipping non-blocking check ${script}: ${skipReason}`);
+      nonBlockingResults.push({
+        script,
+        status: "skipped",
+        passed: null,
+        exitCode: null,
+        startedAtIso: null,
+        finishedAtIso: null,
+        note: skipReason,
+        blocking: false
+      });
+      continue;
+    }
+
     const startedAtIso = new Date().toISOString();
-    const run = runNpmScript(cloudSmokeScript);
+    const run = runNpmScript(script);
     const finishedAtIso = new Date().toISOString();
     const passed = run.status === 0;
 
     nonBlockingResults.push({
-      script: cloudSmokeScript,
+      script,
       status: passed ? "passed" : "failed",
       passed,
       exitCode: run.status ?? 1,
@@ -149,7 +170,7 @@ if (!gateFailedEarly) {
 
     if (!passed) {
       console.warn(
-        `[release-gate] Non-blocking check ${cloudSmokeScript} failed (exit ${run.status ?? 1}). Gate is not blocked.`
+        `[release-gate] Non-blocking check ${script} failed (exit ${run.status ?? 1}). Gate is not blocked.`
       );
     }
   }
@@ -162,7 +183,8 @@ if (!gateFailedEarly) {
       passed: false,
       exitCode: null,
       startedAtIso: null,
-      finishedAtIso: null
+      finishedAtIso: null,
+      blocking: false
     });
   }
 }

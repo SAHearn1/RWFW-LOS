@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { parseAppRole } from "@/lib/auth/userRole";
 import { getTraceIdFromRequest, TRACE_HEADER } from "@/lib/observability/trace";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 import type { UserRecord } from "@/lib/licensing/types";
 
 export const runtime = "nodejs";
@@ -49,6 +50,15 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
+  const rateLimitResponse = enforceRateLimit(user?.id ?? "anonymous", "/api/super-admin/users", RATE_LIMITS.read, traceId);
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const url = new URL(request.url);
+  const limitParam = url.searchParams.get("limit");
+  const offsetParam = url.searchParams.get("offset");
+  const pageLimit = Math.min(Math.max(parseInt(limitParam ?? "100", 10) || 100, 1), 250);
+  const pageOffset = Math.max(parseInt(offsetParam ?? "0", 10) || 0, 0);
+
   const clerkSecret = process.env.CLERK_SECRET_KEY?.trim();
   if (!clerkSecret) {
     return NextResponse.json(
@@ -59,10 +69,13 @@ export async function GET(request: Request): Promise<Response> {
 
   let clerkResponse: globalThis.Response;
   try {
-    clerkResponse = await fetch("https://api.clerk.com/v1/users?limit=100&order_by=-created_at", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${clerkSecret}` },
-    });
+    clerkResponse = await fetch(
+      `https://api.clerk.com/v1/users?limit=${pageLimit}&offset=${pageOffset}&order_by=-created_at`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${clerkSecret}` },
+      }
+    );
   } catch (error) {
     console.error("[super-admin/users] clerk_fetch_failed", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
@@ -89,7 +102,7 @@ export async function GET(request: Request): Promise<Response> {
   const users: UserRecord[] = clerkUsers.map(mapClerkUserToRecord);
 
   return NextResponse.json(
-    { users, total: users.length },
+    { users, total: users.length, limit: pageLimit, offset: pageOffset, hasMore: users.length === pageLimit },
     { status: 200, headers: { [TRACE_HEADER]: traceId } }
   );
 }
